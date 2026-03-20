@@ -1,0 +1,14 @@
+{
+  "name": "scraps-notifier",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "node-cron": "^4.2.1",
+    "pocketbase": "^0.26.3",
+    "web-push": "^3.6.7"
+  }
+}

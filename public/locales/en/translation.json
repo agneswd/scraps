@@ -1,0 +1,118 @@
+{
+  "common": {
+    "appName": "Scraps",
+    "save": "Save",
+    "cancel": "Cancel",
+    "back": "Back",
+    "next": "Next",
+    "close": "Close",
+    "logout": "Log out"
+  },
+  "auth": {
+    "emailLabel": "Email",
+    "emailPlaceholder": "jane@example.com",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "••••••••",
+    "loginButton": "Log in",
+    "loginPending": "Logging in...",
+    "kicker": "Household leftovers, without the clutter",
+    "subtitle": "Sign in with your household account to see the shared leftovers dashboard.",
+    "scaffoldTitle": "Foundation and auth are in place",
+    "scaffoldSummary": "Scaffolding, app shell routing, PocketBase auth wiring, PWA assets, and container files are ready for the dashboard data layer."
+  },
+
+  "dashboard": {
+    "title": "Dashboard",
+    "headline": "Track what needs attention before it turns into waste.",
+    "body": "Active leftovers are sorted by expiry date so the next thing to use is always at the top.",
+    "emptyState": "No leftovers! Your fridge is clear.",
+    "expiryBannerLabel": "Heads up",
+    "expiryBanner": "{{count}} item expiring today",
+    "expiryBanner_plural": "{{count}} items expiring today",
+    "daysLeft": "{{count}} day left",
+    "daysLeft_plural": "{{count}} days left",
+    "hoursLeft": "{{count}}h left",
+    "expired": "Expired",
+    "expiredHoursAgo": "Expired {{count}}h ago",
+    "expiredDaysAgo": "Expired {{count}} day ago",
+    "expiredDaysAgo_plural": "Expired {{count}} days ago",
+    "loadErrorBody": "The dashboard could not load leftovers right now. Check the PocketBase connection and try again.",
+    "retry": "Try again",
+    "markConsumed": "Ate it",
+    "markWasted": "Tossed",
+    "scaffold": {
+      "headline": "The dashboard skeleton is ready for live leftovers data.",
+      "body": "The next implementation slice will add leftover queries, expiry calculations, and card actions on top of this shell.",
+      "expiringToday": "Expiring today",
+      "activeLeftovers": "Active leftovers",
+      "averageRemaining": "Avg. remaining"
+    }
+  },
+  "addItem": {
+    "title": "Add Leftover",
+    "fabLabel": "Add leftover",
+    "nameLabel": "What is it?",
+    "namePlaceholder": "e.g. Chicken curry",
+    "categoryLabel": "Category",
+    "photoLabel": "Take Photo",
+    "notesLabel": "Notes",
+    "notesPlaceholder": "e.g. Blue container, top shelf",
+    "progress": "Step {{current}} of {{total}}",
+    "previewAlt": "Selected leftover photo preview",
+    "notesCounter": "{{count}} characters left",
+    "capture": "Capture",
+    "uploadPhoto": "Upload Photo",
+    "clearPhoto": "Remove Photo",
+    "cameraUnavailable": "Camera access is unavailable. You can still upload a photo from your device.",
+    "fileFallback": "Add a photo from your camera roll or file picker.",
+    "captureError": "That photo could not be processed. Try another image or upload again.",
+    "saveError": "The leftover could not be saved right now. Try again.",
+    "saving": "Saving...",
+    "steps": {
+      "0": "Name",
+      "1": "Category",
+      "2": "Photo",
+      "3": "Notes"
+    }
+  },
+  "stats": {
+    "title": "Stats",
+    "consumed": "Eaten",
+    "wasted": "Wasted",
+    "total": "Total items",
+    "wasteRate": "Waste rate",
+    "period7d": "7 days",
+    "period30d": "30 days",
+    "periodAll": "All time",
+    "scaffold": {
+      "headline": "Stats wiring will land after the dashboard and add-item flow.",
+      "body": "This route is included now so navigation, layout, and protected routing are already in place."
+    }
+  },
+  "categories": {
+    "meat": "Meat",
+    "poultry": "Poultry",
+    "seafood": "Seafood",
+    "veg": "Vegetables",
+    "dairy": "Dairy",
+    "grains": "Grains",
+    "prepared": "Prepared",
+    "other": "Other"
+  },
+  "notifications": {
+    "promptTitle": "Stay ahead of spoilage",
+    "promptBody": "Get notified before your food expires",
+    "enable": "Enable Notifications",
+    "notNow": "Not Now",
+    "iosHint": "Add Scraps to your Home Screen to enable notifications",
+    "enabled": "Notifications enabled",
+    "disabled": "Notifications disabled",
+    "pushTitle": "⚠️ {{itemName}} expires tomorrow!",
+    "pushBody": "Use it or lose it."
+  },
+  "errors": {
+    "offline": "No internet connection",
+    "generic": "Something went wrong"
+  }
+}
+

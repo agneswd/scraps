@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title">
+  <title>Scraps</title>
+  <rect width="256" height="256" rx="56" fill="#8f6623"/>
+  <path d="M64 86c0-8.837 7.163-16 16-16h96c8.837 0 16 7.163 16 16v84c0 17.673-14.327 32-32 32H96c-17.673 0-32-14.327-32-32V86Z" fill="#f7f3e8"/>
+  <path d="M86 56c0-6.627 5.373-12 12-12h60c6.627 0 12 5.373 12 12v16H86V56Z" fill="#dec790"/>
+  <path d="M101 118h54c6.627 0 12 5.373 12 12s-5.373 12-12 12h-54c-6.627 0-12-5.373-12-12s5.373-12 12-12Z" fill="#8f6623"/>
+  <circle cx="104" cy="170" r="12" fill="#8f6623"/>
+  <circle cx="152" cy="170" r="12" fill="#8f6623"/>
+</svg>
