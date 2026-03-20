@@ -9,8 +9,8 @@ export function useStats(period: StatsPeriod) {
   const { isAuthenticated } = useAuth();
 
   const archivedLeftoversQuery = useQuery({
-    queryKey: ['stats', 'archived-leftovers'],
-    queryFn: listArchivedLeftovers,
+    queryKey: ['stats', 'archived-leftovers', period],
+    queryFn: () => listArchivedLeftovers(period),
     enabled: isAuthenticated,
   });
 
@@ -20,7 +20,7 @@ export function useStats(period: StatsPeriod) {
     }
 
     void pocketbase.collection('leftovers').subscribe('*', () => {
-      void queryClient.invalidateQueries({ queryKey: ['stats', 'archived-leftovers'] });
+      void queryClient.invalidateQueries({ queryKey: ['stats'] });
     });
 
     return () => {

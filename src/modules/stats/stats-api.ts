@@ -22,9 +22,26 @@ const PERIOD_DAY_MAP: Record<Exclude<StatsPeriod, 'all'>, number> = {
   '30d': 30,
 };
 
-export async function listArchivedLeftovers() {
+function escapeFilterValue(value: string) {
+  return value.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
+function buildArchivedFilter(period: StatsPeriod, now: Date) {
+  const clauses = ['(status = "consumed" || status = "wasted")'];
+
+  if (period !== 'all') {
+    const cutoff = new Date(now);
+    cutoff.setDate(cutoff.getDate() - PERIOD_DAY_MAP[period]);
+    clauses.push(`updated >= '${escapeFilterValue(cutoff.toISOString())}'`);
+  }
+
+  return clauses.join(' && ');
+}
+
+export async function listArchivedLeftovers(period: StatsPeriod, now = new Date()) {
   return pocketbase.collection('leftovers').getFullList<ArchivedLeftoverRecord>({
-    filter: 'status != "active"',
+    fields: 'id,status,updated,created',
+    filter: buildArchivedFilter(period, now),
     sort: '-updated',
   });
 }
@@ -66,7 +83,7 @@ export function summarizeArchivedLeftovers(
   period: StatsPeriod,
   now = new Date(),
 ): StatsSummary {
-  const periodLeftovers = filterArchivedLeftoversByPeriod(leftovers, period, now);
+  const periodLeftovers = period === 'all' ? filterArchivedLeftoversByPeriod(leftovers, period, now) : leftovers;
   const consumedCount = periodLeftovers.filter((leftover) => leftover.status === 'consumed').length;
   const wastedCount = periodLeftovers.length - consumedCount;
   const totalItems = periodLeftovers.length;
