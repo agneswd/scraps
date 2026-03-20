@@ -1,6 +1,9 @@
 FROM node:22-alpine AS build
 WORKDIR /app
 
+ARG VITE_VAPID_PUBLIC_KEY=""
+ENV VITE_VAPID_PUBLIC_KEY=$VITE_VAPID_PUBLIC_KEY
+
 COPY package.json package-lock.json* ./
 RUN npm ci
 

@@ -14,6 +14,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        VITE_VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
     container_name: scraps-ui
     depends_on:
       - scraps-db
