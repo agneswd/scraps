@@ -17,7 +17,7 @@ export function ExpiryBanner({ expiringCount }: ExpiryBannerProps) {
     <motion.section
       initial={{ opacity: 0, scale: 0.96 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+      transition={{ type: 'spring', stiffness: 100, damping: 20 }}
       className="flex items-center gap-3 rounded-2xl bg-amber-50 p-4 dark:bg-amber-950/30"
     >
       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-600 dark:bg-amber-900/50 dark:text-amber-400">

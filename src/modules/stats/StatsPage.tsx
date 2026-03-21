@@ -18,13 +18,13 @@ const periodTranslationKey: Record<StatsPeriod, string> = {
 function StatsSkeleton() {
   return (
     <div className="space-y-3 pt-2">
-      <div className="h-10 w-48 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800" />
+      <div className="skeleton h-10 w-48" />
       <div className="grid grid-cols-2 gap-2">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-20 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800" style={{ animationDelay: `${i * 80}ms` }} />
+          <div key={i} className="skeleton h-20" style={{ animationDelay: `${i * 80}ms` }} />
         ))}
       </div>
-      <div className="h-16 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800" />
+      <div className="skeleton h-16" />
     </div>
   );
 }
@@ -34,7 +34,14 @@ export function StatsPage() {
   const [period, setPeriod] = useState<StatsPeriod>('30d');
   const { summary, isError, isLoading, refetch } = useStats(period);
 
-  if (isLoading) return <StatsSkeleton />;
+  if (isLoading) return (
+    <div className="space-y-5">
+      <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+        {t('stats.title')}
+      </h1>
+      <StatsSkeleton />
+    </div>
+  );
 
   if (isError) {
     return (

@@ -37,7 +37,7 @@ export function PantryItemCard({ item, index, onTap, onIncrement, onDecrement }:
           onTap(item);
         }
       }}
-      className="flex w-full items-center gap-3 rounded-2xl bg-white p-3 text-left shadow-soft transition-all active:scale-[0.98] dark:bg-slate-800/80"
+      className="flex w-full items-center gap-3 rounded-2xl border border-slate-100/80 bg-white p-3 text-left shadow-soft transition-all active:scale-[0.98] dark:border-slate-700/40 dark:bg-slate-800/80"
     >
       {/* Photo or category icon */}
       <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-700">

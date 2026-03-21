@@ -44,10 +44,20 @@ export function ShoppingListPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-3 pt-2">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="h-16 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800" />
-        ))}
+      <div className="space-y-5">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+            {t('shoppingList.title')}
+          </h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            {t('shoppingList.headline')}
+          </p>
+        </div>
+        <div className="space-y-2">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="skeleton h-16" style={{ animationDelay: `${i * 120}ms` }} />
+          ))}
+        </div>
       </div>
     );
   }

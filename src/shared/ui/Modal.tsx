@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -37,7 +38,10 @@ export function Modal({ children, isOpen, onClose, title }: ModalProps) {
     };
   }, [isOpen, onClose]);
 
-  return (
+  const body = typeof document !== 'undefined' ? document.body : null;
+  if (!body) return null;
+
+  return createPortal(
     <AnimatePresence>
       {isOpen ? (
         <motion.div
@@ -56,7 +60,7 @@ export function Modal({ children, isOpen, onClose, title }: ModalProps) {
             initial={{ y: '100%', opacity: 0.5 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: '100%', opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            transition={{ type: 'spring', stiffness: 260, damping: 28 }}
             className="flex max-h-[94vh] w-full max-w-lg flex-col overflow-hidden rounded-t-[2rem] bg-white shadow-elevated outline-none sm:rounded-[2rem] dark:bg-slate-900"
           >
             <div className="flex items-center justify-between px-6 pb-2 pt-5">
@@ -75,6 +79,7 @@ export function Modal({ children, isOpen, onClose, title }: ModalProps) {
           </motion.div>
         </motion.div>
       ) : null}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 }

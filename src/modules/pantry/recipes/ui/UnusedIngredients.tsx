@@ -23,7 +23,7 @@ export function UnusedIngredients({ items }: UnusedIngredientsProps) {
           {t('recipes.unusedBody')}
         </p>
       </div>
-      <div className="rounded-2xl bg-white p-4 shadow-soft dark:bg-slate-800/80">
+      <div className="rounded-2xl border border-slate-100/80 bg-white p-4 shadow-soft dark:border-slate-700/40 dark:bg-slate-800/80">
         <div className="mb-3 flex items-center gap-2 text-slate-400 dark:text-slate-500">
           <PackageSearch className="h-4 w-4" strokeWidth={2} />
           <span className="text-xs font-medium uppercase tracking-[0.18em]">

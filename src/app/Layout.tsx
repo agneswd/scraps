@@ -14,7 +14,7 @@ const SettingsModal = lazy(() => import('@/modules/settings/SettingsModal').then
 
 const mobileTabClass = ({ isActive }: { isActive: boolean }) =>
   [
-    'flex flex-1 flex-col items-center gap-1 rounded-2xl px-4 py-2 text-xs font-medium transition-all duration-200',
+    'flex w-full flex-col items-center gap-1 py-2 text-xs font-medium transition-all duration-200',
     isActive
       ? 'text-slate-900 dark:text-white'
       : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300',
@@ -120,14 +120,14 @@ export function Layout() {
 
         {/* Page content */}
         <main className="flex-1 overflow-visible px-5 pb-28 pt-2 md:overflow-auto md:px-8 md:py-6 md:pb-6">
-          <div className="mx-auto w-full max-w-lg md:max-w-2xl">
-            <AnimatePresence>
+          <div className="relative mx-auto w-full max-w-lg md:max-w-2xl">
+            <AnimatePresence mode="wait">
               <motion.div
                 key={location.pathname}
+                style={{ opacity: 0, transform: 'translateY(6px)', willChange: 'opacity, transform' }}
                 initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.15, ease: [0.32, 0.72, 0, 1] }}
+                animate={{ opacity: 1, y: 0, transition: { duration: 0.2, ease: [0.32, 0.72, 0, 1] } }}
+                exit={{ opacity: 0, y: -4, transition: { duration: 0.08, ease: 'easeIn' } }}
               >
                 <Outlet />
               </motion.div>
@@ -135,11 +135,11 @@ export function Layout() {
           </div>
         </main>
 
-        {/* Mobile bottom tab bar */}
-        <nav className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-slate-100 bg-white/80 backdrop-blur-xl md:hidden dark:border-slate-800 dark:bg-slate-900/80">
+        {/* Mobile bottom tab bar — liquid glass treatment */}
+        <nav className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-white/20 bg-white/75 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur-2xl md:hidden dark:border-white/5 dark:bg-slate-950/80 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
           <div className="relative mx-auto max-w-lg">
             <div className="flex px-4 pb-2 pt-1">
-              <NavLink to="/" end>
+              <NavLink to="/" end className="flex flex-1">
                 {({ isActive }) => (
                   <div className={mobileTabClass({ isActive })}>
                     <Refrigerator className="h-5 w-5" strokeWidth={1.8} />
@@ -148,7 +148,7 @@ export function Layout() {
                   </div>
                 )}
               </NavLink>
-              <NavLink to="/pantry">
+              <NavLink to="/pantry" className="flex flex-1">
                 {({ isActive }) => (
                   <div className={mobileTabClass({ isActive })}>
                     <ShoppingBasket className="h-5 w-5" strokeWidth={1.8} />
@@ -158,7 +158,7 @@ export function Layout() {
                 )}
               </NavLink>
               <div className="w-16 shrink-0" />
-              <NavLink to="/shopping-list">
+              <NavLink to="/shopping-list" className="flex flex-1">
                 {({ isActive }) => (
                   <div className={mobileTabClass({ isActive })}>
                     <ListChecks className="h-5 w-5" strokeWidth={1.8} />
@@ -167,7 +167,7 @@ export function Layout() {
                   </div>
                 )}
               </NavLink>
-              <NavLink to="/stats">
+              <NavLink to="/stats" className="flex flex-1">
                 {({ isActive }) => (
                   <div className={mobileTabClass({ isActive })}>
                     <BarChart3 className="h-5 w-5" strokeWidth={1.8} />

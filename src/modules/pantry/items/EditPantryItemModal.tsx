@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Modal } from '@/shared/ui/Modal';
 import { Button } from '@/shared/ui/Button';
+import { Select } from '@/shared/ui/Select';
 import { CameraCapture } from '@/modules/add-item/CameraCapture';
 import { useUpdatePantryItem, useDeletePantryItem } from '@/modules/pantry/use-pantry';
 import { PANTRY_CATEGORIES, type PantryCategory } from '@/modules/pantry/pantry-categories';
@@ -112,15 +113,11 @@ export function EditPantryItemModal({ isOpen, item, onClose }: EditPantryItemMod
           <label className="mb-1.5 block text-xs font-medium text-slate-500 dark:text-slate-400">
             {t('addItem.categoryLabel')}
           </label>
-          <select
+          <Select<PantryCategory>
             value={category}
-            onChange={(e) => setCategory(e.target.value as PantryCategory)}
-            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none transition-all focus:border-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-          >
-            {PANTRY_CATEGORIES.map((cat) => (
-              <option key={cat} value={cat}>{t(`categories.${cat}`)}</option>
-            ))}
-          </select>
+            options={PANTRY_CATEGORIES.map((cat) => ({ value: cat, label: t(`categories.${cat}`) }))}
+            onChange={setCategory}
+          />
         </div>
 
         {/* Quantity + Unit */}

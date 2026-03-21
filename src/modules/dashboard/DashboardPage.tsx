@@ -13,8 +13,8 @@ function DashboardSkeleton() {
       {[1, 2, 3].map((i) => (
         <div
           key={i}
-          className="h-20 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800"
-          style={{ animationDelay: `${i * 100}ms` }}
+          className="skeleton h-20"
+          style={{ animationDelay: `${i * 150}ms` }}
         />
       ))}
     </div>

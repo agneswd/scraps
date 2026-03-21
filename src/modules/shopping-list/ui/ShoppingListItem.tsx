@@ -12,7 +12,7 @@ export function ShoppingListItem({ item, onToggle, onDelete }: ShoppingListItemP
   const { t } = useTranslation();
 
   return (
-    <div className="flex items-center gap-3 rounded-2xl bg-white p-3 shadow-soft dark:bg-slate-800/80">
+    <div className="flex items-center gap-3 rounded-2xl border border-slate-100/80 bg-white p-3 shadow-soft dark:border-slate-700/40 dark:bg-slate-800/80">
       <button
         type="button"
         onClick={() => onToggle(item)}

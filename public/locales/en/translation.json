@@ -6,7 +6,8 @@
     "back": "Back",
     "next": "Next",
     "close": "Close",
-    "logout": "Log out"
+    "logout": "Log out",
+    "optional": "optional"
   },
   "auth": {
     "emailLabel": "Email",
@@ -284,6 +285,7 @@
     "importButton": "Import with AI",
     "identifyTitle": "AI Identification",
     "identifying": "Identifying item...",
+    "identifyingHint": "Analysing your photo with AI",
     "identifyError": "AI could not identify this item. You can continue manually.",
     "leftoverMethodPrompt": "Choose how you want to add this leftover.",
     "parsingRecipe": "Parsing recipe with AI...",

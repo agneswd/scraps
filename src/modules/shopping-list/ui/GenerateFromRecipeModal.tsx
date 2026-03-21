@@ -1,7 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui/Button';
 import { Modal } from '@/shared/ui/Modal';
+import { Select } from '@/shared/ui/Select';
 import { matchRecipesToPantry } from '@/modules/pantry/recipes/data/recipe-matching';
 import { useRecipes } from '@/modules/pantry/recipes/data/use-recipes';
 import { usePantryItems } from '@/modules/pantry/use-pantry';
@@ -24,6 +25,13 @@ export function GenerateFromRecipeModal({ isOpen, onClose }: GenerateFromRecipeM
     () => matchRecipesToPantry(recipes ?? [], pantryItems ?? []),
     [pantryItems, recipes],
   );
+
+  useEffect(() => {
+    if (!isOpen) {
+      setSelectedRecipeId('');
+      setError(null);
+    }
+  }, [isOpen]);
 
   const selectedMatch = matches.find((match) => match.recipe.id === selectedRecipeId) ?? null;
 
@@ -54,18 +62,12 @@ export function GenerateFromRecipeModal({ isOpen, onClose }: GenerateFromRecipeM
           <label className="mb-1.5 block text-xs font-medium text-slate-500 dark:text-slate-400">
             {t('shoppingList.selectRecipeLabel')}
           </label>
-          <select
+          <Select
             value={selectedRecipeId}
-            onChange={(event) => setSelectedRecipeId(event.target.value)}
-            className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition-all focus:border-slate-400 focus:ring-4 focus:ring-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:border-slate-500 dark:focus:ring-slate-800"
-          >
-            <option value="">{t('shoppingList.selectRecipePlaceholder')}</option>
-            {matches.map((match) => (
-              <option key={match.recipe.id} value={match.recipe.id}>
-                {match.recipe.title}
-              </option>
-            ))}
-          </select>
+            options={matches.map((match) => ({ value: match.recipe.id, label: match.recipe.title }))}
+            onChange={setSelectedRecipeId}
+            placeholder={t('shoppingList.selectRecipePlaceholder')}
+          />
         </div>
 
         {selectedMatch ? (

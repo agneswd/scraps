@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Camera, LoaderCircle, Pencil } from 'lucide-react';
+import { Camera, LoaderCircle, Pencil, Sparkles } from 'lucide-react';
 import { AiScanButton } from '@/modules/ai/AiScanButton';
 import { useAiIdentify } from '@/modules/ai/use-ai-identify';
 import { CameraCapture } from '@/modules/add-item/CameraCapture';
@@ -17,7 +17,8 @@ type AddItemModalProps = {
   onClose: () => void;
 };
 
-const totalSteps = 4;
+// 2 steps: 0 = name + category, 1 = photo + notes (both optional)
+const TOTAL_STEPS = 2;
 
 type AddMode = 'choose' | 'manual' | 'ai';
 
@@ -44,9 +45,7 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
 
   useEffect(() => {
     return () => {
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-      }
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
     };
   }, [previewUrl]);
 
@@ -64,15 +63,12 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
     }
   }, [isOpen]);
 
-  const canMoveForward =
-    (step === 0 && itemName.trim().length > 0) ||
-    (step === 1 && category !== null && (category !== 'other' || customDays != null)) ||
-    step === 2 ||
-    step === 3;
+  const canProceed = step === 0
+    ? itemName.trim().length > 0 && category !== null && (category !== 'other' || customDays != null)
+    : true; // step 1 (photo/notes) is always optional
 
   async function handleSave() {
     if (!category) return;
-
     try {
       setError(null);
       await createLeftover({
@@ -89,10 +85,7 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
   }
 
   async function handleAiIdentify() {
-    if (!aiPhoto) {
-      return;
-    }
-
+    if (!aiPhoto) return;
     try {
       setError(null);
       const result = await identifyLeftover.mutateAsync(aiPhoto);
@@ -105,42 +98,39 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
     } catch {
       setError(t('ai.identifyError'));
       setMode('manual');
-      setStep(2);
       setPhoto(aiPhoto);
     }
   }
 
+  // ── Method chooser ─────────────────────────────────────────────────────────
   if (mode === 'choose') {
     return (
       <Modal isOpen={isOpen} onClose={onClose} title={t('addItem.title')}>
-        <div className="space-y-3 p-1">
-          <p className="text-center text-sm text-slate-500 dark:text-slate-400">
-            {t('ai.leftoverMethodPrompt')}
-          </p>
+        <div className="space-y-3">
           <button
             type="button"
-            onClick={() => setMode('manual')}
-            className="flex w-full items-center gap-3 rounded-2xl bg-slate-50 p-4 text-left transition-all hover:bg-slate-100 active:scale-[0.98] dark:bg-slate-800/60 dark:hover:bg-slate-800"
+            onClick={() => setMode('ai')}
+            className="flex w-full items-center gap-4 rounded-2xl bg-slate-900 p-4 text-left transition-all active:scale-[0.98] dark:bg-white"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-200/60 dark:bg-slate-700">
-              <Pencil className="h-4.5 w-4.5 text-slate-600 dark:text-slate-300" strokeWidth={1.8} />
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/15 dark:bg-slate-900/15">
+              <Sparkles className="h-5 w-5 text-white dark:text-slate-900" strokeWidth={1.8} />
             </div>
             <div>
-              <p className="text-sm font-medium text-slate-900 dark:text-white">{t('addItem.methodManual')}</p>
-              <p className="text-xs text-slate-400 dark:text-slate-500">{t('addItem.methodManualHint')}</p>
+              <p className="text-sm font-semibold text-white dark:text-slate-900">{t('addItem.methodAi')}</p>
+              <p className="text-xs text-white/60 dark:text-slate-500">{t('addItem.methodAiHint')}</p>
             </div>
           </button>
           <button
             type="button"
-            onClick={() => setMode('ai')}
-            className="flex w-full items-center gap-3 rounded-2xl bg-slate-50 p-4 text-left transition-all hover:bg-slate-100 active:scale-[0.98] dark:bg-slate-800/60 dark:hover:bg-slate-800"
+            onClick={() => setMode('manual')}
+            className="flex w-full items-center gap-4 rounded-2xl bg-slate-50 p-4 text-left transition-all active:scale-[0.98] hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-200/60 dark:bg-slate-700">
-              <Camera className="h-4.5 w-4.5 text-slate-600 dark:text-slate-300" strokeWidth={1.8} />
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-200/60 dark:bg-slate-700">
+              <Pencil className="h-5 w-5 text-slate-600 dark:text-slate-300" strokeWidth={1.8} />
             </div>
             <div>
-              <p className="text-sm font-medium text-slate-900 dark:text-white">{t('addItem.methodAi')}</p>
-              <p className="text-xs text-slate-400 dark:text-slate-500">{t('addItem.methodAiHint')}</p>
+              <p className="text-sm font-semibold text-slate-900 dark:text-white">{t('addItem.methodManual')}</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500">{t('addItem.methodManualHint')}</p>
             </div>
           </button>
         </div>
@@ -148,85 +138,98 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
     );
   }
 
+  // ── AI scan mode ───────────────────────────────────────────────────────────
   if (mode === 'ai') {
     return (
       <Modal isOpen={isOpen} onClose={onClose} title={t('ai.identifyTitle')}>
         {identifyLeftover.isPending ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <LoaderCircle className="h-6 w-6 animate-spin text-slate-400 dark:text-slate-500" strokeWidth={2} />
-            <p className="mt-4 text-sm font-medium text-slate-900 dark:text-white">{t('ai.identifying')}</p>
+            <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900 dark:bg-white">
+              <Sparkles className="h-6 w-6 text-white dark:text-slate-900" strokeWidth={1.8} />
+            </div>
+            <p className="mt-5 text-base font-semibold text-slate-900 dark:text-white">{t('ai.identifying')}</p>
+            <p className="mt-1 text-sm text-slate-400">{t('ai.identifyingHint')}</p>
           </div>
         ) : (
           <div className="space-y-4">
             <CameraCapture hasPhoto={Boolean(aiPhoto)} onCapture={setAiPhoto} />
             {aiPhoto ? <AiScanButton onClick={() => void handleAiIdentify()} /> : null}
-            <Button variant="secondary" className="w-full" onClick={() => setMode('manual')}>
+            <button
+              type="button"
+              onClick={() => { setMode('manual'); setStep(0); }}
+              className="w-full py-2 text-center text-sm text-slate-400 transition hover:text-slate-600 dark:hover:text-slate-300"
+            >
               {t('common.back')}
-            </Button>
+            </button>
           </div>
         )}
       </Modal>
     );
   }
 
+  // ── Manual multi-step ──────────────────────────────────────────────────────
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={t('addItem.title')}>
-      <div className="flex min-h-full flex-col">
+      <div className="flex flex-col">
         {/* Progress dots */}
-        <div className="mb-6 flex items-center justify-center gap-2">
-          {Array.from({ length: totalSteps }, (_, i) => (
+        <div className="mb-5 flex items-center justify-center gap-2">
+          {Array.from({ length: TOTAL_STEPS }, (_, i) => (
             <div
               key={i}
               className={[
                 'h-1.5 rounded-full transition-all duration-300 ease-spring',
-                i === step ? 'w-6 bg-slate-900 dark:bg-white' : 'w-1.5 bg-slate-200 dark:bg-slate-700',
+                i === step ? 'w-7 bg-slate-900 dark:bg-white' : 'w-1.5 bg-slate-200 dark:bg-slate-700',
               ].join(' ')}
             />
           ))}
         </div>
 
-        {/* Step content with slide animation */}
-        <div className="flex-1">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={step}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.2, ease: [0.32, 0.72, 0, 1] }}
-            >
-              {step === 0 ? (
-                <div className="space-y-3">
+        {/* Step content */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={step}
+            initial={{ opacity: 0, x: 16 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -16 }}
+            transition={{ duration: 0.18, ease: [0.32, 0.72, 0, 1] }}
+          >
+            {step === 0 ? (
+              <div className="space-y-5">
+                {/* Name */}
+                <div className="space-y-2">
                   <label className="block text-xs font-medium text-slate-500 dark:text-slate-400">
                     {t('addItem.nameLabel')}
                   </label>
                   <input
                     type="text"
                     value={itemName}
-                    onChange={(event) => setItemName(event.target.value)}
+                    onChange={(e) => setItemName(e.target.value)}
                     placeholder={t('addItem.namePlaceholder')}
-                    className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-[0.9375rem] text-slate-900 outline-none transition-all duration-200 ease-spring placeholder:text-slate-300 focus:border-slate-400 focus:ring-4 focus:ring-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-600 dark:focus:border-slate-500 dark:focus:ring-slate-800"
+                    className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-[0.9375rem] text-slate-900 outline-none transition-all ease-spring placeholder:text-slate-300 focus:border-slate-400 focus:ring-4 focus:ring-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-600 dark:focus:border-slate-500 dark:focus:ring-slate-800"
                     maxLength={60}
                     autoFocus
                   />
                 </div>
-              ) : null}
 
-              {step === 1 ? (
-                <div className="space-y-3">
+                {/* Category */}
+                <div className="space-y-2">
                   <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{t('addItem.categoryLabel')}</p>
-              <CategoryPicker
-                value={category}
-                customDays={customDays}
-                onChange={setCategory}
-                onCustomDaysChange={setCustomDays}
-              />
+                  <CategoryPicker
+                    value={category}
+                    customDays={customDays}
+                    onChange={setCategory}
+                    onCustomDaysChange={setCustomDays}
+                  />
                 </div>
-              ) : null}
-
-              {step === 2 ? (
-                <div className="space-y-3">
-                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{t('addItem.photoLabel')}</p>
+              </div>
+            ) : (
+              <div className="space-y-5">
+                {/* Photo */}
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                    {t('addItem.photoLabel')}
+                    <span className="ml-1 text-slate-300 dark:text-slate-600">{t('common.optional')}</span>
+                  </p>
                   {previewUrl ? (
                     <div className="overflow-hidden rounded-2xl">
                       <img src={previewUrl} alt={t('addItem.previewAlt')} className="aspect-video w-full object-cover" />
@@ -234,50 +237,58 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
                   ) : null}
                   <CameraCapture hasPhoto={Boolean(photo)} onCapture={setPhoto} />
                 </div>
-              ) : null}
 
-              {step === 3 ? (
-                <div className="space-y-3">
-                  <label className="block text-xs font-medium text-slate-500 dark:text-slate-400">
-                    {t('addItem.notesLabel')}
+                {/* Notes */}
+                <div className="space-y-2">
+                  <label className="flex items-baseline justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
+                    <span>
+                      {t('addItem.notesLabel')}
+                      <span className="ml-1 text-slate-300 dark:text-slate-600">{t('common.optional')}</span>
+                    </span>
+                    <span className="text-slate-300 dark:text-slate-600">{60 - notes.length}</span>
                   </label>
                   <textarea
                     value={notes}
-                    onChange={(event) => setNotes(event.target.value.slice(0, 60))}
+                    onChange={(e) => setNotes(e.target.value.slice(0, 60))}
                     placeholder={t('addItem.notesPlaceholder')}
-                    className="min-h-28 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-[0.9375rem] text-slate-900 outline-none transition-all duration-200 ease-spring placeholder:text-slate-300 focus:border-slate-400 focus:ring-4 focus:ring-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-600 dark:focus:border-slate-500 dark:focus:ring-slate-800"
+                    className="min-h-24 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-[0.9375rem] text-slate-900 outline-none transition-all ease-spring placeholder:text-slate-300 focus:border-slate-400 focus:ring-4 focus:ring-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-600 dark:focus:border-slate-500 dark:focus:ring-slate-800"
                   />
-                  <p className="text-right text-xs text-slate-300 dark:text-slate-600">
-                    {60 - notes.length}
-                  </p>
                 </div>
-              ) : null}
-            </motion.div>
-          </AnimatePresence>
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
 
-          {error ? (
-            <motion.p
-              initial={{ opacity: 0, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600 dark:bg-red-950/50 dark:text-red-400"
-            >
-              {error}
-            </motion.p>
-          ) : null}
-        </div>
+        {error ? (
+          <motion.p
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600 dark:bg-red-950/50 dark:text-red-400"
+          >
+            {error}
+          </motion.p>
+        ) : null}
 
-        {/* Actions */}
-        <div className="mt-8 flex items-center justify-between gap-3">
-          <Button variant="ghost" onClick={step === 0 ? onClose : () => setStep((s) => s - 1)}>
+        {/* Footer actions */}
+        <div className="mt-6 flex items-center gap-3">
+          <Button
+            variant="ghost"
+            className="flex-1"
+            onClick={step === 0 ? onClose : () => setStep(0)}
+          >
             {step === 0 ? t('common.cancel') : t('common.back')}
           </Button>
 
-          {step < totalSteps - 1 ? (
-            <Button disabled={!canMoveForward} onClick={() => setStep((s) => s + 1)}>
+          {step < TOTAL_STEPS - 1 ? (
+            <Button className="flex-1" disabled={!canProceed} onClick={() => setStep(1)}>
               {t('common.next')}
             </Button>
           ) : (
-            <Button disabled={isPending || !category || itemName.trim().length === 0} onClick={() => void handleSave()}>
+            <Button
+              className="flex-1"
+              disabled={isPending || !category || itemName.trim().length === 0}
+              onClick={() => void handleSave()}
+            >
               {isPending ? t('addItem.saving') : t('common.save')}
             </Button>
           )}
@@ -286,3 +297,4 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
     </Modal>
   );
 }
+

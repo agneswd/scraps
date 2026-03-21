@@ -28,7 +28,7 @@ export function LeftoverCard({ leftover, onClick }: LeftoverCardProps) {
     <article
       onClick={onClick}
       className={[
-        'flex items-center gap-3.5 rounded-2xl bg-white p-3 shadow-soft transition-all dark:bg-slate-800',
+        'flex items-center gap-3.5 rounded-2xl border border-slate-100/80 bg-white p-3 shadow-soft transition-all dark:border-slate-700/40 dark:bg-slate-800',
         onClick ? 'cursor-pointer hover:shadow-float active:scale-[0.99]' : '',
       ].join(' ')}
     >

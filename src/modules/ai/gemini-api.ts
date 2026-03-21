@@ -3,7 +3,7 @@ import type { PantryCategory } from '@/modules/pantry/pantry-categories';
 import type { RecipeIngredientInput } from '@/modules/pantry/recipes/data/recipe-api';
 import { GEMINI_DAILY_LIMIT, incrementDailyUsage, isDailyLimitReached } from '@/modules/ai/rate-limits';
 
-const GEMINI_MODEL = import.meta.env.VITE_GEMINI_MODEL?.trim() || 'gemini-3.1-flash-lite';
+const GEMINI_MODEL = import.meta.env.VITE_GEMINI_MODEL?.trim() || 'gemini-2.5-flash-lite';
 const GEMINI_KEY = import.meta.env.VITE_GEMINI_KEY?.trim();
 const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 

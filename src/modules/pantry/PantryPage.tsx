@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { motion } from 'framer-motion';
 import { AiRecipeGenerateModal } from '@/modules/ai/AiRecipeGenerateModal';
 import { PantryItemList } from '@/modules/pantry/items/PantryItemList';
 import { EditPantryItemModal } from '@/modules/pantry/items/EditPantryItemModal';
@@ -21,14 +20,19 @@ import type { PantryItemRecord } from '@/modules/pantry/pantry-api';
 
 type PantryTab = 'items' | 'recipes';
 
+const TABS: Array<{ key: PantryTab; label: string }> = [
+  { key: 'items', label: 'pantry.tabItems' },
+  { key: 'recipes', label: 'pantry.tabRecipes' },
+];
+
 function PantrySkeleton() {
   return (
     <div className="space-y-3 pt-2">
       {[1, 2, 3].map((i) => (
         <div
           key={i}
-          className="h-[4.5rem] animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800"
-          style={{ animationDelay: `${i * 100}ms` }}
+          className="skeleton h-[4.5rem]"
+          style={{ animationDelay: `${i * 150}ms` }}
         />
       ))}
     </div>
@@ -49,8 +53,6 @@ export function PantryPage() {
   const deleteRecipe = useDeleteRecipe();
   const incrementMutation = useIncrementQuantity();
   const updateMutation = useUpdatePantryItem();
-  const recipeMatches = matchRecipesToPantry(recipes ?? [], items ?? []);
-  const unusedIngredients = findUnusedPantryItems(items ?? [], recipes ?? []);
 
   function handleIncrement(item: PantryItemRecord) {
     incrementMutation.mutate({ id: item.id, currentQuantity: item.quantity });
@@ -66,80 +68,106 @@ export function PantryPage() {
     });
   }
 
-  const tabs: Array<{ key: PantryTab; label: string }> = [
-    { key: 'items', label: t('pantry.tabItems') },
-    { key: 'recipes', label: t('pantry.tabRecipes') },
-  ];
+  const activeTabIndex = TABS.findIndex((tab) => tab.key === activeTab);
+  const recipeMatches = matchRecipesToPantry(recipes ?? [], items ?? []);
+  const unusedIngredients = findUnusedPantryItems(items ?? [], recipes ?? []);
 
+  // ── Loading state ──────────────────────────────────────────────────────────
+  if (isLoading) {
+    return (
+      <div className="space-y-5">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+            {t('pantry.title')}
+          </h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            {t('pantry.headline')}
+          </p>
+        </div>
+        <PantrySkeleton />
+      </div>
+    );
+  }
+
+  // ── Error state ────────────────────────────────────────────────────────────
+  if (isError) {
+    return (
+      <section className="rounded-2xl bg-red-50 p-6 dark:bg-red-950/30">
+        <p className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
+          {t('errors.generic')}
+        </p>
+        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+          {t('pantry.loadError')}
+        </p>
+        <Button variant="secondary" className="mt-4" onClick={() => void refetch()}>
+          {t('dashboard.retry')}
+        </Button>
+      </section>
+    );
+  }
+
+  // ── Content ────────────────────────────────────────────────────────────────
   return (
-    <div>
+    <div className="space-y-5">
       {/* Header */}
-      <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-        {t('pantry.title')}
-      </h1>
-      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-        {t('pantry.headline')}
-      </p>
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+          {t('pantry.title')}
+        </h1>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          {t('pantry.headline')}
+        </p>
+      </div>
 
-      {/* Tab switcher */}
-      <div className="relative mt-5 flex rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            type="button"
-            onClick={() => setActiveTab(tab.key)}
-            className="relative z-10 flex-1 rounded-lg py-2 text-center text-sm font-medium transition-colors"
-          >
-            <span className={activeTab === tab.key ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}>
-              {tab.label}
-            </span>
-            {activeTab === tab.key && (
-              <motion.div
-                layoutId="pantry-tab-indicator"
-                className="absolute inset-0 rounded-lg bg-white shadow-soft dark:bg-slate-700"
-                style={{ zIndex: -1 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-              />
-            )}
-          </button>
-        ))}
+      {/* Tab switcher — CSS sliding pill (no layoutId motion conflict) */}
+      <div className="relative flex rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
+        {/* Sliding active background */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-y-1 rounded-lg bg-white shadow-soft transition-all duration-200 ease-spring dark:bg-slate-700"
+          style={{
+            width: `calc((100% - 0.5rem) / ${TABS.length})`,
+            left: `calc(0.25rem + ${activeTabIndex} * (100% - 0.5rem) / ${TABS.length})`,
+          }}
+        />
+        {TABS.map((tab) => {
+          const isActive = tab.key === activeTab;
+          return (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveTab(tab.key)}
+              aria-pressed={isActive}
+              className={[
+                'relative flex-1 rounded-lg py-2 text-center text-sm font-medium transition-colors duration-200',
+                isActive
+                  ? 'text-slate-900 dark:text-white'
+                  : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300',
+              ].join(' ')}
+            >
+              {t(tab.label)}
+            </button>
+          );
+        })}
       </div>
 
       {/* Tab content */}
-      <div className="mt-5">
+      <div>
         {activeTab === 'items' && (
           <>
-            {isLoading && <PantrySkeleton />}
-
-            {isError && (
-              <div className="py-12 text-center">
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  {t('pantry.loadError')}
-                </p>
-                <Button variant="secondary" onClick={() => refetch()} className="mt-3">
-                  {t('dashboard.retry')}
-                </Button>
-              </div>
-            )}
-
-            {!isLoading && !isError && items && (
-              <>
-                <PantryItemList
-                  items={items}
-                  onItemTap={setEditItem}
-                  onIncrement={handleIncrement}
-                  onDecrement={handleDecrement}
-                />
-                <UnusedIngredients items={unusedIngredients} />
-              </>
-            )}
+            <PantryItemList
+              items={items ?? []}
+              onItemTap={setEditItem}
+              onIncrement={handleIncrement}
+              onDecrement={handleDecrement}
+            />
+            <UnusedIngredients items={unusedIngredients} />
           </>
         )}
 
         {activeTab === 'recipes' && (
           <>
-            {recipesLoading ? <PantrySkeleton /> : null}
-            {!recipesLoading && (
+            {recipesLoading ? <PantrySkeleton /> : (
               <RecipeList
                 items={recipeMatches}
                 onAdd={() => setIsAddRecipeOpen(true)}
@@ -176,9 +204,7 @@ export function PantryPage() {
           setSelectedRecipe(null);
         }}
         onDelete={() => {
-          if (!selectedRecipe) {
-            return;
-          }
+          if (!selectedRecipe) return;
           deleteRecipe.mutate(selectedRecipe.recipe.id, {
             onSuccess: () => setSelectedRecipe(null),
           });

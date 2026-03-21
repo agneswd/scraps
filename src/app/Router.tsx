@@ -20,7 +20,7 @@ const StatsPage = lazy(() =>
 );
 
 function RouteFallback() {
-  return <div className="h-24 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800" />;
+  return <div />;
 }
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {

@@ -46,9 +46,9 @@ export function LeftoverList({
             animate={{ opacity: 1, y: 0 }}
             transition={{
               type: 'spring',
-              stiffness: 300,
-              damping: 24,
-              delay: index * 0.05,
+              stiffness: 100,
+              damping: 20,
+              delay: index * 0.06,
             }}
           >
             <SwipeActions
