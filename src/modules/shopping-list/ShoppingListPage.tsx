@@ -1,0 +1,129 @@
+import { useMemo, useState } from 'react';
+import { ListChecks } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { useRecipes } from '@/modules/pantry/recipes/data/use-recipes';
+import type { ShoppingListItemRecord } from '@/modules/shopping-list/data/shopping-list-api';
+import { AddShoppingItemModal } from '@/modules/shopping-list/ui/AddShoppingItemModal';
+import { GenerateFromRecipeModal } from '@/modules/shopping-list/ui/GenerateFromRecipeModal';
+import { ShoppingListItem } from '@/modules/shopping-list/ui/ShoppingListItem';
+import {
+  useClearCheckedShoppingListItems,
+  useDeleteShoppingListItem,
+  useShoppingList,
+  useToggleShoppingListItem,
+} from '@/modules/shopping-list/data/use-shopping-list';
+import { Button } from '@/shared/ui/Button';
+
+export function ShoppingListPage() {
+  const { t } = useTranslation();
+  const { data: items, isLoading, isError, refetch } = useShoppingList();
+  const { data: recipes } = useRecipes();
+  const toggleItem = useToggleShoppingListItem();
+  const deleteItem = useDeleteShoppingListItem();
+  const clearChecked = useClearCheckedShoppingListItems();
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isGenerateOpen, setIsGenerateOpen] = useState(false);
+
+  const recipeTitles = useMemo(
+    () => new Map((recipes ?? []).map((recipeWithIngredients) => [recipeWithIngredients.recipe.id, recipeWithIngredients.recipe.title])),
+    [recipes],
+  );
+
+  const groupedItems = useMemo(() => {
+    const groups = new Map<string, ShoppingListItemRecord[]>();
+
+    for (const item of items ?? []) {
+      const groupKey = item.recipe_id || 'manual';
+      const current = groups.get(groupKey) ?? [];
+      current.push(item);
+      groups.set(groupKey, current);
+    }
+
+    return Array.from(groups.entries());
+  }, [items]);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-3 pt-2">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="h-16 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800" />
+        ))}
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <section className="rounded-2xl bg-red-50 p-6 dark:bg-red-950/30">
+        <p className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">{t('errors.generic')}</p>
+        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{t('shoppingList.loadError')}</p>
+        <Button variant="secondary" className="mt-4" onClick={() => void refetch()}>
+          {t('dashboard.retry')}
+        </Button>
+      </section>
+    );
+  }
+
+  return (
+    <section className="space-y-5">
+      <div className="flex items-baseline justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+            {t('shoppingList.title')}
+          </h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            {t('shoppingList.headline')}
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="secondary" onClick={() => setIsGenerateOpen(true)}>
+            {t('shoppingList.generateTitle')}
+          </Button>
+          <Button onClick={() => setIsAddOpen(true)}>{t('shoppingList.addTitle')}</Button>
+        </div>
+      </div>
+
+      {(items ?? []).length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800">
+            <ListChecks className="h-7 w-7 text-slate-300 dark:text-slate-600" strokeWidth={1.5} />
+          </div>
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+            {t('shoppingList.emptyState')}
+          </p>
+          <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+            {t('shoppingList.emptyHint')}
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-5">
+          {groupedItems.map(([groupKey, groupItems]) => (
+            <div key={groupKey} className="space-y-2">
+              <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
+                {groupKey === 'manual'
+                  ? t('shoppingList.manualSection')
+                  : recipeTitles.get(groupKey) ?? t('shoppingList.recipeSectionFallback')}
+              </p>
+              <div className="space-y-2">
+                {groupItems.map((item) => (
+                  <ShoppingListItem
+                    key={item.id}
+                    item={item}
+                    onToggle={(currentItem) => toggleItem.mutate({ id: currentItem.id, checked: !currentItem.checked })}
+                    onDelete={(currentItem) => deleteItem.mutate(currentItem.id)}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+          <Button variant="secondary" onClick={() => clearChecked.mutate()} disabled={clearChecked.isPending}>
+            {clearChecked.isPending ? t('shoppingList.clearing') : t('shoppingList.clearChecked')}
+          </Button>
+        </div>
+      )}
+
+      <AddShoppingItemModal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} />
+      <GenerateFromRecipeModal isOpen={isGenerateOpen} onClose={() => setIsGenerateOpen(false)} />
+    </section>
+  );
+}

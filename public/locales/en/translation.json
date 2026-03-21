@@ -242,6 +242,33 @@
     "unusedIngredients": "Unused ingredients",
     "delete": "Delete recipe",
     "deleting": "Deleting..."
+  },
+  "shoppingList": {
+    "title": "Shopping",
+    "headline": "Keep track of what you still need to buy.",
+    "loadError": "Could not load the shopping list.",
+    "emptyState": "Your shopping list is empty.",
+    "emptyHint": "Add items manually or generate missing ingredients from a saved recipe.",
+    "addTitle": "Add Shopping Item",
+    "nameLabel": "Item name",
+    "namePlaceholder": "e.g. Olive oil",
+    "quantityLabel": "Quantity",
+    "unitLabel": "Unit",
+    "unitPlaceholder": "e.g. bottle, bag, kg",
+    "saveError": "Could not save the shopping list item.",
+    "saving": "Saving...",
+    "toggleChecked": "Toggle checked state",
+    "delete": "Delete item",
+    "manualSection": "Manual items",
+    "recipeSectionFallback": "Recipe items",
+    "clearChecked": "Clear checked items",
+    "clearing": "Clearing...",
+    "generateTitle": "Generate From Recipe",
+    "selectRecipeLabel": "Select a recipe",
+    "selectRecipePlaceholder": "Choose a saved recipe",
+    "nothingMissing": "You already have everything needed for this recipe.",
+    "generateCta": "Add missing items",
+    "generateError": "Could not generate shopping items from this recipe."
   }
 }
 

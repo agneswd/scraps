@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { BarChart3, Plus, Refrigerator, Settings, ShoppingBasket } from 'lucide-react';
+import { BarChart3, ListChecks, Plus, Refrigerator, Settings, ShoppingBasket } from 'lucide-react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AddItemModal } from '@/modules/add-item/AddItemModal';
 import { AddPantryItemModal } from '@/modules/pantry/items/AddPantryItemModal';
+import { AddShoppingItemModal } from '@/modules/shopping-list/ui/AddShoppingItemModal';
 import { useAuth } from '@/modules/auth/use-auth';
 import { usePush } from '@/shared/hooks/use-push';
 import { NotificationPrompt } from '@/shared/ui/NotificationPrompt';
@@ -31,10 +32,12 @@ export function Layout() {
   const location = useLocation();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isAddPantryOpen, setIsAddPantryOpen] = useState(false);
+  const [isAddShoppingOpen, setIsAddShoppingOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const openContextAdd = () => {
     if (location.pathname === '/pantry') setIsAddPantryOpen(true);
+    else if (location.pathname === '/shopping-list') setIsAddShoppingOpen(true);
     else setIsAddModalOpen(true);
   };
 
@@ -57,6 +60,10 @@ export function Layout() {
           <NavLink to="/pantry" className={desktopNavClass}>
             <ShoppingBasket className="h-[1.125rem] w-[1.125rem] shrink-0" strokeWidth={1.8} />
             {t('pantry.title')}
+          </NavLink>
+          <NavLink to="/shopping-list" className={desktopNavClass}>
+            <ListChecks className="h-[1.125rem] w-[1.125rem] shrink-0" strokeWidth={1.8} />
+            {t('shoppingList.title')}
           </NavLink>
           <NavLink to="/stats" className={desktopNavClass}>
             <BarChart3 className="h-[1.125rem] w-[1.125rem] shrink-0" strokeWidth={1.8} />
@@ -137,8 +144,11 @@ export function Layout() {
                 <ShoppingBasket className="h-5 w-5" strokeWidth={1.8} />
                 <span>{t('pantry.title')}</span>
               </NavLink>
-              {/* Spacer keeps tabs flanking the center button */}
               <div className="w-16 shrink-0" />
+              <NavLink to="/shopping-list" className={mobileTabClass}>
+                <ListChecks className="h-5 w-5" strokeWidth={1.8} />
+                <span>{t('shoppingList.title')}</span>
+              </NavLink>
               <NavLink to="/stats" className={mobileTabClass}>
                 <BarChart3 className="h-5 w-5" strokeWidth={1.8} />
                 <span>{t('stats.title')}</span>
@@ -172,6 +182,7 @@ export function Layout() {
 
       <AddItemModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
       <AddPantryItemModal isOpen={isAddPantryOpen} onClose={() => setIsAddPantryOpen(false)} />
+      <AddShoppingItemModal isOpen={isAddShoppingOpen} onClose={() => setIsAddShoppingOpen(false)} />
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
     </div>
   );

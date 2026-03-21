@@ -4,6 +4,7 @@ import { LoginPage } from '@/modules/auth/LoginPage';
 import { useAuth } from '@/modules/auth/use-auth';
 import { DashboardPage } from '@/modules/dashboard/DashboardPage';
 import { PantryPage } from '@/modules/pantry/PantryPage';
+import { ShoppingListPage } from '@/modules/shopping-list/ShoppingListPage';
 import { StatsPage } from '@/modules/stats/StatsPage';
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
@@ -31,6 +32,7 @@ export function Router() {
         >
           <Route index element={<DashboardPage />} />
           <Route path="pantry" element={<PantryPage />} />
+          <Route path="shopping-list" element={<ShoppingListPage />} />
           <Route path="stats" element={<StatsPage />} />
         </Route>
       </Routes>
