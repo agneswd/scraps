@@ -1,6 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { CameraOff } from 'lucide-react';
-import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui/Button';
 
@@ -9,16 +8,7 @@ type BarcodeScannerProps = {
   onCancel: () => void;
 };
 
-const SCAN_FORMATS = [
-  Html5QrcodeSupportedFormats.EAN_13,
-  Html5QrcodeSupportedFormats.EAN_8,
-  Html5QrcodeSupportedFormats.UPC_A,
-  Html5QrcodeSupportedFormats.UPC_E,
-  Html5QrcodeSupportedFormats.CODE_128,
-  Html5QrcodeSupportedFormats.CODE_39,
-];
-
-async function stopScanner(instance: Html5Qrcode | null) {
+async function stopScanner(instance: { stop: () => Promise<void>; clear: () => void } | null) {
   if (!instance) {
     return;
   }
@@ -39,43 +29,63 @@ async function stopScanner(instance: Html5Qrcode | null) {
 export function BarcodeScanner({ onDetected, onCancel }: BarcodeScannerProps) {
   const { t } = useTranslation();
   const elementId = useId().replace(/:/g, '-');
-  const scannerRef = useRef<Html5Qrcode | null>(null);
+  const scannerRef = useRef<{ stop: () => Promise<void>; clear: () => void } | null>(null);
   const hasDetectedRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const scanner = new Html5Qrcode(elementId, {
-      formatsToSupport: SCAN_FORMATS,
-      verbose: false,
-    });
-    scannerRef.current = scanner;
+    let isDisposed = false;
 
-    void scanner.start(
-      { facingMode: 'environment' },
-      {
-        fps: 10,
-        qrbox: { width: 260, height: 160 },
-        aspectRatio: 1.777778,
-        disableFlip: false,
-      },
-      (decodedText) => {
-        if (hasDetectedRef.current) {
+    void import('html5-qrcode')
+      .then(({ Html5Qrcode, Html5QrcodeSupportedFormats }) => {
+        if (isDisposed) {
           return;
         }
 
-        hasDetectedRef.current = true;
-        void stopScanner(scanner).finally(() => {
-          onDetected(decodedText);
+        const scanner = new Html5Qrcode(elementId, {
+          formatsToSupport: [
+            Html5QrcodeSupportedFormats.EAN_13,
+            Html5QrcodeSupportedFormats.EAN_8,
+            Html5QrcodeSupportedFormats.UPC_A,
+            Html5QrcodeSupportedFormats.UPC_E,
+            Html5QrcodeSupportedFormats.CODE_128,
+            Html5QrcodeSupportedFormats.CODE_39,
+          ],
+          verbose: false,
         });
-      },
-      () => {
-        // Ignore noisy per-frame decode errors.
-      },
-    ).catch(() => {
-      setError(t('scanner.cameraUnavailable'));
-    });
+        scannerRef.current = scanner;
+
+        return scanner.start(
+          { facingMode: 'environment' },
+          {
+            fps: 10,
+            qrbox: { width: 260, height: 160 },
+            aspectRatio: 1.777778,
+            disableFlip: false,
+          },
+          (decodedText) => {
+            if (hasDetectedRef.current) {
+              return;
+            }
+
+            hasDetectedRef.current = true;
+            void stopScanner(scanner).finally(() => {
+              onDetected(decodedText);
+            });
+          },
+          () => {
+            // Ignore noisy per-frame decode errors.
+          },
+        );
+      })
+      .catch(() => {
+        if (!isDisposed) {
+          setError(t('scanner.cameraUnavailable'));
+        }
+      });
 
     return () => {
+      isDisposed = true;
       void stopScanner(scannerRef.current);
       scannerRef.current = null;
       hasDetectedRef.current = false;

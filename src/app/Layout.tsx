@@ -1,15 +1,16 @@
-import { useState } from 'react';
+import { Suspense, lazy, useState } from 'react';
 import { BarChart3, ListChecks, Plus, Refrigerator, Settings, ShoppingBasket } from 'lucide-react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'framer-motion';
-import { AddItemModal } from '@/modules/add-item/AddItemModal';
-import { AddPantryItemModal } from '@/modules/pantry/items/AddPantryItemModal';
-import { AddShoppingItemModal } from '@/modules/shopping-list/ui/AddShoppingItemModal';
 import { useAuth } from '@/modules/auth/use-auth';
 import { usePush } from '@/shared/hooks/use-push';
 import { NotificationPrompt } from '@/shared/ui/NotificationPrompt';
-import { SettingsModal } from '@/modules/settings/SettingsModal';
+
+const AddItemModal = lazy(() => import('@/modules/add-item/AddItemModal').then((module) => ({ default: module.AddItemModal })));
+const AddPantryItemModal = lazy(() => import('@/modules/pantry/items/AddPantryItemModal').then((module) => ({ default: module.AddPantryItemModal })));
+const AddShoppingItemModal = lazy(() => import('@/modules/shopping-list/ui/AddShoppingItemModal').then((module) => ({ default: module.AddShoppingItemModal })));
+const SettingsModal = lazy(() => import('@/modules/settings/SettingsModal').then((module) => ({ default: module.SettingsModal })));
 
 const mobileTabClass = ({ isActive }: { isActive: boolean }) =>
   [
@@ -180,10 +181,12 @@ export function Layout() {
         />
       </div>
 
-      <AddItemModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
-      <AddPantryItemModal isOpen={isAddPantryOpen} onClose={() => setIsAddPantryOpen(false)} />
-      <AddShoppingItemModal isOpen={isAddShoppingOpen} onClose={() => setIsAddShoppingOpen(false)} />
-      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+      <Suspense fallback={null}>
+        {isAddModalOpen ? <AddItemModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} /> : null}
+        {isAddPantryOpen ? <AddPantryItemModal isOpen={isAddPantryOpen} onClose={() => setIsAddPantryOpen(false)} /> : null}
+        {isAddShoppingOpen ? <AddShoppingItemModal isOpen={isAddShoppingOpen} onClose={() => setIsAddShoppingOpen(false)} /> : null}
+        {isSettingsOpen ? <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} /> : null}
+      </Suspense>
     </div>
   );
 }

@@ -1,11 +1,27 @@
+import { Suspense, lazy } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { Layout } from '@/app/Layout';
-import { LoginPage } from '@/modules/auth/LoginPage';
 import { useAuth } from '@/modules/auth/use-auth';
-import { DashboardPage } from '@/modules/dashboard/DashboardPage';
-import { PantryPage } from '@/modules/pantry/PantryPage';
-import { ShoppingListPage } from '@/modules/shopping-list/ShoppingListPage';
-import { StatsPage } from '@/modules/stats/StatsPage';
+
+const LoginPage = lazy(() =>
+  import('@/modules/auth/LoginPage').then((module) => ({ default: module.LoginPage })),
+);
+const DashboardPage = lazy(() =>
+  import('@/modules/dashboard/DashboardPage').then((module) => ({ default: module.DashboardPage })),
+);
+const PantryPage = lazy(() =>
+  import('@/modules/pantry/PantryPage').then((module) => ({ default: module.PantryPage })),
+);
+const ShoppingListPage = lazy(() =>
+  import('@/modules/shopping-list/ShoppingListPage').then((module) => ({ default: module.ShoppingListPage })),
+);
+const StatsPage = lazy(() =>
+  import('@/modules/stats/StatsPage').then((module) => ({ default: module.StatsPage })),
+);
+
+function RouteFallback() {
+  return <div className="h-24 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800" />;
+}
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const { isAuthenticated } = useAuth();
@@ -18,10 +34,23 @@ function ProtectedRoute({ children }: { children: JSX.Element }) {
 }
 
 export function Router() {
+  const { isAuthenticated } = useAuth();
+
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/login"
+          element={
+            isAuthenticated ? (
+              <Navigate to="/" replace />
+            ) : (
+              <Suspense fallback={<RouteFallback />}>
+                <LoginPage />
+              </Suspense>
+            )
+          }
+        />
         <Route
           path="/"
           element={
@@ -30,10 +59,38 @@ export function Router() {
             </ProtectedRoute>
           }
         >
-          <Route index element={<DashboardPage />} />
-          <Route path="pantry" element={<PantryPage />} />
-          <Route path="shopping-list" element={<ShoppingListPage />} />
-          <Route path="stats" element={<StatsPage />} />
+          <Route
+            index
+            element={
+              <Suspense fallback={<RouteFallback />}>
+                <DashboardPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="pantry"
+            element={
+              <Suspense fallback={<RouteFallback />}>
+                <PantryPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="shopping-list"
+            element={
+              <Suspense fallback={<RouteFallback />}>
+                <ShoppingListPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="stats"
+            element={
+              <Suspense fallback={<RouteFallback />}>
+                <StatsPage />
+              </Suspense>
+            }
+          />
         </Route>
       </Routes>
     </BrowserRouter>
