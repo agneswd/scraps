@@ -118,7 +118,18 @@ export function ShoppingListPage() {
           </p>
         </div>
       ) : (
-        <div className="space-y-5">
+        <motion.div
+          className="space-y-5"
+          initial="hidden"
+          animate="show"
+          variants={{
+            hidden: { opacity: 0 },
+            show: {
+              opacity: 1,
+              transition: { staggerChildren: 0.06 }
+            }
+          }}
+        >
           {groupedItems.map(([groupKey, groupItems]) => (
             <div key={groupKey} className="space-y-2">
               <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
@@ -127,12 +138,13 @@ export function ShoppingListPage() {
                   : recipeTitles.get(groupKey) ?? t('shoppingList.recipeSectionFallback')}
               </p>
               <div className="space-y-2">
-                {groupItems.map((item, index) => (
+                {groupItems.map((item) => (
                   <motion.div
                     key={item.id}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.06, type: 'spring', stiffness: 100, damping: 20 }}
+                    variants={{
+                      hidden: { opacity: 0, y: 12 },
+                      show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100, damping: 20 } }
+                    }}
                   >
                     <ShoppingListItem
                       item={item}
@@ -144,10 +156,12 @@ export function ShoppingListPage() {
               </div>
             </div>
           ))}
-          <Button variant="secondary" onClick={() => clearChecked.mutate()} disabled={clearChecked.isPending}>
-            {clearChecked.isPending ? t('shoppingList.clearing') : t('shoppingList.clearChecked')}
-          </Button>
-        </div>
+          <motion.div variants={{ hidden: { opacity: 0 }, show: { opacity: 1 } }}>
+            <Button variant="secondary" onClick={() => clearChecked.mutate()} disabled={clearChecked.isPending}>
+              {clearChecked.isPending ? t('shoppingList.clearing') : t('shoppingList.clearChecked')}
+            </Button>
+          </motion.div>
+        </motion.div>
       )}
 
       <AddShoppingItemModal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} />

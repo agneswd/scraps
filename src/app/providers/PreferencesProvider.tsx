@@ -49,13 +49,13 @@ function getStoredTheme(): ThemePreference {
 
 function getStoredAiModel(): AiModelPreference {
   if (typeof window === 'undefined') {
-    return 'gemini-2.5-flash-lite';
+    return 'gemini-3.1-flash-lite-preview';
   }
   const stored = window.localStorage.getItem(AI_MODEL_STORAGE_KEY);
   if (stored === 'gemini-3.1-flash-lite-preview' || stored === 'gemini-3.0-flash' || stored === 'gemini-2.5-flash' || stored === 'gemini-2.5-flash-lite') {
     return stored as AiModelPreference;
   }
-  return 'gemini-2.5-flash-lite';
+  return 'gemini-3.1-flash-lite-preview';
 }
 
 function getSystemTheme(): 'light' | 'dark' {

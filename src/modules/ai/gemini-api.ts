@@ -6,7 +6,7 @@ import { GEMINI_DAILY_LIMIT, incrementDailyUsage, isDailyLimitReached } from '@/
 const GEMINI_KEY = import.meta.env.VITE_GEMINI_KEY?.trim();
 
 function getGeminiEndpoint() {
-  let model = import.meta.env.VITE_GEMINI_MODEL?.trim() || 'gemini-2.5-flash-lite';
+  let model = import.meta.env.VITE_GEMINI_MODEL?.trim() || 'gemini-3.1-flash-lite-preview';
   if (typeof window !== 'undefined') {
     const stored = window.localStorage.getItem('scraps.preferences.aiModel');
     if (stored) {

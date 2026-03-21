@@ -65,26 +65,22 @@ export function PantryItemList({ items, onItemTap, onIncrement, onDecrement }: P
 
       {/* Item list */}
       <div className="space-y-2">
-        <AnimatePresence mode="popLayout">
-          {filtered.map((item, index) => (
-            <motion.div
-              key={item.id}
-              layout
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ delay: index * 0.06, type: 'spring', stiffness: 100, damping: 20 }}
-            >
-              <PantryItemCard
-                item={item}
-                index={index}
-                onTap={onItemTap}
-                onIncrement={onIncrement}
-                onDecrement={onDecrement}
-              />
-            </motion.div>
-          ))}
-        </AnimatePresence>
+        {filtered.map((item, index) => (
+          <motion.div
+            key={item.id}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.06, type: 'spring', stiffness: 100, damping: 20 }}
+          >
+            <PantryItemCard
+              item={item}
+              index={index}
+              onTap={onItemTap}
+              onIncrement={onIncrement}
+              onDecrement={onDecrement}
+            />
+          </motion.div>
+        ))}
       </div>
 
       {filtered.length === 0 && items.length > 0 && (

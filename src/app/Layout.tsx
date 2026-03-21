@@ -124,10 +124,10 @@ export function Layout() {
             <AnimatePresence mode="wait">
               <motion.div
                 key={location.pathname}
-                style={{ willChange: 'opacity, transform' }}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0, transition: { duration: 0.2, ease: [0.32, 0.72, 0, 1] } }}
-                exit={{ opacity: 0, y: -4, transition: { duration: 0.08, ease: 'easeIn' } }}
+                style={{ willChange: 'opacity' }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1, transition: { duration: 0.15, ease: 'easeOut' } }}
+                exit={{ opacity: 0, transition: { duration: 0.1, ease: 'easeIn' } }}
               >
                 <Outlet />
               </motion.div>
