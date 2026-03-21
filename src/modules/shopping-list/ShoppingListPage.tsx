@@ -118,19 +118,10 @@ export function ShoppingListPage() {
           </p>
         </div>
       ) : (
-        <motion.div
-          className="space-y-5"
-          initial="hidden"
-          animate="show"
-          variants={{
-            hidden: { opacity: 0 },
-            show: {
-              opacity: 1,
-              transition: { staggerChildren: 0.06 }
-            }
-          }}
-        >
-          {groupedItems.map(([groupKey, groupItems]) => (
+        <div className="space-y-5">
+          {groupedItems.map(([groupKey, groupItems], groupIdx) => {
+            const previousItemsCount = groupedItems.slice(0, groupIdx).reduce((acc, [, items]) => acc + items.length, 0);
+            return (
             <div key={groupKey} className="space-y-2">
               <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
                 {groupKey === 'manual'
@@ -138,13 +129,14 @@ export function ShoppingListPage() {
                   : recipeTitles.get(groupKey) ?? t('shoppingList.recipeSectionFallback')}
               </p>
               <div className="space-y-2">
-                {groupItems.map((item) => (
+                {groupItems.map((item, itemIdx) => {
+                  const globalIndex = previousItemsCount + itemIdx;
+                  return (
                   <motion.div
                     key={item.id}
-                    variants={{
-                      hidden: { opacity: 0, y: 12 },
-                      show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100, damping: 20 } }
-                    }}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ type: 'spring', stiffness: 100, damping: 20, delay: globalIndex * 0.06 }}
                   >
                     <ShoppingListItem
                       item={item}
@@ -152,16 +144,16 @@ export function ShoppingListPage() {
                       onDelete={(currentItem) => deleteItem.mutate(currentItem.id)}
                     />
                   </motion.div>
-                ))}
+                )})}
               </div>
             </div>
-          ))}
-          <motion.div variants={{ hidden: { opacity: 0 }, show: { opacity: 1 } }}>
+          )})}
+          <div>
             <Button variant="secondary" onClick={() => clearChecked.mutate()} disabled={clearChecked.isPending}>
               {clearChecked.isPending ? t('shoppingList.clearing') : t('shoppingList.clearChecked')}
             </Button>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       )}
 
       <AddShoppingItemModal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} />
