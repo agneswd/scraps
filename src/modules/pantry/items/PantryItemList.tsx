@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { PackageOpen } from 'lucide-react';
 import { PantryItemCard } from '@/modules/pantry/items/PantryItemCard';
 import type { PantryItemRecord } from '@/modules/pantry/pantry-api';
@@ -67,14 +67,22 @@ export function PantryItemList({ items, onItemTap, onIncrement, onDecrement }: P
       <div className="space-y-2">
         <AnimatePresence mode="popLayout">
           {filtered.map((item, index) => (
-            <PantryItemCard
+            <motion.div
               key={item.id}
-              item={item}
-              index={index}
-              onTap={onItemTap}
-              onIncrement={onIncrement}
-              onDecrement={onDecrement}
-            />
+              layout
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ delay: index * 0.04, type: 'spring', stiffness: 300, damping: 30 }}
+            >
+              <PantryItemCard
+                item={item}
+                index={index}
+                onTap={onItemTap}
+                onIncrement={onIncrement}
+                onDecrement={onDecrement}
+              />
+            </motion.div>
           ))}
         </AnimatePresence>
       </div>

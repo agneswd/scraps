@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next';
-import { motion } from 'framer-motion';
 import { Minus, Plus } from 'lucide-react';
 import { pocketbase } from '@/shared/api/pocketbase';
 import { PANTRY_CATEGORY_ICONS } from '@/modules/pantry/pantry-categories';
@@ -28,12 +27,16 @@ export function PantryItemCard({ item, index, onTap, onIncrement, onDecrement }:
     : null;
 
   return (
-    <motion.button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={() => onTap(item)}
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.04, type: 'spring', stiffness: 300, damping: 30 }}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onTap(item);
+        }
+      }}
       className="flex w-full items-center gap-3 rounded-2xl bg-white p-3 text-left shadow-soft transition-all active:scale-[0.98] dark:bg-slate-800/80"
     >
       {/* Photo or category icon */}
@@ -81,6 +84,6 @@ export function PantryItemCard({ item, index, onTap, onIncrement, onDecrement }:
           <Plus className="h-3.5 w-3.5" strokeWidth={2} />
         </button>
       </div>
-    </motion.button>
+    </div>
   );
 }
