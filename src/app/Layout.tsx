@@ -14,8 +14,10 @@ const SettingsModal = lazy(() => import('@/modules/settings/SettingsModal').then
 
 const mobileTabClass = ({ isActive }: { isActive: boolean }) =>
   [
-    'flex flex-1 flex-col items-center gap-1 rounded-2xl px-5 py-2 text-xs font-medium transition-all duration-300',
-    isActive ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500',
+    'flex flex-1 flex-col items-center gap-1 rounded-2xl px-4 py-2 text-xs font-medium transition-all duration-200',
+    isActive
+      ? 'text-slate-900 dark:text-white'
+      : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300',
   ].join(' ');
 
 const desktopNavClass = ({ isActive }: { isActive: boolean }) =>
@@ -119,13 +121,13 @@ export function Layout() {
         {/* Page content */}
         <main className="flex-1 overflow-visible px-5 pb-28 pt-2 md:overflow-auto md:px-8 md:py-6 md:pb-6">
           <div className="mx-auto w-full max-w-lg md:max-w-2xl">
-            <AnimatePresence mode="wait">
+            <AnimatePresence>
               <motion.div
                 key={location.pathname}
-                initial={{ opacity: 0, y: 8 }}
+                initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.2, ease: [0.32, 0.72, 0, 1] }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15, ease: [0.32, 0.72, 0, 1] }}
               >
                 <Outlet />
               </motion.div>
@@ -137,22 +139,42 @@ export function Layout() {
         <nav className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-slate-100 bg-white/80 backdrop-blur-xl md:hidden dark:border-slate-800 dark:bg-slate-900/80">
           <div className="relative mx-auto max-w-lg">
             <div className="flex px-4 pb-2 pt-1">
-              <NavLink to="/" end className={mobileTabClass}>
-                <Refrigerator className="h-5 w-5" strokeWidth={1.8} />
-                <span>{t('dashboard.title')}</span>
+              <NavLink to="/" end>
+                {({ isActive }) => (
+                  <div className={mobileTabClass({ isActive })}>
+                    <Refrigerator className="h-5 w-5" strokeWidth={1.8} />
+                    <span>{t('dashboard.title')}</span>
+                    <span className={['h-1 w-4 rounded-full transition-all duration-200', isActive ? 'bg-slate-900 dark:bg-white' : 'bg-transparent'].join(' ')} />
+                  </div>
+                )}
               </NavLink>
-              <NavLink to="/pantry" className={mobileTabClass}>
-                <ShoppingBasket className="h-5 w-5" strokeWidth={1.8} />
-                <span>{t('pantry.title')}</span>
+              <NavLink to="/pantry">
+                {({ isActive }) => (
+                  <div className={mobileTabClass({ isActive })}>
+                    <ShoppingBasket className="h-5 w-5" strokeWidth={1.8} />
+                    <span>{t('pantry.title')}</span>
+                    <span className={['h-1 w-4 rounded-full transition-all duration-200', isActive ? 'bg-slate-900 dark:bg-white' : 'bg-transparent'].join(' ')} />
+                  </div>
+                )}
               </NavLink>
               <div className="w-16 shrink-0" />
-              <NavLink to="/shopping-list" className={mobileTabClass}>
-                <ListChecks className="h-5 w-5" strokeWidth={1.8} />
-                <span>{t('shoppingList.title')}</span>
+              <NavLink to="/shopping-list">
+                {({ isActive }) => (
+                  <div className={mobileTabClass({ isActive })}>
+                    <ListChecks className="h-5 w-5" strokeWidth={1.8} />
+                    <span>{t('shoppingList.title')}</span>
+                    <span className={['h-1 w-4 rounded-full transition-all duration-200', isActive ? 'bg-slate-900 dark:bg-white' : 'bg-transparent'].join(' ')} />
+                  </div>
+                )}
               </NavLink>
-              <NavLink to="/stats" className={mobileTabClass}>
-                <BarChart3 className="h-5 w-5" strokeWidth={1.8} />
-                <span>{t('stats.title')}</span>
+              <NavLink to="/stats">
+                {({ isActive }) => (
+                  <div className={mobileTabClass({ isActive })}>
+                    <BarChart3 className="h-5 w-5" strokeWidth={1.8} />
+                    <span>{t('stats.title')}</span>
+                    <span className={['h-1 w-4 rounded-full transition-all duration-200', isActive ? 'bg-slate-900 dark:bg-white' : 'bg-transparent'].join(' ')} />
+                  </div>
+                )}
               </NavLink>
             </div>
 

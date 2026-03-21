@@ -69,10 +69,10 @@ export function LeftoverCard({ leftover, onClick }: LeftoverCardProps) {
         ) : null}
       </div>
 
-      {/* Swipe hint: subtle colored bars indicate swipeable actions */}
-      <div className="flex shrink-0 flex-col items-center gap-0.5 pr-0.5 opacity-30">
-        <div className="h-1.5 w-4 rounded-full bg-emerald-500" />
-        <div className="h-1.5 w-4 rounded-full bg-red-400" />
+      {/* Swipe hint: subtle colored chevron indicates swipeable actions */}
+      <div className="flex shrink-0 flex-col items-center justify-center gap-1.5 opacity-25 pr-0.5">
+        <div className="h-5 w-1 rounded-full bg-emerald-500" />
+        <div className="h-5 w-1 rounded-full bg-red-400" />
       </div>
     </article>
   );

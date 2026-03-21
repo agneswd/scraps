@@ -66,20 +66,31 @@ export function ShoppingListPage() {
 
   return (
     <section className="space-y-5">
-      <div className="flex items-baseline justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-            {t('shoppingList.title')}
-          </h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            {t('shoppingList.headline')}
-          </p>
+      {/* Page header */}
+      <div className="space-y-3">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+              {t('shoppingList.title')}
+            </h1>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              {t('shoppingList.headline')}
+            </p>
+          </div>
+          {/* Desktop: action buttons in header row */}
+          <div className="hidden shrink-0 items-center gap-2 sm:flex">
+            <Button variant="secondary" onClick={() => setIsGenerateOpen(true)}>
+              {t('shoppingList.generateTitle')}
+            </Button>
+            <Button onClick={() => setIsAddOpen(true)}>{t('shoppingList.addTitle')}</Button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="secondary" onClick={() => setIsGenerateOpen(true)}>
+        {/* Mobile: action buttons below title, full-width */}
+        <div className="flex gap-2 sm:hidden">
+          <Button variant="secondary" className="flex-1" onClick={() => setIsGenerateOpen(true)}>
             {t('shoppingList.generateTitle')}
           </Button>
-          <Button onClick={() => setIsAddOpen(true)}>{t('shoppingList.addTitle')}</Button>
+          <Button className="flex-1" onClick={() => setIsAddOpen(true)}>{t('shoppingList.addTitle')}</Button>
         </div>
       </div>
 

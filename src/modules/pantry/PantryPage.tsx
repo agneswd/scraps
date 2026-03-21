@@ -140,18 +140,12 @@ export function PantryPage() {
           <>
             {recipesLoading ? <PantrySkeleton /> : null}
             {!recipesLoading && (
-              <div className="space-y-4">
-                <div className="flex justify-end">
-                  <Button variant="secondary" onClick={() => setIsAiRecipeOpen(true)}>
-                    {t('ai.generateTitle')}
-                  </Button>
-                </div>
-                <RecipeList
-                  items={recipeMatches}
-                  onAdd={() => setIsAddRecipeOpen(true)}
-                  onItemTap={setSelectedRecipe}
-                />
-              </div>
+              <RecipeList
+                items={recipeMatches}
+                onAdd={() => setIsAddRecipeOpen(true)}
+                onAiGenerate={() => setIsAiRecipeOpen(true)}
+                onItemTap={setSelectedRecipe}
+              />
             )}
           </>
         )}

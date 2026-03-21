@@ -81,11 +81,16 @@ export function RecipeDetailModal({
         </div>
 
         <div className="flex gap-3">
-          <Button variant="secondary" onClick={onEdit}>
+          <Button variant="secondary" className="flex-1" onClick={onEdit}>
             <Pencil className="h-4 w-4" strokeWidth={2} />
             {t('recipes.editTitle')}
           </Button>
-          <Button variant="secondary" className="!bg-red-50 !text-red-600 dark:!bg-red-950/40 dark:!text-red-400" onClick={onDelete} disabled={isDeleting}>
+          <Button
+            variant="secondary"
+            className="flex-1 !bg-red-50 !text-red-600 dark:!bg-red-950/40 dark:!text-red-400"
+            onClick={onDelete}
+            disabled={isDeleting}
+          >
             <Trash2 className="h-4 w-4" strokeWidth={2} />
             {isDeleting ? t('recipes.deleting') : t('recipes.delete')}
           </Button>

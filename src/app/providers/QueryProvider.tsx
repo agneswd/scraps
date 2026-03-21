@@ -9,7 +9,7 @@ export function QueryProvider({ children }: { children: ReactNode }) {
           queries: {
             retry: 1,
             refetchOnWindowFocus: false,
-            staleTime: 60_000,
+            staleTime: 5 * 60_000, // 5 min — prevents loading skeletons on quick re-navigations
           },
         },
       }),

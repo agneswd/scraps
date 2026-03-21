@@ -8,10 +8,11 @@ import { Button } from '@/shared/ui/Button';
 type RecipeListProps = {
   items: RecipeMatchResult[];
   onAdd: () => void;
+  onAiGenerate?: () => void;
   onItemTap: (item: RecipeMatchResult) => void;
 };
 
-export function RecipeList({ items, onAdd, onItemTap }: RecipeListProps) {
+export function RecipeList({ items, onAdd, onAiGenerate, onItemTap }: RecipeListProps) {
   const { t } = useTranslation();
   const [showCookableOnly, setShowCookableOnly] = useState(false);
 
@@ -29,9 +30,16 @@ export function RecipeList({ items, onAdd, onItemTap }: RecipeListProps) {
         <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
           {t('recipes.emptyHint')}
         </p>
-        <Button className="mt-4" onClick={onAdd}>
-          {t('recipes.addTitle')}
-        </Button>
+        <div className="mt-4 flex flex-col items-center gap-2 w-full">
+          <Button className="w-full max-w-xs" onClick={onAdd}>
+            {t('recipes.addTitle')}
+          </Button>
+          {onAiGenerate ? (
+            <Button variant="secondary" className="w-full max-w-xs" onClick={onAiGenerate}>
+              {t('ai.generateTitle')}
+            </Button>
+          ) : null}
+        </div>
       </div>
     );
   }
@@ -47,7 +55,14 @@ export function RecipeList({ items, onAdd, onItemTap }: RecipeListProps) {
             {t('recipes.savedRecipesCount', { count: items.length })}
           </p>
         </div>
-        <Button onClick={onAdd}>{t('recipes.addTitle')}</Button>
+        <div className="flex items-center gap-2">
+          {onAiGenerate ? (
+            <Button variant="secondary" onClick={onAiGenerate}>
+              {t('ai.generateTitle')}
+            </Button>
+          ) : null}
+          <Button onClick={onAdd}>{t('recipes.addTitle')}</Button>
+        </div>
       </div>
       <div className="flex gap-2 overflow-x-auto pb-1">
         <button
