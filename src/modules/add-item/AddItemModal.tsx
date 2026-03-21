@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Camera, LoaderCircle, Pencil } from 'lucide-react';
+import { AiScanButton } from '@/modules/ai/AiScanButton';
+import { useAiIdentify } from '@/modules/ai/use-ai-identify';
 import { CameraCapture } from '@/modules/add-item/CameraCapture';
 import { CategoryPicker } from '@/modules/add-item/CategoryPicker';
 import { useAddItem } from '@/modules/add-item/use-add-item';
@@ -16,15 +19,25 @@ type AddItemModalProps = {
 
 const totalSteps = 4;
 
+type AddMode = 'choose' | 'manual' | 'ai';
+
+function toLeftoverCategory(value: string): LeftoverCategory {
+  const allowed: LeftoverCategory[] = ['meat', 'poultry', 'seafood', 'veg', 'dairy', 'grains', 'prepared', 'other'];
+  return allowed.includes(value as LeftoverCategory) ? (value as LeftoverCategory) : 'other';
+}
+
 export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
   const { t } = useTranslation();
   const { createLeftover, isPending } = useAddItem();
+  const identifyLeftover = useAiIdentify('leftover');
+  const [mode, setMode] = useState<AddMode>('choose');
   const [step, setStep] = useState(0);
   const [itemName, setItemName] = useState('');
   const [category, setCategory] = useState<LeftoverCategory | null>(null);
   const [customDays, setCustomDays] = useState<number | null>(null);
   const [notes, setNotes] = useState('');
   const [photo, setPhoto] = useState<Blob | null>(null);
+  const [aiPhoto, setAiPhoto] = useState<Blob | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const previewUrl = useMemo(() => (photo ? URL.createObjectURL(photo) : null), [photo]);
@@ -39,12 +52,14 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
 
   useEffect(() => {
     if (!isOpen) {
+      setMode('choose');
       setStep(0);
       setItemName('');
       setCategory(null);
       setCustomDays(null);
       setNotes('');
       setPhoto(null);
+      setAiPhoto(null);
       setError(null);
     }
   }, [isOpen]);
@@ -71,6 +86,87 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
     } catch {
       setError(t('addItem.saveError'));
     }
+  }
+
+  async function handleAiIdentify() {
+    if (!aiPhoto) {
+      return;
+    }
+
+    try {
+      setError(null);
+      const result = await identifyLeftover.mutateAsync(aiPhoto);
+      setItemName(result.name);
+      setCategory(toLeftoverCategory(result.category));
+      setCustomDays(result.estimated_expiry_days ?? null);
+      setPhoto(aiPhoto);
+      setMode('manual');
+      setStep(0);
+    } catch {
+      setError(t('ai.identifyError'));
+      setMode('manual');
+      setStep(2);
+      setPhoto(aiPhoto);
+    }
+  }
+
+  if (mode === 'choose') {
+    return (
+      <Modal isOpen={isOpen} onClose={onClose} title={t('addItem.title')}>
+        <div className="space-y-3 p-1">
+          <p className="text-center text-sm text-slate-500 dark:text-slate-400">
+            {t('ai.leftoverMethodPrompt')}
+          </p>
+          <button
+            type="button"
+            onClick={() => setMode('manual')}
+            className="flex w-full items-center gap-3 rounded-2xl bg-slate-50 p-4 text-left transition-all hover:bg-slate-100 active:scale-[0.98] dark:bg-slate-800/60 dark:hover:bg-slate-800"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-200/60 dark:bg-slate-700">
+              <Pencil className="h-4.5 w-4.5 text-slate-600 dark:text-slate-300" strokeWidth={1.8} />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-slate-900 dark:text-white">{t('addItem.methodManual')}</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500">{t('addItem.methodManualHint')}</p>
+            </div>
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode('ai')}
+            className="flex w-full items-center gap-3 rounded-2xl bg-slate-50 p-4 text-left transition-all hover:bg-slate-100 active:scale-[0.98] dark:bg-slate-800/60 dark:hover:bg-slate-800"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-200/60 dark:bg-slate-700">
+              <Camera className="h-4.5 w-4.5 text-slate-600 dark:text-slate-300" strokeWidth={1.8} />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-slate-900 dark:text-white">{t('addItem.methodAi')}</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500">{t('addItem.methodAiHint')}</p>
+            </div>
+          </button>
+        </div>
+      </Modal>
+    );
+  }
+
+  if (mode === 'ai') {
+    return (
+      <Modal isOpen={isOpen} onClose={onClose} title={t('ai.identifyTitle')}>
+        {identifyLeftover.isPending ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <LoaderCircle className="h-6 w-6 animate-spin text-slate-400 dark:text-slate-500" strokeWidth={2} />
+            <p className="mt-4 text-sm font-medium text-slate-900 dark:text-white">{t('ai.identifying')}</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <CameraCapture hasPhoto={Boolean(aiPhoto)} onCapture={setAiPhoto} />
+            {aiPhoto ? <AiScanButton onClick={() => void handleAiIdentify()} /> : null}
+            <Button variant="secondary" className="w-full" onClick={() => setMode('manual')}>
+              {t('common.back')}
+            </Button>
+          </div>
+        )}
+      </Modal>
+    );
   }
 
   return (

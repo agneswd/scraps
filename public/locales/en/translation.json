@@ -44,6 +44,10 @@
   },
   "addItem": {
     "title": "Add Leftover",
+    "methodManual": "Add manually",
+    "methodManualHint": "Type the item and choose a category yourself.",
+    "methodAi": "AI scan",
+    "methodAiHint": "Take a photo and let AI estimate the item and expiry.",
     "fabLabel": "Add leftover",
     "nameLabel": "What is it?",
     "namePlaceholder": "e.g. Chicken curry",
@@ -197,6 +201,10 @@
   "recipes": {
     "addTitle": "Add Recipe",
     "editTitle": "Edit Recipe",
+    "methodManual": "Manual recipe",
+    "methodUrl": "Import from URL",
+    "methodText": "Paste recipe text",
+    "methodPhoto": "Import from photo",
     "titleLabel": "Recipe title",
     "titlePlaceholder": "e.g. Weeknight tomato pasta",
     "descriptionLabel": "Description",
@@ -216,6 +224,7 @@
     "sourceUrlLabel": "Source URL",
     "tagsLabel": "Tags",
     "tagsPlaceholder": "e.g. dinner, pasta, quick",
+    "pasteTextPlaceholder": "Paste the recipe text here.",
     "photoLabel": "Recipe photo",
     "saveError": "Could not save the recipe. Try again.",
     "saving": "Saving...",
@@ -269,6 +278,19 @@
     "nothingMissing": "You already have everything needed for this recipe.",
     "generateCta": "Add missing items",
     "generateError": "Could not generate shopping items from this recipe."
+  },
+  "ai": {
+    "scanButton": "Identify with AI",
+    "importButton": "Import with AI",
+    "identifyTitle": "AI Identification",
+    "identifying": "Identifying item...",
+    "identifyError": "AI could not identify this item. You can continue manually.",
+    "leftoverMethodPrompt": "Choose how you want to add this leftover.",
+    "parsingRecipe": "Parsing recipe with AI...",
+    "parseRecipeError": "AI could not parse that recipe. Try another source or enter it manually.",
+    "generateTitle": "Generate With AI",
+    "generating": "Creating a recipe from your pantry...",
+    "generateError": "AI could not generate a recipe right now."
   }
 }
 

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
+import { AiRecipeGenerateModal } from '@/modules/ai/AiRecipeGenerateModal';
 import { PantryItemList } from '@/modules/pantry/items/PantryItemList';
 import { EditPantryItemModal } from '@/modules/pantry/items/EditPantryItemModal';
 import {
@@ -39,6 +40,7 @@ export function PantryPage() {
   const [activeTab, setActiveTab] = useState<PantryTab>('items');
   const [editItem, setEditItem] = useState<PantryItemRecord | null>(null);
   const [isAddRecipeOpen, setIsAddRecipeOpen] = useState(false);
+  const [isAiRecipeOpen, setIsAiRecipeOpen] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState<RecipeWithIngredients | null>(null);
   const [editingRecipe, setEditingRecipe] = useState<RecipeWithIngredients | null>(null);
 
@@ -138,11 +140,18 @@ export function PantryPage() {
           <>
             {recipesLoading ? <PantrySkeleton /> : null}
             {!recipesLoading && (
-              <RecipeList
-                items={recipeMatches}
-                onAdd={() => setIsAddRecipeOpen(true)}
-                onItemTap={setSelectedRecipe}
-              />
+              <div className="space-y-4">
+                <div className="flex justify-end">
+                  <Button variant="secondary" onClick={() => setIsAiRecipeOpen(true)}>
+                    {t('ai.generateTitle')}
+                  </Button>
+                </div>
+                <RecipeList
+                  items={recipeMatches}
+                  onAdd={() => setIsAddRecipeOpen(true)}
+                  onItemTap={setSelectedRecipe}
+                />
+              </div>
             )}
           </>
         )}
@@ -155,6 +164,14 @@ export function PantryPage() {
       />
 
       <AddRecipeModal isOpen={isAddRecipeOpen} onClose={() => setIsAddRecipeOpen(false)} />
+
+      <AiRecipeGenerateModal
+        isOpen={isAiRecipeOpen}
+        pantryItems={(items ?? [])
+          .filter((item) => item.status !== 'finished' && item.quantity > 0)
+          .map((item) => item.name)}
+        onClose={() => setIsAiRecipeOpen(false)}
+      />
 
       <RecipeDetailModal
         recipeWithIngredients={selectedRecipe}

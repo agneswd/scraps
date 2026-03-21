@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Barcode, Camera, LoaderCircle, Pencil } from 'lucide-react';
+import { AiScanButton } from '@/modules/ai/AiScanButton';
+import { useAiIdentify } from '@/modules/ai/use-ai-identify';
 import { Modal } from '@/shared/ui/Modal';
 import { Button } from '@/shared/ui/Button';
 import { PantryCategoryPicker } from '@/modules/pantry/items/PantryCategoryPicker';
@@ -18,11 +20,17 @@ type AddPantryItemModalProps = {
 
 type EntryMethod = 'choose' | 'manual' | 'barcode' | 'ai';
 
+function toPantryCategory(value: string): PantryCategory {
+  const allowed: PantryCategory[] = ['meat', 'poultry', 'seafood', 'veg', 'dairy', 'grains', 'prepared', 'other', 'condiment', 'spice', 'beverage', 'frozen', 'baking', 'canned'];
+  return allowed.includes(value as PantryCategory) ? (value as PantryCategory) : 'other';
+}
+
 export function AddPantryItemModal({ isOpen, onClose }: AddPantryItemModalProps) {
   const { t } = useTranslation();
   const createItem = useCreatePantryItem();
   const incrementQuantity = useIncrementQuantity();
   const scanner = useScanner();
+  const identifyPantryItem = useAiIdentify('pantry');
 
   const [method, setMethod] = useState<EntryMethod>('choose');
   const [step, setStep] = useState(0);
@@ -32,6 +40,7 @@ export function AddPantryItemModal({ isOpen, onClose }: AddPantryItemModalProps)
   const [quantity, setQuantity] = useState(1);
   const [unit, setUnit] = useState('');
   const [photo, setPhoto] = useState<Blob | null>(null);
+  const [aiPhoto, setAiPhoto] = useState<Blob | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
 
@@ -52,6 +61,7 @@ export function AddPantryItemModal({ isOpen, onClose }: AddPantryItemModalProps)
       setQuantity(1);
       setUnit('');
       setPhoto(null);
+      setAiPhoto(null);
       setError(null);
       setIsScannerOpen(false);
     }
@@ -116,6 +126,28 @@ export function AddPantryItemModal({ isOpen, onClose }: AddPantryItemModalProps)
     } catch {
       setStep(0);
       setError(t('scanner.lookupFailed'));
+    }
+  }
+
+  async function handleAiIdentify() {
+    if (!aiPhoto) {
+      return;
+    }
+
+    try {
+      setError(null);
+      const result = await identifyPantryItem.mutateAsync(aiPhoto);
+      setName(result.name);
+      setCategory(toPantryCategory(result.category));
+      setQuantity(1);
+      setPhoto(aiPhoto);
+      setStep(3);
+      setMethod('manual');
+    } catch {
+      setError(t('ai.identifyError'));
+      setMethod('manual');
+      setStep(2);
+      setPhoto(aiPhoto);
     }
   }
 
@@ -219,6 +251,27 @@ export function AddPantryItemModal({ isOpen, onClose }: AddPantryItemModalProps)
             <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">{barcode}</p>
           ) : null}
         </div>
+      </Modal>
+    );
+  }
+
+  if (method === 'ai') {
+    return (
+      <Modal isOpen={isOpen} onClose={onClose} title={t('ai.identifyTitle')}>
+        {identifyPantryItem.isPending ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <LoaderCircle className="h-6 w-6 animate-spin text-slate-400 dark:text-slate-500" strokeWidth={2} />
+            <p className="mt-4 text-sm font-medium text-slate-900 dark:text-white">{t('ai.identifying')}</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <CameraCapture hasPhoto={Boolean(aiPhoto)} onCapture={setAiPhoto} />
+            {aiPhoto ? <AiScanButton onClick={() => void handleAiIdentify()} /> : null}
+            <Button variant="secondary" className="w-full" onClick={() => setMethod('manual')}>
+              {t('common.back')}
+            </Button>
+          </div>
+        )}
       </Modal>
     );
   }
