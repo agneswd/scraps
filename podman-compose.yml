@@ -23,6 +23,8 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+        VITE_GEMINI_KEY: ${VITE_GEMINI_KEY:-}
+        VITE_SPOONACULAR_KEY: ${VITE_SPOONACULAR_KEY:-}
     container_name: scraps-ui
     ports:
       - "8080:80"

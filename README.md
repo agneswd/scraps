@@ -37,6 +37,8 @@ Edit `.env` and fill in:
 | `VAPID_PUBLIC_KEY` | Web Push public key |
 | `VAPID_PRIVATE_KEY` | Web Push private key |
 | `VAPID_SUBJECT` | `mailto:` address for push notifications |
+| `VITE_GEMINI_KEY` | Gemini API key for AI-assisted pantry and recipe features |
+| `VITE_SPOONACULAR_KEY` | Spoonacular API key reserved for future recipe discovery |
 | `TUNNEL_TOKEN` | Cloudflare Tunnel token (only if using the tunnel profile) |
 
 ### 2. Generate VAPID keys
