@@ -1,6 +1,6 @@
 import { Suspense, lazy, useState } from 'react';
 import { BarChart3, ListChecks, Plus, Refrigerator, Settings, ShoppingBasket } from 'lucide-react';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useOutlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAuth } from '@/modules/auth/use-auth';
@@ -33,6 +33,7 @@ export function Layout() {
   const { user, userEmail } = useAuth();
   const push = usePush();
   const location = useLocation();
+  const element = useOutlet();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isAddPantryOpen, setIsAddPantryOpen] = useState(false);
   const [isAddShoppingOpen, setIsAddShoppingOpen] = useState(false);
@@ -129,7 +130,7 @@ export function Layout() {
                 animate={{ opacity: 1, transition: { duration: 0.15, ease: 'easeOut' } }}
                 exit={{ opacity: 0, transition: { duration: 0.1, ease: 'easeIn' } }}
               >
-                <Outlet />
+                {element}
               </motion.div>
             </AnimatePresence>
           </div>
