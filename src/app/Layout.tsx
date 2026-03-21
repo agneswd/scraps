@@ -1,116 +1,178 @@
-import { BarChart3, Bell, BellOff, LogOut, Soup } from 'lucide-react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { useState } from 'react';
+import { BarChart3, Plus, Refrigerator, Settings, ShoppingBasket } from 'lucide-react';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { AnimatePresence, motion } from 'framer-motion';
+import { AddItemModal } from '@/modules/add-item/AddItemModal';
+import { AddPantryItemModal } from '@/modules/pantry/items/AddPantryItemModal';
 import { useAuth } from '@/modules/auth/use-auth';
 import { usePush } from '@/shared/hooks/use-push';
 import { NotificationPrompt } from '@/shared/ui/NotificationPrompt';
+import { SettingsModal } from '@/modules/settings/SettingsModal';
 
-const navLinkClassName = ({ isActive }: { isActive: boolean }) =>
+const mobileTabClass = ({ isActive }: { isActive: boolean }) =>
   [
-    'flex min-h-11 items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold transition',
+    'flex flex-1 flex-col items-center gap-1 rounded-2xl px-5 py-2 text-xs font-medium transition-all duration-300',
+    isActive ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500',
+  ].join(' ');
+
+const desktopNavClass = ({ isActive }: { isActive: boolean }) =>
+  [
+    'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
     isActive
-      ? 'bg-brand-500 text-white shadow-card'
-      : 'bg-white/80 text-slate-700 hover:bg-white dark:bg-slate-900/80 dark:text-slate-200 dark:hover:bg-slate-900',
+      ? 'bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-white'
+      : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800/50 dark:hover:text-slate-300',
   ].join(' ');
 
 export function Layout() {
   const { t } = useTranslation();
-  const { logout, user, userEmail } = useAuth();
+  const { user, userEmail } = useAuth();
   const push = usePush();
+  const location = useLocation();
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isAddPantryOpen, setIsAddPantryOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  const notificationStateLabel = push.isSubscribed
-    ? t('notifications.enabled')
-    : push.needsIosStandalone
-      ? t('notifications.installRequired')
-      : push.isBrowserSupported
-        ? t('notifications.disabled')
-        : t('notifications.unavailable');
-
-  const handleNotificationToggle = () => {
-    if (push.isLoading || !push.isSupported) {
-      return;
-    }
-
-    if (push.isSubscribed) {
-      void push.unsubscribe();
-      return;
-    }
-
-    void push.subscribe();
+  const openContextAdd = () => {
+    if (location.pathname === '/pantry') setIsAddPantryOpen(true);
+    else setIsAddModalOpen(true);
   };
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-5xl flex-col px-4 py-6 sm:px-6 lg:px-8">
-      <header className="flex flex-col gap-4 rounded-[28px] border border-white/50 bg-white/75 p-5 shadow-card backdrop-blur dark:border-white/10 dark:bg-slate-950/75 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="font-display text-3xl tracking-tight text-slate-950 dark:text-white">
+    <div className="flex min-h-[100dvh] md:h-[100dvh] md:overflow-hidden">
+      {/* ─── Desktop sidebar (md+) ─── */}
+      <aside className="hidden w-56 shrink-0 flex-col border-r border-slate-100 bg-white px-4 py-6 md:flex dark:border-slate-800 dark:bg-slate-900">
+        <div className="mb-6 px-1">
+          <p className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
             {t('common.appName')}
           </p>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{userEmail}</p>
+          <p className="mt-0.5 truncate text-xs text-slate-400 dark:text-slate-500">{userEmail}</p>
         </div>
 
-        <div className="flex flex-col gap-3 sm:items-end">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-            <nav className="grid grid-cols-2 gap-2 rounded-full bg-brand-50/80 p-1 dark:bg-slate-900/80">
-              <NavLink to="/" end className={navLinkClassName}>
-                <Soup className="h-4 w-4" />
+        <nav className="flex flex-col gap-1">
+          <NavLink to="/" end className={desktopNavClass}>
+            <Refrigerator className="h-[1.125rem] w-[1.125rem] shrink-0" strokeWidth={1.8} />
+            {t('dashboard.title')}
+          </NavLink>
+          <NavLink to="/pantry" className={desktopNavClass}>
+            <ShoppingBasket className="h-[1.125rem] w-[1.125rem] shrink-0" strokeWidth={1.8} />
+            {t('pantry.title')}
+          </NavLink>
+          <NavLink to="/stats" className={desktopNavClass}>
+            <BarChart3 className="h-[1.125rem] w-[1.125rem] shrink-0" strokeWidth={1.8} />
+            {t('stats.title')}
+          </NavLink>
+        </nav>
+
+        <button
+          type="button"
+          onClick={openContextAdd}
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-white shadow-soft transition-all duration-200 hover:bg-slate-700 active:scale-[0.98] dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
+        >
+          <Plus className="h-4 w-4 shrink-0" strokeWidth={2.5} />
+          {t('addItem.fabLabel')}
+        </button>
+
+        <div className="flex-1" />
+
+        <div className="border-t border-slate-100 pt-4 dark:border-slate-800">
+          <button
+            type="button"
+            onClick={() => setIsSettingsOpen(true)}
+            aria-label={t('settings.title')}
+            className="flex h-9 w-full items-center justify-center gap-2 rounded-xl bg-slate-100 px-3 text-sm font-medium text-slate-600 transition-all hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+          >
+            <Settings className="h-[1.125rem] w-[1.125rem]" strokeWidth={2} />
+            {t('settings.title')}
+          </button>
+        </div>
+      </aside>
+
+      {/* ─── Main column ─── */}
+      <div className="flex min-h-[100dvh] flex-1 flex-col md:min-h-0 md:overflow-hidden">
+        {/* Mobile header */}
+        <header className="flex items-center justify-between px-5 pb-1 pt-4 md:hidden">
+          <div>
+            <p className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
+              {t('common.appName')}
+            </p>
+            <p className="text-xs text-slate-400 dark:text-slate-500">{userEmail}</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsSettingsOpen(true)}
+            aria-label={t('settings.title')}
+            className="flex h-10 w-10 items-center justify-center rounded-full text-slate-400 transition-all hover:bg-slate-100 active:scale-90 dark:text-slate-500 dark:hover:bg-slate-800"
+          >
+            <Settings className="h-[1.125rem] w-[1.125rem]" strokeWidth={2} />
+          </button>
+        </header>
+
+        {/* Page content */}
+        <main className="flex-1 overflow-visible px-5 pb-28 pt-2 md:overflow-auto md:px-8 md:py-6 md:pb-6">
+          <div className="mx-auto w-full max-w-lg md:max-w-2xl">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={location.pathname}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2, ease: [0.32, 0.72, 0, 1] }}
+              >
+                <Outlet />
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </main>
+
+        {/* Mobile bottom tab bar */}
+        <nav className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-slate-100 bg-white/80 backdrop-blur-xl md:hidden dark:border-slate-800 dark:bg-slate-900/80">
+          <div className="relative mx-auto max-w-lg">
+            <div className="flex px-4 pb-2 pt-1">
+              <NavLink to="/" end className={mobileTabClass}>
+                <Refrigerator className="h-5 w-5" strokeWidth={1.8} />
                 <span>{t('dashboard.title')}</span>
               </NavLink>
-              <NavLink to="/stats" className={navLinkClassName}>
-                <BarChart3 className="h-4 w-4" />
+              <NavLink to="/pantry" className={mobileTabClass}>
+                <ShoppingBasket className="h-5 w-5" strokeWidth={1.8} />
+                <span>{t('pantry.title')}</span>
+              </NavLink>
+              {/* Spacer keeps tabs flanking the center button */}
+              <div className="w-16 shrink-0" />
+              <NavLink to="/stats" className={mobileTabClass}>
+                <BarChart3 className="h-5 w-5" strokeWidth={1.8} />
                 <span>{t('stats.title')}</span>
               </NavLink>
-            </nav>
-
-            <div className="flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                onClick={handleNotificationToggle}
-                disabled={push.isLoading || !push.isSupported}
-                aria-pressed={push.isSubscribed}
-                className="inline-flex min-h-11 items-center gap-2 rounded-full border border-slate-200 px-4 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70 dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-900"
-              >
-                {push.isSubscribed ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />}
-                <span>{t('notifications.label')}</span>
-                <span className="rounded-full bg-brand-50 px-2 py-1 text-xs font-semibold text-brand-700 dark:bg-slate-900 dark:text-brand-200">
-                  {notificationStateLabel}
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={logout}
-                className="inline-flex min-h-11 items-center gap-2 rounded-full border border-slate-200 px-4 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-900"
-              >
-                <LogOut className="h-4 w-4" />
-                <span>{t('common.logout')}</span>
-              </button>
             </div>
+
+            {/* Center Add button — context-sensitive */}
+            <button
+              type="button"
+              onClick={openContextAdd}
+              aria-label={t('addItem.fabLabel')}
+              className="absolute left-1/2 top-0 z-10 flex h-16 w-16 -translate-x-1/2 -translate-y-[60%] items-center justify-center rounded-full bg-slate-900 text-white shadow-elevated ring-4 ring-white transition-all hover:bg-slate-700 active:scale-90 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 dark:ring-slate-900"
+            >
+              <Plus className="h-7 w-7" strokeWidth={2.5} />
+            </button>
           </div>
+        </nav>
 
-          {(push.error || push.needsIosStandalone) && (
-            <p className="max-w-md text-sm text-slate-600 dark:text-slate-300">
-              {push.error ?? t('notifications.iosHint')}
-            </p>
-          )}
-        </div>
-      </header>
+        <NotificationPrompt
+          userId={typeof user?.id === 'string' ? user.id : null}
+          isBrowserSupported={push.isBrowserSupported}
+          isBusy={push.isLoading}
+          isSubscribed={push.isSubscribed}
+          isSupported={push.isSupported}
+          needsIosStandalone={push.needsIosStandalone}
+          error={push.error}
+          permission={push.permission}
+          onEnable={push.subscribe}
+        />
+      </div>
 
-      <main className="flex-1 py-6">
-        <Outlet />
-      </main>
-
-      <NotificationPrompt
-        userId={typeof user?.id === 'string' ? user.id : null}
-        isBrowserSupported={push.isBrowserSupported}
-        isBusy={push.isLoading}
-        isSubscribed={push.isSubscribed}
-        isSupported={push.isSupported}
-        needsIosStandalone={push.needsIosStandalone}
-        error={push.error}
-        permission={push.permission}
-        onEnable={push.subscribe}
-      />
+      <AddItemModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
+      <AddPantryItemModal isOpen={isAddPantryOpen} onClose={() => setIsAddPantryOpen(false)} />
+      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
     </div>
   );
 }
