@@ -2,12 +2,19 @@ version: '3.9'
 
 services:
   scraps-db:
-    image: docker.io/mujo/pocketbase:latest
+    image: docker.io/lukehagar/pocketbase:latest
     container_name: scraps-db
-    command: ["/pb/pocketbase", "serve", "--http=0.0.0.0:8090", "--dir=/pb_data"]
+    entrypoint: /pb/pocketbase
+    command: ["serve", "--http=0.0.0.0:8090", "--dir=/pb_data", "--migrationsDir=/pb_migrations"]
     volumes:
       - ./pb_data:/pb_data:Z
-      - ./pb_migrations:/pb/pb_migrations:Z
+      - ./pb_migrations:/pb_migrations:Z
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8090/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     restart: unless-stopped
 
   scraps-ui:
@@ -17,8 +24,11 @@ services:
       args:
         VITE_VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
     container_name: scraps-ui
+    ports:
+      - "8080:80"
     depends_on:
-      - scraps-db
+      scraps-db:
+        condition: service_healthy
     restart: unless-stopped
 
   scraps-notifier:
@@ -27,7 +37,8 @@ services:
       dockerfile: Dockerfile
     container_name: scraps-notifier
     depends_on:
-      - scraps-db
+      scraps-db:
+        condition: service_healthy
     environment:
       PB_URL: http://scraps-db:8090
       CHECK_INTERVAL_HOURS: 2
@@ -46,4 +57,6 @@ services:
       TUNNEL_TOKEN: ${TUNNEL_TOKEN:-}
     depends_on:
       - scraps-ui
+    profiles:
+      - tunnel
     restart: unless-stopped

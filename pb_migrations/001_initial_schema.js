@@ -3,170 +3,109 @@ migrate(
     const households = new Collection({
       name: 'households',
       type: 'base',
-      system: false,
-      schema: [
-        {
-          system: false,
-          id: 'household_name',
-          name: 'name',
-          type: 'text',
-          required: true,
-          presentable: true,
-          unique: false,
-          options: {
-            min: null,
-            max: null,
-            pattern: '',
-          },
-        },
-      ],
-      listRule: '@request.auth != ""',
-      viewRule: '@request.auth != ""',
+      listRule: '@request.auth.id != ""',
+      viewRule: '@request.auth.id != ""',
       createRule: null,
       updateRule: null,
       deleteRule: null,
+      fields: [
+        {
+          type: 'text',
+          name: 'name',
+          required: true,
+          presentable: true,
+        },
+        { type: 'autodate', name: 'created', onCreate: true, onUpdate: false },
+        { type: 'autodate', name: 'updated', onCreate: true, onUpdate: true },
+      ],
     });
 
     app.save(households);
 
+    // Add household_id relation field to the built-in users collection
+    const usersCollection = app.findCollectionByNameOrId('users');
+    usersCollection.fields.add(new RelationField({
+      name: 'household_id',
+      required: true,
+      maxSelect: 1,
+      collectionId: households.id,
+      cascadeDelete: false,
+    }));
+    app.save(usersCollection);
+
     const leftovers = new Collection({
       name: 'leftovers',
       type: 'base',
-      system: false,
-      schema: [
+      listRule: '@request.auth.household_id ?= household_id',
+      viewRule: '@request.auth.household_id ?= household_id',
+      createRule: '@request.auth.household_id ?= @request.body.household_id',
+      updateRule: '@request.auth.household_id ?= household_id',
+      deleteRule: '@request.auth.household_id ?= household_id',
+      fields: [
         {
-          system: false,
-          id: 'household_relation',
+          type: 'relation',
           name: 'household_id',
-          type: 'relation',
           required: true,
-          presentable: false,
-          unique: false,
-          options: {
-            collectionId: households.id,
-            cascadeDelete: false,
-            minSelect: 1,
-            maxSelect: 1,
-            displayFields: []
-          }
+          maxSelect: 1,
+          collectionId: households.id,
+          cascadeDelete: false,
         },
         {
-          system: false,
-          id: 'added_by_relation',
+          type: 'relation',
           name: 'added_by',
-          type: 'relation',
           required: true,
-          presentable: false,
-          unique: false,
-          options: {
-            collectionId: '_pb_users_auth_',
-            cascadeDelete: false,
-            minSelect: 1,
-            maxSelect: 1,
-            displayFields: []
-          }
+          maxSelect: 1,
+          collectionId: usersCollection.id,
+          cascadeDelete: false,
         },
         {
-          system: false,
-          id: 'item_name_text',
-          name: 'item_name',
           type: 'text',
+          name: 'item_name',
           required: true,
           presentable: true,
-          unique: false,
-          options: {
-            min: 1,
-            max: null,
-            pattern: ''
-          }
+          min: 1,
         },
         {
-          system: false,
-          id: 'category_select',
+          type: 'select',
           name: 'category',
-          type: 'select',
           required: true,
-          presentable: false,
-          unique: false,
-          options: {
-            maxSelect: 1,
-            values: ['meat', 'poultry', 'seafood', 'veg', 'dairy', 'grains', 'prepared', 'other']
-          }
+          maxSelect: 1,
+          values: ['meat', 'poultry', 'seafood', 'veg', 'dairy', 'grains', 'prepared', 'other'],
         },
         {
-          system: false,
-          id: 'expiry_date_field',
+          type: 'date',
           name: 'expiry_date',
-          type: 'date',
           required: true,
-          presentable: false,
-          unique: false,
-          options: {
-            min: '',
-            max: ''
-          }
         },
         {
-          system: false,
-          id: 'status_select',
-          name: 'status',
           type: 'select',
+          name: 'status',
           required: true,
-          presentable: false,
-          unique: false,
-          options: {
-            maxSelect: 1,
-            values: ['active', 'consumed', 'wasted']
-          }
+          maxSelect: 1,
+          values: ['active', 'consumed', 'wasted'],
         },
         {
-          system: false,
-          id: 'photo_file',
-          name: 'photo',
           type: 'file',
+          name: 'photo',
           required: false,
-          presentable: false,
-          unique: false,
-          options: {
-            maxSelect: 1,
-            maxSize: 2097152,
-            mimeTypes: ['image/*'],
-            thumbs: []
-          }
+          maxSelect: 1,
+          maxSize: 2097152,
+          mimeTypes: ['image/*'],
         },
         {
-          system: false,
-          id: 'notes_text',
-          name: 'notes',
           type: 'text',
+          name: 'notes',
           required: false,
-          presentable: false,
-          unique: false,
-          options: {
-            min: null,
-            max: 60,
-            pattern: ''
-          }
+          max: 60,
         },
         {
-          system: false,
-          id: 'notified_at_date',
-          name: 'notified_at',
           type: 'date',
+          name: 'notified_at',
           required: false,
-          presentable: false,
-          unique: false,
-          options: {
-            min: '',
-            max: ''
-          }
-        }
+        },
+        { type: 'autodate', name: 'created', onCreate: true, onUpdate: false },
+        { type: 'autodate', name: 'updated', onCreate: true, onUpdate: true },
       ],
-      listRule: '@request.auth.household_id = household_id',
-      viewRule: '@request.auth.household_id = household_id',
-      createRule: '@request.auth.household_id = @request.data.household_id',
-      updateRule: '@request.auth.household_id = household_id',
-      deleteRule: '@request.auth.household_id = household_id'
     });
 
     app.save(leftovers);
@@ -174,88 +113,52 @@ migrate(
     const pushSubscriptions = new Collection({
       name: 'push_subscriptions',
       type: 'base',
-      system: false,
-      schema: [
-        {
-          system: false,
-          id: 'push_user_relation',
-          name: 'user_id',
-          type: 'relation',
-          required: true,
-          presentable: false,
-          unique: false,
-          options: {
-            collectionId: '_pb_users_auth_',
-            cascadeDelete: true,
-            minSelect: 1,
-            maxSelect: 1,
-            displayFields: []
-          }
-        },
-        {
-          system: false,
-          id: 'push_household_relation',
-          name: 'household_id',
-          type: 'relation',
-          required: true,
-          presentable: false,
-          unique: false,
-          options: {
-            collectionId: households.id,
-            cascadeDelete: true,
-            minSelect: 1,
-            maxSelect: 1,
-            displayFields: []
-          }
-        },
-        {
-          system: false,
-          id: 'push_endpoint',
-          name: 'endpoint',
-          type: 'text',
-          required: true,
-          presentable: false,
-          unique: true,
-          options: {
-            min: 1,
-            max: null,
-            pattern: ''
-          }
-        },
-        {
-          system: false,
-          id: 'push_p256dh',
-          name: 'p256dh',
-          type: 'text',
-          required: true,
-          presentable: false,
-          unique: false,
-          options: {
-            min: 1,
-            max: null,
-            pattern: ''
-          }
-        },
-        {
-          system: false,
-          id: 'push_auth_key',
-          name: 'auth_key',
-          type: 'text',
-          required: true,
-          presentable: false,
-          unique: false,
-          options: {
-            min: 1,
-            max: null,
-            pattern: ''
-          }
-        }
-      ],
-      listRule: '@request.auth.id = user_id',
-      viewRule: '@request.auth.id = user_id',
-      createRule: '@request.auth.id = @request.data.user_id',
+      listRule: '@request.auth.id ?= user_id',
+      viewRule: '@request.auth.id ?= user_id',
+      createRule: '@request.auth.id ?= @request.body.user_id',
       updateRule: null,
-      deleteRule: '@request.auth.id = user_id'
+      deleteRule: '@request.auth.id ?= user_id',
+      fields: [
+        {
+          type: 'relation',
+          name: 'user_id',
+          required: true,
+          maxSelect: 1,
+          collectionId: usersCollection.id,
+          cascadeDelete: true,
+        },
+        {
+          type: 'relation',
+          name: 'household_id',
+          required: true,
+          maxSelect: 1,
+          collectionId: households.id,
+          cascadeDelete: true,
+        },
+        {
+          type: 'text',
+          name: 'endpoint',
+          required: true,
+          min: 1,
+        },
+        {
+          type: 'text',
+          name: 'p256dh',
+          required: true,
+          min: 1,
+        },
+        {
+          type: 'text',
+          name: 'auth_key',
+          required: true,
+          min: 1,
+        },
+        { type: 'autodate', name: 'created', onCreate: true, onUpdate: false },
+        { type: 'autodate', name: 'updated', onCreate: true, onUpdate: true },
+      ],
+      indexes: [
+        'CREATE UNIQUE INDEX idx_push_endpoint ON push_subscriptions (endpoint)',
+      ],
     });
 
     app.save(pushSubscriptions);
