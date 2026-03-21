@@ -183,6 +183,16 @@
     "deleteError": "Could not delete the item.",
     "loadError": "Could not load pantry items.",
     "recipesComingSoon": "Recipe book coming soon."
+  },
+  "scanner": {
+    "title": "Scan Barcode",
+    "alignBarcode": "Align the barcode inside the frame and hold steady.",
+    "cameraUnavailable": "Camera access is unavailable for barcode scanning.",
+    "useManualInstead": "Use manual entry instead",
+    "lookingUpProduct": "Looking up product details...",
+    "lookupFailed": "Could not look up this barcode right now. You can add the item manually.",
+    "productNotFound": "No product was found for this barcode. You can still add it manually.",
+    "barcodeLabel": "Barcode"
   }
 }
 

@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Barcode, Camera, Pencil } from 'lucide-react';
+import { Barcode, Camera, LoaderCircle, Pencil } from 'lucide-react';
 import { Modal } from '@/shared/ui/Modal';
 import { Button } from '@/shared/ui/Button';
 import { PantryCategoryPicker } from '@/modules/pantry/items/PantryCategoryPicker';
 import { CameraCapture } from '@/modules/add-item/CameraCapture';
-import { useCreatePantryItem } from '@/modules/pantry/use-pantry';
+import { BarcodeScanner } from '@/modules/pantry/scanner/BarcodeScanner';
+import { useScanner } from '@/modules/pantry/scanner/use-scanner';
+import { useCreatePantryItem, useIncrementQuantity } from '@/modules/pantry/use-pantry';
 import { type PantryCategory } from '@/modules/pantry/pantry-categories';
 
 type AddPantryItemModalProps = {
@@ -19,15 +21,19 @@ type EntryMethod = 'choose' | 'manual' | 'barcode' | 'ai';
 export function AddPantryItemModal({ isOpen, onClose }: AddPantryItemModalProps) {
   const { t } = useTranslation();
   const createItem = useCreatePantryItem();
+  const incrementQuantity = useIncrementQuantity();
+  const scanner = useScanner();
 
   const [method, setMethod] = useState<EntryMethod>('choose');
   const [step, setStep] = useState(0);
+  const [barcode, setBarcode] = useState('');
   const [name, setName] = useState('');
   const [category, setCategory] = useState<PantryCategory | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [unit, setUnit] = useState('');
   const [photo, setPhoto] = useState<Blob | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
 
   const previewUrl = useMemo(() => (photo ? URL.createObjectURL(photo) : null), [photo]);
 
@@ -37,16 +43,19 @@ export function AddPantryItemModal({ isOpen, onClose }: AddPantryItemModalProps)
 
   useEffect(() => {
     if (!isOpen) {
+      scanner.reset();
       setMethod('choose');
       setStep(0);
+      setBarcode('');
       setName('');
       setCategory(null);
       setQuantity(1);
       setUnit('');
       setPhoto(null);
       setError(null);
+      setIsScannerOpen(false);
     }
-  }, [isOpen]);
+  }, [isOpen, scanner]);
 
   const totalSteps = 4;
 
@@ -66,11 +75,47 @@ export function AddPantryItemModal({ isOpen, onClose }: AddPantryItemModalProps)
         category,
         quantity,
         unit: unit.trim() || undefined,
+        barcode: barcode || undefined,
         photo,
       });
       onClose();
     } catch {
       setError(t('pantry.saveError'));
+    }
+  }
+
+  async function handleBarcodeDetected(scannedBarcode: string) {
+    setError(null);
+    setBarcode(scannedBarcode);
+    setIsScannerOpen(false);
+
+    try {
+      const result = await scanner.resolveBarcode(scannedBarcode);
+
+      if (result.existingItem) {
+        await incrementQuantity.mutateAsync({
+          id: result.existingItem.id,
+          currentQuantity: result.existingItem.quantity,
+        });
+        onClose();
+        return;
+      }
+
+      if (!result.product) {
+        setStep(0);
+        setError(t('scanner.productNotFound'));
+        return;
+      }
+
+      setName(result.product.name);
+      setCategory(result.product.category);
+      setQuantity(1);
+      setUnit(result.product.quantityLabel ?? '');
+      setPhoto(result.product.imageBlob ?? null);
+      setStep(3);
+    } catch {
+      setStep(0);
+      setError(t('scanner.lookupFailed'));
     }
   }
 
@@ -103,7 +148,10 @@ export function AddPantryItemModal({ isOpen, onClose }: AddPantryItemModalProps)
 
           <button
             type="button"
-            onClick={() => setMethod('barcode')}
+            onClick={() => {
+              setMethod('barcode');
+              setIsScannerOpen(true);
+            }}
             className="flex w-full items-center gap-3 rounded-2xl bg-slate-50 p-4 text-left transition-all hover:bg-slate-100 active:scale-[0.98] dark:bg-slate-800/60 dark:hover:bg-slate-800"
           >
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-200/60 dark:bg-slate-700">
@@ -136,6 +184,40 @@ export function AddPantryItemModal({ isOpen, onClose }: AddPantryItemModalProps)
               </p>
             </div>
           </button>
+        </div>
+      </Modal>
+    );
+  }
+
+  if (method === 'barcode' && isScannerOpen) {
+    return (
+      <Modal isOpen={isOpen} onClose={onClose} title={t('scanner.title')}>
+        <BarcodeScanner
+          onDetected={(scannedBarcode) => {
+            void handleBarcodeDetected(scannedBarcode);
+          }}
+          onCancel={() => {
+            setIsScannerOpen(false);
+            setMethod('manual');
+          }}
+        />
+      </Modal>
+    );
+  }
+
+  if (method === 'barcode' && scanner.isResolving) {
+    return (
+      <Modal isOpen={isOpen} onClose={onClose} title={t('scanner.title')}>
+        <div className="flex flex-col items-center justify-center py-14 text-center">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800">
+            <LoaderCircle className="h-6 w-6 animate-spin text-slate-400 dark:text-slate-500" strokeWidth={2} />
+          </div>
+          <p className="mt-4 text-sm font-medium text-slate-900 dark:text-white">
+            {t('scanner.lookingUpProduct')}
+          </p>
+          {barcode ? (
+            <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">{barcode}</p>
+          ) : null}
         </div>
       </Modal>
     );
@@ -199,6 +281,11 @@ export function AddPantryItemModal({ isOpen, onClose }: AddPantryItemModalProps)
 
             {step === 3 && (
               <motion.div key="details" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.15 }}>
+                {barcode ? (
+                  <div className="mb-3 inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                    {t('scanner.barcodeLabel')}: {barcode}
+                  </div>
+                ) : null}
                 <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                   {t('pantry.quantityLabel')}
                 </label>
