@@ -89,9 +89,15 @@ export async function lookupOpenFoodFactsProduct(barcode: string, language: stri
   const url = new URL(`https://${locale}.openfoodfacts.org/api/v2/product/${barcode}.json`);
   url.searchParams.set('fields', 'product_name,product_name_en,brands,categories_tags,image_front_url,quantity');
 
-  const response = await fetch(url);
+  let response;
+  try {
+    response = await fetch(url);
+  } catch {
+    return null;
+  }
+
   if (!response.ok) {
-    throw new Error('open-food-facts-request-failed');
+    return null;
   }
 
   const data = (await response.json()) as OpenFoodFactsResponse;
