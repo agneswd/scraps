@@ -3,9 +3,18 @@ import type { PantryCategory } from '@/modules/pantry/pantry-categories';
 import type { RecipeIngredientInput } from '@/modules/pantry/recipes/data/recipe-api';
 import { GEMINI_DAILY_LIMIT, incrementDailyUsage, isDailyLimitReached } from '@/modules/ai/rate-limits';
 
-const GEMINI_MODEL = import.meta.env.VITE_GEMINI_MODEL?.trim() || 'gemini-2.5-flash-lite';
 const GEMINI_KEY = import.meta.env.VITE_GEMINI_KEY?.trim();
-const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+
+function getGeminiEndpoint() {
+  let model = import.meta.env.VITE_GEMINI_MODEL?.trim() || 'gemini-2.5-flash-lite';
+  if (typeof window !== 'undefined') {
+    const stored = window.localStorage.getItem('scraps.preferences.aiModel');
+    if (stored) {
+      model = stored;
+    }
+  }
+  return `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+}
 
 type GeminiResponse = {
   candidates?: Array<{
@@ -65,7 +74,8 @@ async function requestGeminiJson<T>(
     throw new Error(`gemini-limit-reached:${GEMINI_DAILY_LIMIT}`);
   }
 
-  const response = await fetch(`${GEMINI_ENDPOINT}?key=${encodeURIComponent(GEMINI_KEY)}`, {
+  const endpoint = getGeminiEndpoint();
+  const response = await fetch(`${endpoint}?key=${encodeURIComponent(GEMINI_KEY)}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

@@ -10,6 +10,7 @@ import i18n from '@/shared/i18n/i18n';
 import { loadLanguageResources } from '@/shared/i18n/languages';
 
 export type ThemePreference = 'system' | 'light' | 'dark';
+export type AiModelPreference = 'gemini-3.1-flash-lite-preview' | 'gemini-3.0-flash' | 'gemini-2.5-flash' | 'gemini-2.5-flash-lite';
 
 type PreferencesContextValue = {
   language: string;
@@ -17,10 +18,13 @@ type PreferencesContextValue = {
   theme: ThemePreference;
   resolvedTheme: 'light' | 'dark';
   setTheme: (theme: ThemePreference) => void;
+  aiModel: AiModelPreference;
+  setAiModel: (model: AiModelPreference) => void;
 };
 
 const LANGUAGE_STORAGE_KEY = 'scraps.preferences.language';
 const THEME_STORAGE_KEY = 'scraps.preferences.theme';
+export const AI_MODEL_STORAGE_KEY = 'scraps.preferences.aiModel';
 
 const PreferencesContext = createContext<PreferencesContextValue | undefined>(undefined);
 
@@ -43,6 +47,17 @@ function getStoredTheme(): ThemePreference {
     : 'system';
 }
 
+function getStoredAiModel(): AiModelPreference {
+  if (typeof window === 'undefined') {
+    return 'gemini-2.5-flash-lite';
+  }
+  const stored = window.localStorage.getItem(AI_MODEL_STORAGE_KEY);
+  if (stored === 'gemini-3.1-flash-lite-preview' || stored === 'gemini-3.0-flash' || stored === 'gemini-2.5-flash' || stored === 'gemini-2.5-flash-lite') {
+    return stored as AiModelPreference;
+  }
+  return 'gemini-2.5-flash-lite';
+}
+
 function getSystemTheme(): 'light' | 'dark' {
   if (typeof window === 'undefined') {
     return 'light';
@@ -54,6 +69,7 @@ function getSystemTheme(): 'light' | 'dark' {
 export function PreferencesProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState(getStoredLanguage);
   const [theme, setThemeState] = useState<ThemePreference>(getStoredTheme);
+  const [aiModel, setAiModelState] = useState<AiModelPreference>(getStoredAiModel);
   const [systemTheme, setSystemTheme] = useState<'light' | 'dark'>(getSystemTheme);
 
   useEffect(() => {
@@ -78,6 +94,10 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
   }, [theme]);
 
   useEffect(() => {
+    window.localStorage.setItem(AI_MODEL_STORAGE_KEY, aiModel);
+  }, [aiModel]);
+
+  useEffect(() => {
     window.localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
 
     void loadLanguageResources(language)
@@ -94,8 +114,10 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
       theme,
       resolvedTheme,
       setTheme: setThemeState,
+      aiModel,
+      setAiModel: setAiModelState,
     }),
-    [language, resolvedTheme, theme],
+    [language, resolvedTheme, theme, aiModel],
   );
 
   return <PreferencesContext.Provider value={value}>{children}</PreferencesContext.Provider>;

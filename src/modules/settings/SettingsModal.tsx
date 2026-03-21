@@ -4,9 +4,10 @@ import { SettingsActions } from '@/modules/settings/SettingsActions';
 import { HistoryLog } from '@/modules/settings/HistoryLog';
 import { LanguagePicker } from '@/modules/settings/LanguagePicker';
 import { ThemePicker } from '@/modules/settings/ThemePicker';
+import { AiModelPicker } from '@/modules/settings/AiModelPicker';
 import { Modal } from '@/shared/ui/Modal';
 
-type Tab = 'history' | 'theme' | 'language';
+type Tab = 'history' | 'theme' | 'language' | 'aiModel';
 
 type Props = {
   isOpen: boolean;
@@ -27,6 +28,7 @@ export function SettingsModal({ isOpen, onClose }: Props) {
     { id: 'history', label: t('settings.history') },
     { id: 'theme', label: t('settings.theme') },
     { id: 'language', label: t('settings.language') },
+    { id: 'aiModel', label: t('settings.aiModel', 'AI Model') },
   ];
 
   return (
@@ -62,6 +64,7 @@ export function SettingsModal({ isOpen, onClose }: Props) {
       {tab === 'history' ? <HistoryLog /> : null}
       {tab === 'theme' ? <ThemePicker /> : null}
       {tab === 'language' ? <LanguagePicker /> : null}
+      {tab === 'aiModel' ? <AiModelPicker /> : null}
 
       <SettingsActions />
     </Modal>

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { ListChecks } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useRecipes } from '@/modules/pantry/recipes/data/use-recipes';
 import type { ShoppingListItemRecord } from '@/modules/shopping-list/data/shopping-list-api';
@@ -126,13 +127,19 @@ export function ShoppingListPage() {
                   : recipeTitles.get(groupKey) ?? t('shoppingList.recipeSectionFallback')}
               </p>
               <div className="space-y-2">
-                {groupItems.map((item) => (
-                  <ShoppingListItem
+                {groupItems.map((item, index) => (
+                  <motion.div
                     key={item.id}
-                    item={item}
-                    onToggle={(currentItem) => toggleItem.mutate({ id: currentItem.id, checked: !currentItem.checked })}
-                    onDelete={(currentItem) => deleteItem.mutate(currentItem.id)}
-                  />
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.06, type: 'spring', stiffness: 100, damping: 20 }}
+                  >
+                    <ShoppingListItem
+                      item={item}
+                      onToggle={(currentItem) => toggleItem.mutate({ id: currentItem.id, checked: !currentItem.checked })}
+                      onDelete={(currentItem) => deleteItem.mutate(currentItem.id)}
+                    />
+                  </motion.div>
                 ))}
               </div>
             </div>

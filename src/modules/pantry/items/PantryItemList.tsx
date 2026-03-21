@@ -73,7 +73,7 @@ export function PantryItemList({ items, onItemTap, onIncrement, onDecrement }: P
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
-              transition={{ delay: index * 0.04, type: 'spring', stiffness: 100, damping: 20 }}
+              transition={{ delay: index * 0.06, type: 'spring', stiffness: 100, damping: 20 }}
             >
               <PantryItemCard
                 item={item}
