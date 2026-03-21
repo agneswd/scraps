@@ -3,6 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { PantryItemList } from '@/modules/pantry/items/PantryItemList';
 import { EditPantryItemModal } from '@/modules/pantry/items/EditPantryItemModal';
+import { useDeleteRecipe, useRecipes } from '@/modules/pantry/recipes/data/use-recipes';
+import type { RecipeWithIngredients } from '@/modules/pantry/recipes/data/recipe-api';
+import { AddRecipeModal } from '@/modules/pantry/recipes/ui/AddRecipeModal';
+import { EditRecipeModal } from '@/modules/pantry/recipes/ui/EditRecipeModal';
+import { RecipeDetailModal } from '@/modules/pantry/recipes/ui/RecipeDetailModal';
+import { RecipeList } from '@/modules/pantry/recipes/ui/RecipeList';
 import { usePantryItems, useIncrementQuantity, useUpdatePantryItem } from '@/modules/pantry/use-pantry';
 import { Button } from '@/shared/ui/Button';
 import type { PantryItemRecord } from '@/modules/pantry/pantry-api';
@@ -27,8 +33,13 @@ export function PantryPage() {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<PantryTab>('items');
   const [editItem, setEditItem] = useState<PantryItemRecord | null>(null);
+  const [isAddRecipeOpen, setIsAddRecipeOpen] = useState(false);
+  const [selectedRecipe, setSelectedRecipe] = useState<RecipeWithIngredients | null>(null);
+  const [editingRecipe, setEditingRecipe] = useState<RecipeWithIngredients | null>(null);
 
   const { data: items, isLoading, isError, refetch } = usePantryItems();
+  const { data: recipes, isLoading: recipesLoading } = useRecipes();
+  const deleteRecipe = useDeleteRecipe();
   const incrementMutation = useIncrementQuantity();
   const updateMutation = useUpdatePantryItem();
 
@@ -114,11 +125,16 @@ export function PantryPage() {
         )}
 
         {activeTab === 'recipes' && (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              {t('pantry.recipesComingSoon')}
-            </p>
-          </div>
+          <>
+            {recipesLoading ? <PantrySkeleton /> : null}
+            {!recipesLoading && (
+              <RecipeList
+                items={recipes ?? []}
+                onAdd={() => setIsAddRecipeOpen(true)}
+                onItemTap={setSelectedRecipe}
+              />
+            )}
+          </>
         )}
       </div>
 
@@ -126,6 +142,32 @@ export function PantryPage() {
         isOpen={editItem !== null}
         item={editItem}
         onClose={() => setEditItem(null)}
+      />
+
+      <AddRecipeModal isOpen={isAddRecipeOpen} onClose={() => setIsAddRecipeOpen(false)} />
+
+      <RecipeDetailModal
+        recipeWithIngredients={selectedRecipe}
+        isDeleting={deleteRecipe.isPending}
+        onClose={() => setSelectedRecipe(null)}
+        onEdit={() => {
+          setEditingRecipe(selectedRecipe);
+          setSelectedRecipe(null);
+        }}
+        onDelete={() => {
+          if (!selectedRecipe) {
+            return;
+          }
+          deleteRecipe.mutate(selectedRecipe.recipe.id, {
+            onSuccess: () => setSelectedRecipe(null),
+          });
+        }}
+      />
+
+      <EditRecipeModal
+        isOpen={editingRecipe !== null}
+        recipeWithIngredients={editingRecipe}
+        onClose={() => setEditingRecipe(null)}
       />
     </div>
   );
