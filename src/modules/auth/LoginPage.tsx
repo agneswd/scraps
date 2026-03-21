@@ -1,6 +1,7 @@
 import { FormEvent, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
 import { Button } from '@/shared/ui/Button';
 import { useAuth } from '@/modules/auth/use-auth';
 
@@ -25,77 +26,74 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md rounded-[32px] border border-white/60 bg-white/80 p-8 shadow-card backdrop-blur dark:border-white/10 dark:bg-slate-950/80">
-        <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-600 dark:text-brand-200">
-          {t('auth.kicker')}
-        </p>
-        <h1 className="mt-3 font-display text-4xl tracking-tight text-slate-950 dark:text-white">
-          {t('common.appName')}
-        </h1>
-        <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
-          {t('auth.subtitle')}
-        </p>
+    <div className="flex min-h-[100dvh] items-center justify-center px-5">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
+        className="w-full max-w-sm"
+      >
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+            {t('common.appName')}
+          </h1>
+          <p className="mt-2 text-sm text-slate-400 dark:text-slate-500">
+            {t('auth.subtitle')}
+          </p>
+        </div>
 
-        <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
-          <label className="block">
-            <span className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">
+        <form className="space-y-4" onSubmit={handleSubmit}>
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-slate-500 dark:text-slate-400">
               {t('auth.emailLabel')}
-            </span>
+            </label>
             <input
               type="email"
               autoComplete="email"
               value={email}
               onChange={(event) => {
-                if (error) {
-                  clearError();
-                }
-
+                if (error) clearError();
                 setEmail(event.target.value);
               }}
-              className="min-h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-950 outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-200/40 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:ring-brand-500/20"
+              className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-[0.9375rem] text-slate-900 outline-none transition-all duration-200 ease-spring placeholder:text-slate-300 focus:border-slate-400 focus:ring-4 focus:ring-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-600 dark:focus:border-slate-500 dark:focus:ring-slate-800"
               placeholder={t('auth.emailPlaceholder')}
               required
             />
-          </label>
+          </div>
 
-          <label className="block">
-            <span className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-slate-500 dark:text-slate-400">
               {t('auth.passwordLabel')}
-            </span>
+            </label>
             <input
               type="password"
               autoComplete="current-password"
               value={password}
               onChange={(event) => {
-                if (error) {
-                  clearError();
-                }
-
+                if (error) clearError();
                 setPassword(event.target.value);
               }}
-              className="min-h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-950 outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-200/40 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:ring-brand-500/20"
+              className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-[0.9375rem] text-slate-900 outline-none transition-all duration-200 ease-spring placeholder:text-slate-300 focus:border-slate-400 focus:ring-4 focus:ring-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-600 dark:focus:border-slate-500 dark:focus:ring-slate-800"
               placeholder={t('auth.passwordPlaceholder')}
               required
             />
-          </label>
+          </div>
 
           {error ? (
-            <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900/60 dark:bg-red-950/60 dark:text-red-100">
+            <motion.p
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600 dark:bg-red-950/50 dark:text-red-400"
+            >
               {error}
-            </div>
+            </motion.p>
           ) : null}
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button type="submit" className="!mt-6 w-full" disabled={isLoading}>
             {isLoading ? t('auth.loginPending') : t('auth.loginButton')}
           </Button>
         </form>
-
-        <div className="mt-6 rounded-3xl border border-dashed border-brand-300 bg-brand-50/80 p-5 text-sm text-brand-900 dark:border-brand-500/40 dark:bg-brand-900/20 dark:text-brand-50">
-          <p className="font-semibold">{t('auth.scaffoldTitle')}</p>
-          <p className="mt-2">{t('auth.scaffoldSummary')}</p>
-        </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

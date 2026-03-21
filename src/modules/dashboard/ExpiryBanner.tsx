@@ -1,4 +1,5 @@
 import { TriangleAlert } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 
 type ExpiryBannerProps = {
@@ -13,16 +14,20 @@ export function ExpiryBanner({ expiringCount }: ExpiryBannerProps) {
   }
 
   return (
-    <section className="flex items-start gap-3 rounded-[28px] border border-amber-200 bg-amber-50 px-5 py-4 text-amber-950 shadow-card dark:border-amber-900 dark:bg-amber-950/70 dark:text-amber-100">
-      <div className="rounded-full bg-amber-200/80 p-3 dark:bg-amber-900/80">
-        <TriangleAlert className="h-5 w-5" />
+    <motion.section
+      initial={{ opacity: 0, scale: 0.96 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+      className="flex items-center gap-3 rounded-2xl bg-amber-50 p-4 dark:bg-amber-950/30"
+    >
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-600 dark:bg-amber-900/50 dark:text-amber-400">
+        <TriangleAlert className="h-4 w-4" strokeWidth={2.5} />
       </div>
       <div>
-        <p className="text-sm font-semibold uppercase tracking-[0.2em]">{t('dashboard.expiryBannerLabel')}</p>
-        <p className="mt-1 text-base font-semibold">
+        <p className="text-sm font-medium text-amber-900 dark:text-amber-200">
           {t('dashboard.expiryBanner', { count: expiringCount })}
         </p>
       </div>
-    </section>
+    </motion.section>
   );
 }

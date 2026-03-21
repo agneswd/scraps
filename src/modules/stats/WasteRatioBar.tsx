@@ -1,74 +1,52 @@
 import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
 
 type WasteRatioBarProps = {
   consumedCount: number;
   wastedCount: number;
 };
 
-function formatPercent(value: number) {
-  return `${Math.round(value)}%`;
-}
-
 export function WasteRatioBar({ consumedCount, wastedCount }: WasteRatioBarProps) {
   const { t } = useTranslation();
   const totalItems = consumedCount + wastedCount;
-  const consumedPercentage = totalItems === 0 ? 0 : (consumedCount / totalItems) * 100;
-  const wastedPercentage = totalItems === 0 ? 0 : (wastedCount / totalItems) * 100;
+  const consumedPct = totalItems === 0 ? 0 : (consumedCount / totalItems) * 100;
+  const wastedPct = totalItems === 0 ? 0 : (wastedCount / totalItems) * 100;
 
   return (
-    <section className="rounded-[32px] border border-white/50 bg-white/80 p-6 shadow-card backdrop-blur dark:border-white/10 dark:bg-slate-950/80">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-600 dark:text-brand-200">
-            {t('stats.ratioLabel')}
-          </p>
-          <h2 className="mt-2 font-display text-3xl tracking-tight text-slate-950 dark:text-white">
-            {t('stats.ratioTitle')}
-          </h2>
-        </div>
-        <p className="text-sm text-slate-600 dark:text-slate-300">{t('stats.ratioBody')}</p>
-      </div>
+    <section className="rounded-2xl bg-white p-5 shadow-soft dark:bg-slate-800/80">
+      <p className="text-xs font-medium text-slate-400 dark:text-slate-500">{t('stats.ratioLabel')}</p>
 
-      <div className="mt-6 h-5 overflow-hidden rounded-full bg-slate-200/80 dark:bg-slate-800/80">
+      <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
         {totalItems > 0 ? (
-          <div className="flex h-full w-full">
-            <div
-              className="h-full bg-emerald-500 transition-[width] duration-500 dark:bg-emerald-400"
-              style={{ width: `${consumedPercentage}%` }}
+          <div className="flex h-full">
+            <motion.div
+              className="h-full rounded-full bg-emerald-400 dark:bg-emerald-500"
+              initial={{ width: 0 }}
+              animate={{ width: `${consumedPct}%` }}
+              transition={{ duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
             />
-            <div
-              className="h-full bg-rose-500 transition-[width] duration-500 dark:bg-rose-400"
-              style={{ width: `${wastedPercentage}%` }}
+            <motion.div
+              className="h-full bg-red-400 dark:bg-red-500"
+              initial={{ width: 0 }}
+              animate={{ width: `${wastedPct}%` }}
+              transition={{ duration: 0.6, ease: [0.32, 0.72, 0, 1], delay: 0.1 }}
             />
           </div>
-        ) : (
-          <div className="h-full w-full bg-slate-300/60 dark:bg-slate-700/60" />
-        )}
+        ) : null}
       </div>
 
-      <div className="mt-5 grid gap-3 sm:grid-cols-2">
-        <div className="rounded-[24px] bg-emerald-50/80 p-4 dark:bg-emerald-950/40">
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-sm font-semibold text-emerald-900 dark:text-emerald-100">
-              {t('stats.consumed')}
-            </span>
-            <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-200">
-              {formatPercent(consumedPercentage)}
-            </span>
-          </div>
-          <p className="mt-3 font-display text-3xl tracking-tight text-emerald-950 dark:text-emerald-50">
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        <div className="rounded-xl bg-emerald-50 p-3 dark:bg-emerald-950/30">
+          <p className="text-xs text-emerald-600 dark:text-emerald-400">{t('stats.consumed')}</p>
+          <p className="mt-1 text-xl font-bold tracking-tight text-emerald-700 dark:text-emerald-300">
             {consumedCount}
           </p>
+          <p className="text-xs text-emerald-500/70 dark:text-emerald-500/50">{Math.round(consumedPct)}%</p>
         </div>
-
-        <div className="rounded-[24px] bg-rose-50/80 p-4 dark:bg-rose-950/40">
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-sm font-semibold text-rose-900 dark:text-rose-100">{t('stats.wasted')}</span>
-            <span className="text-sm font-semibold text-rose-700 dark:text-rose-200">
-              {formatPercent(wastedPercentage)}
-            </span>
-          </div>
-          <p className="mt-3 font-display text-3xl tracking-tight text-rose-950 dark:text-rose-50">{wastedCount}</p>
+        <div className="rounded-xl bg-red-50 p-3 dark:bg-red-950/30">
+          <p className="text-xs text-red-500 dark:text-red-400">{t('stats.wasted')}</p>
+          <p className="mt-1 text-xl font-bold tracking-tight text-red-600 dark:text-red-300">{wastedCount}</p>
+          <p className="text-xs text-red-400/70 dark:text-red-500/50">{Math.round(wastedPct)}%</p>
         </div>
       </div>
     </section>

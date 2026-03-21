@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { motion, AnimatePresence } from 'framer-motion';
 import { CameraCapture } from '@/modules/add-item/CameraCapture';
 import { CategoryPicker } from '@/modules/add-item/CategoryPicker';
 import { useAddItem } from '@/modules/add-item/use-add-item';
@@ -21,6 +22,7 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
   const [step, setStep] = useState(0);
   const [itemName, setItemName] = useState('');
   const [category, setCategory] = useState<LeftoverCategory | null>(null);
+  const [customDays, setCustomDays] = useState<number | null>(null);
   const [notes, setNotes] = useState('');
   const [photo, setPhoto] = useState<Blob | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -40,6 +42,7 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
       setStep(0);
       setItemName('');
       setCategory(null);
+      setCustomDays(null);
       setNotes('');
       setPhoto(null);
       setError(null);
@@ -48,21 +51,19 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
 
   const canMoveForward =
     (step === 0 && itemName.trim().length > 0) ||
-    (step === 1 && category !== null) ||
+    (step === 1 && category !== null && (category !== 'other' || customDays != null)) ||
     step === 2 ||
     step === 3;
 
   async function handleSave() {
-    if (!category) {
-      return;
-    }
+    if (!category) return;
 
     try {
       setError(null);
       await createLeftover({
         itemName: itemName.trim(),
         category,
-        expiryDate: calculateDefaultExpiryDate(category),
+        expiryDate: calculateDefaultExpiryDate(category, new Date(), customDays ?? undefined),
         notes: notes.trim(),
         photo,
       });
@@ -75,78 +76,108 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={t('addItem.title')}>
       <div className="flex min-h-full flex-col">
-        <div className="mb-6 flex items-center justify-between rounded-full bg-brand-50/80 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-brand-700 dark:bg-slate-900/80 dark:text-brand-200">
-          <span>{t('addItem.progress', { current: step + 1, total: totalSteps })}</span>
-          <span>{t(`addItem.steps.${step}`)}</span>
+        {/* Progress dots */}
+        <div className="mb-6 flex items-center justify-center gap-2">
+          {Array.from({ length: totalSteps }, (_, i) => (
+            <div
+              key={i}
+              className={[
+                'h-1.5 rounded-full transition-all duration-300 ease-spring',
+                i === step ? 'w-6 bg-slate-900 dark:bg-white' : 'w-1.5 bg-slate-200 dark:bg-slate-700',
+              ].join(' ')}
+            />
+          ))}
         </div>
 
-        <div className="flex-1 space-y-6">
-          {step === 0 ? (
-            <section className="space-y-3">
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
-                {t('addItem.nameLabel')}
-              </label>
-              <input
-                type="text"
-                value={itemName}
-                onChange={(event) => setItemName(event.target.value)}
-                placeholder={t('addItem.namePlaceholder')}
-                className="min-h-11 w-full rounded-[24px] border border-slate-200 bg-white px-4 py-4 text-slate-950 outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-200/40 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:ring-brand-500/20"
-                maxLength={60}
-              />
-            </section>
-          ) : null}
-
-          {step === 1 ? (
-            <section className="space-y-3">
-              <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">{t('addItem.categoryLabel')}</p>
-              <CategoryPicker value={category} onChange={setCategory} />
-            </section>
-          ) : null}
-
-          {step === 2 ? (
-            <section className="space-y-4">
-              <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">{t('addItem.photoLabel')}</p>
-              <CameraCapture onCapture={setPhoto} />
-              {previewUrl ? (
-                <div className="overflow-hidden rounded-[28px] border border-white/50 bg-white/80 shadow-card dark:border-white/10 dark:bg-slate-950/80">
-                  <img src={previewUrl} alt={t('addItem.previewAlt')} className="aspect-video w-full object-cover" />
+        {/* Step content with slide animation */}
+        <div className="flex-1">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={step}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.2, ease: [0.32, 0.72, 0, 1] }}
+            >
+              {step === 0 ? (
+                <div className="space-y-3">
+                  <label className="block text-xs font-medium text-slate-500 dark:text-slate-400">
+                    {t('addItem.nameLabel')}
+                  </label>
+                  <input
+                    type="text"
+                    value={itemName}
+                    onChange={(event) => setItemName(event.target.value)}
+                    placeholder={t('addItem.namePlaceholder')}
+                    className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-[0.9375rem] text-slate-900 outline-none transition-all duration-200 ease-spring placeholder:text-slate-300 focus:border-slate-400 focus:ring-4 focus:ring-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-600 dark:focus:border-slate-500 dark:focus:ring-slate-800"
+                    maxLength={60}
+                    autoFocus
+                  />
                 </div>
               ) : null}
-            </section>
-          ) : null}
 
-          {step === 3 ? (
-            <section className="space-y-3">
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
-                {t('addItem.notesLabel')}
-              </label>
-              <textarea
-                value={notes}
-                onChange={(event) => setNotes(event.target.value.slice(0, 60))}
-                placeholder={t('addItem.notesPlaceholder')}
-                className="min-h-32 w-full rounded-[24px] border border-slate-200 bg-white px-4 py-4 text-slate-950 outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-200/40 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:ring-brand-500/20"
+              {step === 1 ? (
+                <div className="space-y-3">
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{t('addItem.categoryLabel')}</p>
+              <CategoryPicker
+                value={category}
+                customDays={customDays}
+                onChange={setCategory}
+                onCustomDaysChange={setCustomDays}
               />
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                {t('addItem.notesCounter', { count: 60 - notes.length })}
-              </p>
-            </section>
-          ) : null}
+                </div>
+              ) : null}
+
+              {step === 2 ? (
+                <div className="space-y-3">
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{t('addItem.photoLabel')}</p>
+                  {previewUrl ? (
+                    <div className="overflow-hidden rounded-2xl">
+                      <img src={previewUrl} alt={t('addItem.previewAlt')} className="aspect-video w-full object-cover" />
+                    </div>
+                  ) : null}
+                  <CameraCapture hasPhoto={Boolean(photo)} onCapture={setPhoto} />
+                </div>
+              ) : null}
+
+              {step === 3 ? (
+                <div className="space-y-3">
+                  <label className="block text-xs font-medium text-slate-500 dark:text-slate-400">
+                    {t('addItem.notesLabel')}
+                  </label>
+                  <textarea
+                    value={notes}
+                    onChange={(event) => setNotes(event.target.value.slice(0, 60))}
+                    placeholder={t('addItem.notesPlaceholder')}
+                    className="min-h-28 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-[0.9375rem] text-slate-900 outline-none transition-all duration-200 ease-spring placeholder:text-slate-300 focus:border-slate-400 focus:ring-4 focus:ring-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-600 dark:focus:border-slate-500 dark:focus:ring-slate-800"
+                  />
+                  <p className="text-right text-xs text-slate-300 dark:text-slate-600">
+                    {60 - notes.length}
+                  </p>
+                </div>
+              ) : null}
+            </motion.div>
+          </AnimatePresence>
 
           {error ? (
-            <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900/60 dark:bg-red-950/60 dark:text-red-100">
+            <motion.p
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600 dark:bg-red-950/50 dark:text-red-400"
+            >
               {error}
-            </div>
+            </motion.p>
           ) : null}
         </div>
 
+        {/* Actions */}
         <div className="mt-8 flex items-center justify-between gap-3">
-          <Button variant="secondary" onClick={step === 0 ? onClose : () => setStep((current) => current - 1)}>
+          <Button variant="ghost" onClick={step === 0 ? onClose : () => setStep((s) => s - 1)}>
             {step === 0 ? t('common.cancel') : t('common.back')}
           </Button>
 
           {step < totalSteps - 1 ? (
-            <Button disabled={!canMoveForward} onClick={() => setStep((current) => current + 1)}>
+            <Button disabled={!canMoveForward} onClick={() => setStep((s) => s + 1)}>
               {t('common.next')}
             </Button>
           ) : (

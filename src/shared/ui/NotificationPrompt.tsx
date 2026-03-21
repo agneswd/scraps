@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { BellRing, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui/Button';
 
@@ -38,21 +39,16 @@ export function NotificationPrompt({
   const dismissKey = useMemo(() => getDismissKey(userId), [userId]);
 
   useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
+    if (typeof window === 'undefined') return;
     const storedValue = window.localStorage.getItem(dismissKey);
     setDismissedAt(storedValue ? Number(storedValue) : null);
   }, [dismissKey]);
 
   const dismissPrompt = () => {
     const nextDismissedAt = Date.now();
-
     if (typeof window !== 'undefined') {
       window.localStorage.setItem(dismissKey, String(nextDismissedAt));
     }
-
     setDismissedAt(nextDismissedAt);
   };
 
@@ -66,60 +62,63 @@ export function NotificationPrompt({
     !wasDismissedRecently &&
     (isSupported || needsIosStandalone || isBrowserSupported);
 
-  if (!shouldShow) {
-    return null;
-  }
-
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-4 z-40 flex justify-center px-4">
-      <section
-        role="dialog"
-        aria-modal="false"
-        aria-labelledby="notification-prompt-title"
-        className="pointer-events-auto w-full max-w-lg rounded-[28px] border border-white/50 bg-white/95 p-5 shadow-card backdrop-blur dark:border-white/10 dark:bg-slate-950/95"
-      >
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-3">
-            <div className="mt-1 flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-50 text-brand-700 dark:bg-slate-900 dark:text-brand-200">
-              <BellRing className="h-5 w-5" />
-            </div>
-
-            <div>
-              <h2
-                id="notification-prompt-title"
-                className="font-display text-2xl tracking-tight text-slate-950 dark:text-white"
-              >
-                {t('notifications.promptTitle')}
-              </h2>
-              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-                {needsIosStandalone ? t('notifications.iosHint') : t('notifications.promptBody')}
-              </p>
-              {error && <p className="mt-2 text-sm text-red-600 dark:text-red-300">{error}</p>}
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={dismissPrompt}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-900"
-            aria-label={t('common.close')}
+    <AnimatePresence>
+      {shouldShow ? (
+        <motion.div
+          initial={{ y: 80, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: 80, opacity: 0 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+          className="pointer-events-none safe-bottom fixed inset-x-0 bottom-20 z-30 flex justify-center px-5"
+        >
+          <section
+            role="dialog"
+            aria-modal="false"
+            aria-labelledby="notification-prompt-title"
+            className="pointer-events-auto w-full max-w-sm rounded-2xl bg-white p-4 shadow-elevated dark:bg-slate-800"
           >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400">
+                <BellRing className="h-5 w-5" strokeWidth={1.5} />
+              </div>
 
-        <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-end">
-          <Button variant="secondary" onClick={dismissPrompt} className="sm:min-w-32">
-            {t('notifications.notNow')}
-          </Button>
+              <div className="min-w-0 flex-1">
+                <h2
+                  id="notification-prompt-title"
+                  className="text-sm font-medium text-slate-900 dark:text-white"
+                >
+                  {t('notifications.promptTitle')}
+                </h2>
+                <p className="mt-0.5 text-xs text-slate-400 dark:text-slate-500">
+                  {needsIosStandalone ? t('notifications.iosHint') : t('notifications.promptBody')}
+                </p>
+                {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+              </div>
 
-          {!needsIosStandalone && (
-            <Button onClick={() => void onEnable()} disabled={isBusy} className="sm:min-w-40">
-              {isBusy ? t('notifications.enabling') : t('notifications.enable')}
-            </Button>
-          )}
-        </div>
-      </section>
-    </div>
+              <button
+                type="button"
+                onClick={dismissPrompt}
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-slate-300 transition hover:bg-slate-100 dark:text-slate-600 dark:hover:bg-slate-700"
+                aria-label={t('common.close')}
+              >
+                <X className="h-3.5 w-3.5" strokeWidth={2.5} />
+              </button>
+            </div>
+
+            {!needsIosStandalone ? (
+              <div className="mt-3 flex gap-2">
+                <Button variant="ghost" onClick={dismissPrompt} className="flex-1 !min-h-9 !text-xs">
+                  {t('notifications.notNow')}
+                </Button>
+                <Button onClick={() => void onEnable()} disabled={isBusy} className="flex-1 !min-h-9 !text-xs">
+                  {isBusy ? t('notifications.enabling') : t('notifications.enable')}
+                </Button>
+              </div>
+            ) : null}
+          </section>
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
   );
 }

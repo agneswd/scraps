@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
-import { Camera, CameraOff, ImageUp } from 'lucide-react';
+import { Camera, CameraOff, ImageUp, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { resizeAndCompress } from '@/modules/add-item/image-utils';
 
 type CameraCaptureProps = {
+  hasPhoto?: boolean;
   onCapture: (file: Blob | null) => void;
 };
 
-export function CameraCapture({ onCapture }: CameraCaptureProps) {
+export function CameraCapture({ hasPhoto = false, onCapture }: CameraCaptureProps) {
   const { t } = useTranslation();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
@@ -17,15 +18,11 @@ export function CameraCapture({ onCapture }: CameraCaptureProps) {
     let isCancelled = false;
 
     async function startCamera() {
-      if (!navigator.mediaDevices?.getUserMedia) {
-        return;
-      }
+      if (!navigator.mediaDevices?.getUserMedia) return;
 
       try {
         const mediaStream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: 'environment',
-          },
+          video: { facingMode: 'environment' },
         });
 
         if (isCancelled) {
@@ -51,26 +48,23 @@ export function CameraCapture({ onCapture }: CameraCaptureProps) {
   }, [t]);
 
   useEffect(() => {
-    if (!videoRef.current || !stream) {
-      return;
-    }
-
+    if (!videoRef.current || !stream) return;
     videoRef.current.srcObject = stream;
     void videoRef.current.play();
   }, [stream]);
 
   async function handleCapture() {
-    if (!videoRef.current) {
-      return;
-    }
+    if (!videoRef.current) return;
 
     try {
+      // Limit capture resolution to prevent oversized intermediates on high-res cameras
+      const maxCaptureSize = 1920;
+      const scale = Math.min(1, maxCaptureSize / Math.max(videoRef.current.videoWidth, videoRef.current.videoHeight));
       const canvas = document.createElement('canvas');
-      canvas.width = videoRef.current.videoWidth;
-      canvas.height = videoRef.current.videoHeight;
+      canvas.width = Math.round(videoRef.current.videoWidth * scale);
+      canvas.height = Math.round(videoRef.current.videoHeight * scale);
 
       const context = canvas.getContext('2d');
-
       if (!context) {
         setError(t('errors.generic'));
         return;
@@ -80,13 +74,9 @@ export function CameraCapture({ onCapture }: CameraCaptureProps) {
 
       const rawBlob = await new Promise<Blob>((resolve, reject) => {
         canvas.toBlob((blob) => {
-          if (!blob) {
-            reject(new Error('capture-failed'));
-            return;
-          }
-
+          if (!blob) { reject(new Error('capture-failed')); return; }
           resolve(blob);
-        }, 'image/png');
+        }, 'image/jpeg', 0.9);
       });
 
       const compressedBlob = await resizeAndCompress(rawBlob);
@@ -99,10 +89,7 @@ export function CameraCapture({ onCapture }: CameraCaptureProps) {
 
   async function handleFileSelection(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
-
-    if (!file) {
-      return;
-    }
+    if (!file) return;
 
     try {
       const compressedBlob = await resizeAndCompress(file);
@@ -116,32 +103,47 @@ export function CameraCapture({ onCapture }: CameraCaptureProps) {
   return (
     <div className="space-y-4">
       {stream ? (
-        <div className="overflow-hidden rounded-[28px] border border-white/50 bg-black shadow-card dark:border-white/10">
+        <div className="overflow-hidden rounded-2xl bg-black shadow-soft">
           <video ref={videoRef} className="aspect-video w-full object-cover" muted playsInline />
         </div>
       ) : (
-        <div className="flex aspect-video items-center justify-center rounded-[28px] border border-dashed border-slate-300 bg-white/70 text-slate-500 dark:border-slate-700 dark:bg-slate-950/70 dark:text-slate-300">
-          <div className="flex flex-col items-center gap-3 text-center">
-            {error ? <CameraOff className="h-8 w-8" /> : <ImageUp className="h-8 w-8" />}
-            <p className="max-w-xs text-sm leading-6">{error ?? t('addItem.fileFallback')}</p>
+        <div className="flex aspect-[4/3] items-center justify-center rounded-2xl bg-slate-50 p-5 dark:bg-slate-800">
+          <div className="flex flex-col items-center gap-2 text-center">
+            {error ? (
+              <CameraOff className="h-6 w-6 text-slate-300 dark:text-slate-600" strokeWidth={1.5} />
+            ) : (
+              <ImageUp className="h-6 w-6 text-slate-300 dark:text-slate-600" strokeWidth={1.5} />
+            )}
+            <p className="max-w-[200px] text-xs text-slate-400 dark:text-slate-500">
+              {error ?? t('addItem.fileFallback')}
+            </p>
           </div>
         </div>
       )}
 
-      <div className="flex flex-wrap gap-3">
+      <p className="text-xs text-slate-400 dark:text-slate-500">
+        {stream ? t('addItem.cameraHint') : t('addItem.fileFallback')}
+      </p>
+
+      <div className="grid grid-cols-2 gap-2">
         {stream ? (
           <button
             type="button"
             onClick={() => void handleCapture()}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-brand-500 px-5 text-sm font-semibold text-white transition hover:bg-brand-600"
+            className="col-span-2 inline-flex h-11 items-center justify-center gap-1.5 rounded-xl bg-slate-900 px-4 text-sm font-medium text-white transition-all duration-200 ease-spring active:scale-95 dark:bg-white dark:text-slate-900"
           >
-            <Camera className="h-4 w-4" />
+            <Camera className="h-4 w-4" strokeWidth={2} />
             {t('addItem.capture')}
           </button>
         ) : null}
 
-        <label className="inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-900 transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:hover:bg-slate-900">
-          <ImageUp className="h-4 w-4" />
+        <label className={[
+          'inline-flex h-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl px-4 text-sm font-medium transition-all duration-200 ease-spring active:scale-95',
+          stream
+            ? 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+            : 'col-span-2 bg-slate-900 text-white dark:bg-white dark:text-slate-900',
+        ].join(' ')}>
+          <ImageUp className="h-4 w-4" strokeWidth={2} />
           {t('addItem.uploadPhoto')}
           <input
             type="file"
@@ -152,13 +154,16 @@ export function CameraCapture({ onCapture }: CameraCaptureProps) {
           />
         </label>
 
-        <button
-          type="button"
-          onClick={() => onCapture(null)}
-          className="inline-flex min-h-11 items-center justify-center rounded-full border border-slate-200 px-5 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-900"
-        >
-          {t('addItem.clearPhoto')}
-        </button>
+        {hasPhoto ? (
+          <button
+            type="button"
+            onClick={() => onCapture(null)}
+            className="inline-flex h-11 items-center justify-center gap-1.5 rounded-xl bg-slate-100 px-3 text-sm text-slate-500 transition-all duration-200 ease-spring hover:bg-slate-200 active:scale-95 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
+          >
+            <X className="h-4 w-4" strokeWidth={2} />
+            {t('addItem.clearPhoto')}
+          </button>
+        ) : null}
       </div>
     </div>
   );

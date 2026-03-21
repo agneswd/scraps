@@ -9,7 +9,7 @@ type SwipeActionsProps = {
   onMarkWasted: () => void;
 };
 
-const actionRevealWidth = 176;
+const actionRevealWidth = 164;
 
 export function SwipeActions({
   children,
@@ -54,13 +54,13 @@ export function SwipeActions({
   }
 
   return (
-    <div className="relative overflow-hidden rounded-[28px]">
-      <div className="absolute inset-y-0 right-0 flex w-44 overflow-hidden rounded-[28px]">
+    <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-800">
+      <div className="absolute inset-y-1 right-1 flex w-40 overflow-hidden rounded-[1.05rem]">
         <button
           type="button"
           disabled={disabled}
           onClick={() => runAction(onMarkConsumed)}
-          className="flex-1 bg-emerald-500 px-4 text-sm font-semibold text-white transition hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-60"
+          className="flex-1 bg-emerald-400 px-3 text-xs font-medium text-white transition active:bg-emerald-500 disabled:opacity-50 dark:bg-emerald-600"
         >
           {t('dashboard.markConsumed')}
         </button>
@@ -68,7 +68,7 @@ export function SwipeActions({
           type="button"
           disabled={disabled}
           onClick={() => runAction(onMarkWasted)}
-          className="flex-1 bg-red-500 px-4 text-sm font-semibold text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+          className="flex-1 bg-red-400 px-3 text-xs font-medium text-white transition active:bg-red-500 disabled:opacity-50 dark:bg-red-600"
         >
           {t('dashboard.markWasted')}
         </button>

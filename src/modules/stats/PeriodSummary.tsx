@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import type { StatsSummary } from '@/modules/stats/stats-api';
 
 type PeriodSummaryProps = {
@@ -10,33 +11,28 @@ type PeriodSummaryProps = {
   };
 };
 
-function formatValue(value: number) {
-  return new Intl.NumberFormat().format(value);
-}
-
-function formatPercent(value: number) {
-  return `${Math.round(value)}%`;
-}
-
 export function PeriodSummary({ summary, labels }: PeriodSummaryProps) {
   const metrics = [
-    { label: labels.total, value: formatValue(summary.totalItems) },
-    { label: labels.consumed, value: formatValue(summary.consumedCount) },
-    { label: labels.wasted, value: formatValue(summary.wastedCount) },
-    { label: labels.wasteRate, value: formatPercent(summary.wastePercentage) },
+    { label: labels.total, value: summary.totalItems },
+    { label: labels.consumed, value: summary.consumedCount },
+    { label: labels.wasted, value: summary.wastedCount },
+    { label: labels.wasteRate, value: `${Math.round(summary.wastePercentage)}%` },
   ];
 
   return (
-    <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      {metrics.map((metric) => (
-        <article
+    <div className="grid grid-cols-2 gap-2">
+      {metrics.map((metric, index) => (
+        <motion.article
           key={metric.label}
-          className="rounded-[28px] border border-white/50 bg-white/80 p-5 shadow-card backdrop-blur dark:border-white/10 dark:bg-slate-950/80"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: index * 0.05, type: 'spring', stiffness: 300, damping: 24 }}
+          className="rounded-2xl bg-white p-4 shadow-soft dark:bg-slate-800/80"
         >
-          <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">{metric.label}</p>
-          <p className="mt-4 font-display text-4xl tracking-tight text-slate-950 dark:text-white">{metric.value}</p>
-        </article>
+          <p className="text-xs text-slate-400 dark:text-slate-500">{metric.label}</p>
+          <p className="mt-1 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{metric.value}</p>
+        </motion.article>
       ))}
-    </section>
+    </div>
   );
 }

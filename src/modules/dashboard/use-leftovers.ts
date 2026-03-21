@@ -1,6 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { updateLeftoverStatus, listActiveLeftovers, type LeftoverRecord } from '@/modules/dashboard/leftover-api';
+import {
+  updateLeftoverStatus,
+  restoreLeftover,
+  listActiveLeftovers,
+  type LeftoverRecord,
+} from '@/modules/dashboard/leftover-api';
 import { pocketbase } from '@/shared/api/pocketbase';
 import { useAuth } from '@/modules/auth/use-auth';
 import type { LeftoverStatus } from '@/modules/dashboard/expiry-utils';
@@ -10,7 +15,9 @@ type UpdateStatusArgs = {
   status: Exclude<LeftoverStatus, 'active'>;
 };
 
-export function useLeftovers() {
+type OnActionCallback = (id: string, name: string, status: Exclude<LeftoverStatus, 'active'>) => void;
+
+export function useLeftovers(onAction?: OnActionCallback) {
   const queryClient = useQueryClient();
   const { isAuthenticated } = useAuth();
 
@@ -56,8 +63,20 @@ export function useLeftovers() {
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: ['leftovers'] });
+      void queryClient.invalidateQueries({ queryKey: ['stats'] });
     },
   });
+
+  const undoAction = useCallback(async (id: string) => {
+    await restoreLeftover(id);
+    void queryClient.invalidateQueries({ queryKey: ['leftovers'] });
+  }, [queryClient]);
+
+  const triggerAction = useCallback((id: string, status: Exclude<LeftoverStatus, 'active'>) => {
+    const item = leftoversQuery.data?.find((l) => l.id === id);
+    updateStatusMutation.mutate({ id, status });
+    if (item) onAction?.(id, item.item_name, status);
+  }, [leftoversQuery.data, updateStatusMutation, onAction]);
 
   return {
     leftovers: leftoversQuery.data ?? [],
@@ -65,8 +84,9 @@ export function useLeftovers() {
     isError: leftoversQuery.isError,
     error: leftoversQuery.error,
     refetch: leftoversQuery.refetch,
-    markConsumed: (id: string) => updateStatusMutation.mutate({ id, status: 'consumed' }),
-    markWasted: (id: string) => updateStatusMutation.mutate({ id, status: 'wasted' }),
+    markConsumed: (id: string) => triggerAction(id, 'consumed'),
+    markWasted: (id: string) => triggerAction(id, 'wasted'),
+    undoAction,
     updatingId: updateStatusMutation.variables?.id ?? null,
   };
 }

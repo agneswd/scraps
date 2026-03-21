@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -36,34 +37,44 @@ export function Modal({ children, isOpen, onClose, title }: ModalProps) {
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) {
-    return null;
-  }
-
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/55 px-4 py-4 backdrop-blur sm:items-center sm:px-6">
-      <div
-        ref={panelRef}
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
-        tabIndex={-1}
-        className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-[36px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(248,247,243,0.98))] shadow-card outline-none dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.96),rgba(2,6,23,0.98))]"
-      >
-        <div className="flex items-center justify-between border-b border-slate-200/70 px-6 py-5 dark:border-slate-800/80">
-          <h2 className="font-display text-3xl tracking-tight text-slate-950 dark:text-white">{title}</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-900"
-            aria-label={t('common.close')}
+    <AnimatePresence>
+      {isOpen ? (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/30 backdrop-blur-sm sm:items-center sm:px-6"
+        >
+          <motion.div
+            ref={panelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={title}
+            tabIndex={-1}
+            initial={{ y: '100%', opacity: 0.5 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: '100%', opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            className="flex max-h-[94vh] w-full max-w-lg flex-col overflow-hidden rounded-t-[2rem] bg-white shadow-elevated outline-none sm:rounded-[2rem] dark:bg-slate-900"
           >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
+            <div className="flex items-center justify-between px-6 pb-2 pt-5">
+              <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">{title}</h2>
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-all duration-200 ease-spring hover:bg-slate-200 active:scale-90 dark:bg-slate-800 dark:text-slate-400"
+                aria-label={t('common.close')}
+              >
+                <X className="h-4 w-4" strokeWidth={2.5} />
+              </button>
+            </div>
 
-        <div className="overflow-y-auto px-6 py-6">{children}</div>
-      </div>
-    </div>
+            <div className="overflow-y-auto px-6 pb-8 pt-2">{children}</div>
+          </motion.div>
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
   );
 }

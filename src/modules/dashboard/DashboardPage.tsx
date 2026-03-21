@@ -1,38 +1,56 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AddItemModal } from '@/modules/add-item/AddItemModal';
 import { ExpiryBanner } from '@/modules/dashboard/ExpiryBanner';
 import { LeftoverList } from '@/modules/dashboard/LeftoverList';
 import { countExpiringSoon } from '@/modules/dashboard/expiry-utils';
 import { useLeftovers } from '@/modules/dashboard/use-leftovers';
 import { Button } from '@/shared/ui/Button';
-import { Fab } from '@/shared/ui/Fab';
+import { UndoToast, type UndoToastData } from '@/shared/ui/UndoToast';
+
+function DashboardSkeleton() {
+  return (
+    <div className="space-y-3 pt-2">
+      {[1, 2, 3].map((i) => (
+        <div
+          key={i}
+          className="h-20 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800"
+          style={{ animationDelay: `${i * 100}ms` }}
+        />
+      ))}
+    </div>
+  );
+}
 
 export function DashboardPage() {
   const { t } = useTranslation();
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const { leftovers, isError, isLoading, markConsumed, markWasted, refetch, updatingId } = useLeftovers();
+  const [undoToast, setUndoToast] = useState<UndoToastData | null>(null);
+
+  const handleAction = useCallback((id: string, name: string, status: 'consumed' | 'wasted') => {
+    const label = status === 'consumed' ? t('dashboard.markConsumed') : t('dashboard.markWasted');
+    setUndoToast({
+      id: `${id}-${Date.now()}`,
+      message: `${name} — ${label}`,
+      onUndo: () => void undoRef.current?.(id),
+    });
+  }, [t]);
+
+  const { leftovers, isError, isLoading, markConsumed, markWasted, refetch, updatingId, undoAction } = useLeftovers(handleAction);
+  const undoRef = { current: undoAction };
 
   if (isLoading) {
-    return (
-      <section className="space-y-4">
-        <div className="h-24 animate-pulse rounded-[32px] bg-white/70 shadow-card dark:bg-slate-950/70" />
-        <div className="h-36 animate-pulse rounded-[32px] bg-white/70 shadow-card dark:bg-slate-950/70" />
-        <div className="h-36 animate-pulse rounded-[32px] bg-white/70 shadow-card dark:bg-slate-950/70" />
-      </section>
-    );
+    return <DashboardSkeleton />;
   }
 
   if (isError) {
     return (
-      <section className="rounded-[32px] border border-red-200 bg-white/80 p-6 shadow-card dark:border-red-900/60 dark:bg-slate-950/80">
-        <p className="font-display text-3xl tracking-tight text-slate-950 dark:text-white">
+      <section className="rounded-2xl bg-red-50 p-6 dark:bg-red-950/30">
+        <p className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
           {t('errors.generic')}
         </p>
-        <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
           {t('dashboard.loadErrorBody')}
         </p>
-        <Button className="mt-5" onClick={() => void refetch()}>
+        <Button variant="secondary" className="mt-4" onClick={() => void refetch()}>
           {t('dashboard.retry')}
         </Button>
       </section>
@@ -43,17 +61,14 @@ export function DashboardPage() {
 
   return (
     <>
-      <section className="space-y-6 pb-24">
-        <div className="rounded-[32px] border border-white/50 bg-white/80 p-6 shadow-card backdrop-blur dark:border-white/10 dark:bg-slate-950/80">
-          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-600 dark:text-brand-200">
+      <section className="space-y-4 pb-4">
+        <div className="flex items-baseline justify-between">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
             {t('dashboard.title')}
-          </p>
-          <h1 className="mt-3 font-display text-4xl tracking-tight text-slate-950 dark:text-white">
-            {t('dashboard.headline')}
           </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">
-            {t('dashboard.body')}
-          </p>
+          <span className="text-sm text-slate-400 dark:text-slate-500">
+            {leftovers.length} {leftovers.length === 1 ? 'item' : 'items'}
+          </span>
         </div>
 
         <ExpiryBanner expiringCount={expiringSoonCount} />
@@ -66,8 +81,7 @@ export function DashboardPage() {
         />
       </section>
 
-      <Fab label={t('addItem.fabLabel')} onClick={() => setIsAddModalOpen(true)} />
-      <AddItemModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
+      <UndoToast toast={undoToast} onDismiss={() => setUndoToast(null)} />
     </>
   );
 }

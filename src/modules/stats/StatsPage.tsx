@@ -5,6 +5,7 @@ import { PeriodSummary } from '@/modules/stats/PeriodSummary';
 import { useStats } from '@/modules/stats/use-stats';
 import { WasteRatioBar } from '@/modules/stats/WasteRatioBar';
 import { Button } from '@/shared/ui/Button';
+import { BarChart3 } from 'lucide-react';
 
 const PERIOD_OPTIONS: StatsPeriod[] = ['7d', '30d', 'all'];
 
@@ -16,17 +17,15 @@ const periodTranslationKey: Record<StatsPeriod, string> = {
 
 function StatsSkeleton() {
   return (
-    <section className="space-y-4">
-      <div className="h-32 animate-pulse rounded-[32px] bg-white/70 shadow-card dark:bg-slate-950/70" />
-      <div className="h-24 animate-pulse rounded-[28px] bg-white/70 shadow-card dark:bg-slate-950/70" />
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="h-28 animate-pulse rounded-[28px] bg-white/70 shadow-card dark:bg-slate-950/70" />
-        <div className="h-28 animate-pulse rounded-[28px] bg-white/70 shadow-card dark:bg-slate-950/70" />
-        <div className="h-28 animate-pulse rounded-[28px] bg-white/70 shadow-card dark:bg-slate-950/70" />
-        <div className="h-28 animate-pulse rounded-[28px] bg-white/70 shadow-card dark:bg-slate-950/70" />
+    <div className="space-y-3 pt-2">
+      <div className="h-10 w-48 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800" />
+      <div className="grid grid-cols-2 gap-2">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="h-20 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800" style={{ animationDelay: `${i * 80}ms` }} />
+        ))}
       </div>
-      <div className="h-64 animate-pulse rounded-[32px] bg-white/70 shadow-card dark:bg-slate-950/70" />
-    </section>
+      <div className="h-16 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800" />
+    </div>
   );
 }
 
@@ -35,16 +34,14 @@ export function StatsPage() {
   const [period, setPeriod] = useState<StatsPeriod>('30d');
   const { summary, isError, isLoading, refetch } = useStats(period);
 
-  if (isLoading) {
-    return <StatsSkeleton />;
-  }
+  if (isLoading) return <StatsSkeleton />;
 
   if (isError) {
     return (
-      <section className="rounded-[32px] border border-red-200 bg-white/80 p-6 shadow-card dark:border-red-900/60 dark:bg-slate-950/80">
-        <p className="font-display text-3xl tracking-tight text-slate-950 dark:text-white">{t('errors.generic')}</p>
-        <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">{t('stats.loadErrorBody')}</p>
-        <Button className="mt-5" onClick={() => void refetch()}>
+      <section className="rounded-2xl bg-red-50 p-6 dark:bg-red-950/30">
+        <p className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">{t('errors.generic')}</p>
+        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{t('stats.loadErrorBody')}</p>
+        <Button variant="secondary" className="mt-4" onClick={() => void refetch()}>
           {t('stats.retry')}
         </Button>
       </section>
@@ -52,43 +49,43 @@ export function StatsPage() {
   }
 
   return (
-    <section className="space-y-6">
-      <div className="rounded-[32px] border border-white/50 bg-white/80 p-6 shadow-card backdrop-blur dark:border-white/10 dark:bg-slate-950/80">
-        <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-600 dark:text-brand-200">
+    <section className="space-y-5">
+      <div className="flex items-baseline justify-between">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
           {t('stats.title')}
-        </p>
-        <h1 className="mt-3 font-display text-4xl tracking-tight text-slate-950 dark:text-white">
-          {t('stats.headline')}
         </h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">
-          {t('stats.body')}
-        </p>
       </div>
 
-      <div className="rounded-[28px] border border-white/50 bg-white/80 p-4 shadow-card backdrop-blur dark:border-white/10 dark:bg-slate-950/80 sm:flex sm:items-center sm:justify-between">
-        <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">{t('stats.periodLabel')}</p>
-        <div className="mt-3 flex flex-wrap gap-2 sm:mt-0">
-          {PERIOD_OPTIONS.map((option) => {
-            const isActive = option === period;
-
-            return (
-              <button
-                key={option}
-                type="button"
-                onClick={() => setPeriod(option)}
-                aria-pressed={isActive}
-                className={[
-                  'min-h-11 rounded-full px-4 text-sm font-semibold transition',
-                  isActive
-                    ? 'bg-brand-500 text-white shadow-card'
-                    : 'bg-brand-50 text-slate-700 hover:bg-brand-100 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800',
-                ].join(' ')}
-              >
-                {t(periodTranslationKey[option])}
-              </button>
-            );
-          })}
-        </div>
+      {/* Period toggle — pill selector */}
+      <div className="relative flex rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
+        {/* Sliding active background */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-y-1 rounded-lg bg-white shadow-soft transition-all duration-200 ease-spring dark:bg-slate-700"
+          style={{
+            width: `calc((100% - 0.5rem) / ${PERIOD_OPTIONS.length})`,
+            left: `calc(0.25rem + ${PERIOD_OPTIONS.indexOf(period)} * (100% - 0.5rem) / ${PERIOD_OPTIONS.length})`,
+          }}
+        />
+        {PERIOD_OPTIONS.map((option) => {
+          const isActive = option === period;
+          return (
+            <button
+              key={option}
+              type="button"
+              onClick={() => setPeriod(option)}
+              aria-pressed={isActive}
+              className={[
+                'relative flex-1 rounded-lg py-2 text-sm font-medium transition-colors duration-200',
+                isActive
+                  ? 'text-slate-900 dark:text-white'
+                  : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300',
+              ].join(' ')}
+            >
+              {t(periodTranslationKey[option])}
+            </button>
+          );
+        })}
       </div>
 
       <PeriodSummary
@@ -104,9 +101,11 @@ export function StatsPage() {
       <WasteRatioBar consumedCount={summary.consumedCount} wastedCount={summary.wastedCount} />
 
       {summary.totalItems === 0 ? (
-        <div className="rounded-[32px] border border-dashed border-slate-300 bg-white/70 p-6 shadow-card dark:border-slate-700 dark:bg-slate-950/70">
-          <p className="font-display text-3xl tracking-tight text-slate-950 dark:text-white">{t('stats.emptyTitle')}</p>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">{t('stats.emptyBody')}</p>
+        <div className="flex flex-col items-center gap-3 py-16 text-center">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800">
+            <BarChart3 className="h-6 w-6 text-slate-300 dark:text-slate-600" strokeWidth={1.5} />
+          </div>
+          <p className="text-sm text-slate-400 dark:text-slate-500">{t('stats.emptyBody')}</p>
         </div>
       ) : null}
     </section>

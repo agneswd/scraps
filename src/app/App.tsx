@@ -1,5 +1,6 @@
 import { Router } from '@/app/Router';
 import { AuthProvider } from '@/app/providers/AuthProvider';
+import { PreferencesProvider } from '@/app/providers/PreferencesProvider';
 import { QueryProvider } from '@/app/providers/QueryProvider';
 import { useOnlineStatus } from '@/shared/hooks/use-online-status';
 import { OfflineBanner } from '@/shared/ui/OfflineBanner';
@@ -18,9 +19,11 @@ function AppFrame() {
 export function App() {
   return (
     <QueryProvider>
-      <AuthProvider>
-        <AppFrame />
-      </AuthProvider>
+      <PreferencesProvider>
+        <AuthProvider>
+          <AppFrame />
+        </AuthProvider>
+      </PreferencesProvider>
     </QueryProvider>
   );
 }

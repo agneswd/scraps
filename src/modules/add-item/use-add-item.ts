@@ -45,7 +45,13 @@ export function useAddItem() {
       }
 
       if (photo) {
-        formData.set('photo', new File([photo], `${itemName.toLowerCase().replace(/\s+/g, '-')}.webp`, { type: 'image/webp' }));
+        const extension = photo.type === 'image/jpeg' ? 'jpg' : 'webp';
+        formData.set(
+          'photo',
+          new File([photo], `${itemName.toLowerCase().replace(/\s+/g, '-')}.${extension}`, {
+            type: photo.type,
+          }),
+        );
       }
 
       return pocketbase.collection('leftovers').create(formData);

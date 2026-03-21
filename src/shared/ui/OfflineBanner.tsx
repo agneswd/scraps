@@ -1,15 +1,21 @@
 import { WifiOff } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 
 export function OfflineBanner() {
   const { t } = useTranslation();
 
   return (
-    <div className="sticky top-0 z-[60] border-b border-red-200 bg-red-50/95 backdrop-blur dark:border-red-900/60 dark:bg-red-950/90">
-      <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-3 text-sm font-semibold text-red-900 dark:text-red-100 sm:px-6 lg:px-8">
-        <WifiOff className="h-4 w-4 shrink-0" />
+    <motion.div
+      initial={{ y: -40, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+      className="sticky top-0 z-[60] bg-red-500 dark:bg-red-600"
+    >
+      <div className="mx-auto flex max-w-lg items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white">
+        <WifiOff className="h-3.5 w-3.5 shrink-0" strokeWidth={2.5} />
         <span>{t('errors.offline')}</span>
       </div>
-    </div>
+    </motion.div>
   );
 }

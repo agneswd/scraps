@@ -12,6 +12,8 @@ export function useStats(period: StatsPeriod) {
     queryKey: ['stats', 'archived-leftovers', period],
     queryFn: () => listArchivedLeftovers(period),
     enabled: isAuthenticated,
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 
   useEffect(() => {

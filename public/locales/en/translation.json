@@ -22,7 +22,7 @@
   },
 
   "dashboard": {
-    "title": "Dashboard",
+    "title": "Fridge",
     "headline": "Track what needs attention before it turns into waste.",
     "body": "Active leftovers are sorted by expiry date so the next thing to use is always at the top.",
     "emptyState": "No leftovers! Your fridge is clear.",
@@ -40,13 +40,7 @@
     "retry": "Try again",
     "markConsumed": "Ate it",
     "markWasted": "Tossed",
-    "scaffold": {
-      "headline": "The dashboard skeleton is ready for live leftovers data.",
-      "body": "The next implementation slice will add leftover queries, expiry calculations, and card actions on top of this shell.",
-      "expiringToday": "Expiring today",
-      "activeLeftovers": "Active leftovers",
-      "averageRemaining": "Avg. remaining"
-    }
+    "undo": "Undo"
   },
   "addItem": {
     "title": "Add Leftover",
@@ -63,11 +57,14 @@
     "capture": "Capture",
     "uploadPhoto": "Upload Photo",
     "clearPhoto": "Remove Photo",
+    "cameraHint": "Use capture for a quick fridge shot, or upload one from your library.",
     "cameraUnavailable": "Camera access is unavailable. You can still upload a photo from your device.",
     "fileFallback": "Add a photo from your camera roll or file picker.",
     "captureError": "That photo could not be processed. Try another image or upload again.",
     "saveError": "The leftover could not be saved right now. Try again.",
     "saving": "Saving...",
+    "customDaysLabel": "How many days will this last?",
+    "customDaysSuffix": "days",
     "steps": {
       "0": "Name",
       "1": "Category",
@@ -93,11 +90,23 @@
     "loadErrorBody": "The stats view could not load completed leftovers right now. Check the PocketBase connection and try again.",
     "retry": "Try again",
     "emptyTitle": "No completed leftovers yet.",
-    "emptyBody": "Once items are marked as eaten or wasted, this view will show the totals and ratio for the selected period.",
-    "scaffold": {
-      "headline": "Stats wiring will land after the dashboard and add-item flow.",
-      "body": "This route is included now so navigation, layout, and protected routing are already in place."
-    }
+    "emptyBody": "Once items are marked as eaten or wasted, this view will show the totals and ratio for the selected period."
+  },
+  "leftover": {
+    "editTitle": "Edit leftover",
+    "daysFromTodayLabel": "Days until expiry",
+    "restore": "Restore",
+    "restored": "Restored"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "history": "History",
+    "historyEmpty": "No completed items yet.",
+    "theme": "Theme",
+    "themeSystem": "System",
+    "themeLight": "Light",
+    "themeDark": "Dark"
   },
   "categories": {
     "meat": "Meat",
@@ -107,7 +116,14 @@
     "dairy": "Dairy",
     "grains": "Grains",
     "prepared": "Prepared",
-    "other": "Other"
+    "other": "Other",
+    "custom": "Custom",
+    "condiment": "Condiment",
+    "spice": "Spice",
+    "beverage": "Beverage",
+    "frozen": "Frozen",
+    "baking": "Baking",
+    "canned": "Canned"
   },
   "notifications": {
     "label": "Notifications",
@@ -127,6 +143,46 @@
   "errors": {
     "offline": "No internet connection",
     "generic": "Something went wrong"
+  },
+  "pantry": {
+    "title": "Pantry",
+    "headline": "Track what's in your kitchen before it runs out.",
+    "tabItems": "Items",
+    "tabRecipes": "Recipes",
+    "emptyState": "Your pantry is empty.",
+    "emptyHint": "Tap the + button to add your first item.",
+    "filterAll": "All",
+    "filterInStock": "In stock",
+    "filterLow": "Low",
+    "filterFinished": "Finished",
+    "noMatchingItems": "No items match this filter.",
+    "addTitle": "Add to Pantry",
+    "editTitle": "Edit Item",
+    "addMethodPrompt": "How would you like to add an item?",
+    "methodManual": "Add Manually",
+    "methodManualHint": "Type the name and pick a category.",
+    "methodBarcode": "Scan Barcode",
+    "methodBarcodeHint": "Use your camera to scan a product barcode.",
+    "methodAi": "AI Scan",
+    "methodAiHint": "Take a photo and let AI identify the product.",
+    "nameLabel": "Item name",
+    "namePlaceholder": "e.g. Olive oil",
+    "quantityLabel": "Quantity",
+    "unitLabel": "Unit",
+    "unitPlaceholder": "e.g. bottle, can, kg",
+    "statusLabel": "Status",
+    "status_in_stock": "In stock",
+    "status_low": "Low",
+    "status_finished": "Finished",
+    "increaseQuantity": "Increase quantity",
+    "decreaseQuantity": "Decrease quantity",
+    "saving": "Saving...",
+    "saveError": "Could not save the item. Try again.",
+    "delete": "Delete",
+    "confirmDelete": "Tap again to confirm",
+    "deleteError": "Could not delete the item.",
+    "loadError": "Could not load pantry items.",
+    "recipesComingSoon": "Recipe book coming soon."
   }
 }
 
