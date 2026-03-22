@@ -28,11 +28,11 @@ export const CATEGORY_SHELF_LIFE_DAYS: Record<LeftoverCategory, number> = {
   // Based on cooked leftover refrigerator shelf life research (generous realistic values)
   seafood: 3,    // Cooked fish/shellfish: 3–4 days
   poultry: 4,    // Cooked chicken/turkey: 3–4 days
-  meat: 5,       // Cooked red meat: 3–5 days
+  meat: 4,       // Cooked red meat: 3–5 days
   dairy: 5,      // Dairy-based dishes/cream sauces: 4–5 days
   prepared: 5,   // Soups, stews, casseroles: 3–5 days
   veg: 5,        // Cooked vegetables: 4–5 days
-  grains: 7,     // Cooked rice, pasta, grains: 5–7 days
+  grains: 6,     // Cooked rice, pasta, grains: 5–7 days
   other: 5,
 };
 
