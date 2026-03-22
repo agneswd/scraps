@@ -10,7 +10,8 @@ export const SUPPORTED_LANGUAGES = [
   { code: 'sv', label: 'Swedish', nativeLabel: 'Svenska' },
   { code: 'tl', label: 'Filipino', nativeLabel: 'Filipino' },
   { code: 'ceb', label: 'Cebuano', nativeLabel: 'Cebuano' },
-  { code: 'mni', label: 'Meitei', nativeLabel: 'Meitei' },
+  { code: 'mni', label: 'Meitei (Latin)', nativeLabel: 'Meitei' },
+  { code: 'mni-Mtei', label: 'Meitei (Meitei Mayek)', nativeLabel: 'ꯃꯩꯇꯩ ꯃꯌꯦꯛ' },
 ] as const;
 
 export async function loadLanguageResources(code: string) {
