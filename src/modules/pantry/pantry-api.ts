@@ -1,5 +1,5 @@
 import type { RecordModel } from 'pocketbase';
-import { pocketbase } from '@/shared/api/pocketbase';
+import { pocketbase, assertPbId } from '@/shared/api/pocketbase';
 import type { PantryCategory, PantryStatus } from '@/modules/pantry/pantry-categories';
 
 export type PantryItemRecord = RecordModel & {
@@ -24,9 +24,15 @@ export async function listPantryItems(statusFilter?: PantryStatus) {
 }
 
 export async function getPantryItemByBarcode(householdId: string, barcode: string) {
+  // Reject barcodes that contain characters outside known barcode charsets
+  // (EAN, UPC, CODE-39, CODE-128 subsets) to prevent filter-string injection.
+  if (!/^[A-Za-z0-9 \-./+$%]+$/.test(barcode)) {
+    return null;
+  }
+
   try {
     return await pocketbase.collection('pantry_items').getFirstListItem<PantryItemRecord>(
-      `household_id = "${householdId}" && barcode = "${barcode}" && status != "finished"`,
+      `household_id = "${assertPbId(householdId, 'householdId')}" && barcode = "${barcode}" && status != "finished"`,
     );
   } catch {
     return null;

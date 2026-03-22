@@ -1,5 +1,5 @@
 import type { RecordModel } from 'pocketbase';
-import { pocketbase } from '@/shared/api/pocketbase';
+import { pocketbase, assertPbId } from '@/shared/api/pocketbase';
 import {
   createLeftover,
   deleteLeftover,
@@ -112,7 +112,7 @@ async function createDeletedHistoryEntry(
 
 async function trimDeletedHistoryEntries(householdId: string) {
   const entries = await pocketbase.collection('history_entries').getFullList<DeletedHistoryRecord>({
-    filter: `household_id = "${householdId}"`,
+    filter: `household_id = "${assertPbId(householdId, 'householdId')}"`,
     sort: '-updated',
     fields: 'id,updated',
   });
@@ -349,4 +349,21 @@ export async function archiveAndDeleteShoppingItems(items: ShoppingListItemRecor
   for (const item of items) {
     await archiveAndDeleteShoppingItem(item);
   }
+}
+
+export async function clearAllHistory(householdId: string) {
+  const validId = assertPbId(householdId, 'householdId');
+
+  const [deletedEntries, archivedLeftovers] = await Promise.all([
+    pocketbase.collection('history_entries').getFullList<DeletedHistoryRecord>({
+      filter: `household_id = "${validId}"`,
+      fields: 'id',
+    }),
+    listArchivedLeftovers(),
+  ]);
+
+  await Promise.all([
+    ...deletedEntries.map((entry) => pocketbase.collection('history_entries').delete(entry.id)),
+    ...archivedLeftovers.map((leftover) => deleteLeftover(leftover.id)),
+  ]);
 }
