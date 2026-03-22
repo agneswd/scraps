@@ -20,9 +20,10 @@ const toneBadgeClasses = {
 
 export function LeftoverCard({ leftover, onClick }: LeftoverCardProps) {
   const { t } = useTranslation();
+  const now = new Date();
   const CategoryIcon = CATEGORY_ICONS[leftover.category];
   const photoUrl = getLeftoverPhotoUrl(leftover);
-  const tone = getExpiryTone(leftover.expiry_date);
+  const tone = getExpiryTone(leftover.expiry_date, now);
 
   return (
     <article
@@ -60,7 +61,7 @@ export function LeftoverCard({ leftover, onClick }: LeftoverCardProps) {
               toneBadgeClasses[tone],
             ].join(' ')}
           >
-            {formatTimeRemaining(leftover.expiry_date, t)}
+            {formatTimeRemaining(leftover.expiry_date, t, now)}
           </span>
         </div>
 
