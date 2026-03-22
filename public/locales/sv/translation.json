@@ -116,7 +116,10 @@
     "accountBody": "Se inloggat konto och hantera sessioner.",
     "themeSystem": "System",
     "themeLight": "Ljust",
-    "themeDark": "Mörkt"
+    "themeDark": "Mörkt",
+    "clearHistory": "Rensa historik",
+    "clearHistoryConfirmTitle": "Rensa all historik?",
+    "clearHistoryConfirmBody": "Alla historikposter raderas permanent. Det går inte att ångra."
   },
   "categories": {
     "meat": "Kött",

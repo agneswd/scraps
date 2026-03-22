@@ -116,7 +116,10 @@
     "accountBody": "See your signed-in account and session actions.",
     "themeSystem": "Sistema",
     "themeLight": "Leggero",
-    "themeDark": "Buio"
+    "themeDark": "Buio",
+    "clearHistory": "Cancella cronologia",
+    "clearHistoryConfirmTitle": "Cancellare tutta la cronologia?",
+    "clearHistoryConfirmBody": "Tutte le voci verranno eliminate definitivamente. Questa azione non può essere annullata."
   },
   "categories": {
     "meat": "Carne",

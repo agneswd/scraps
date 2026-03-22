@@ -116,7 +116,10 @@
     "accountBody": "See your signed-in account and session actions.",
     "themeSystem": "Система",
     "themeLight": "Свет",
-    "themeDark": "Темный"
+    "themeDark": "Темный",
+    "clearHistory": "Очистить историю",
+    "clearHistoryConfirmTitle": "Очистить всю историю?",
+    "clearHistoryConfirmBody": "Все записи будут удалены без возможности восстановления. Это действие нельзя отменить."
   },
   "categories": {
     "meat": "Мясо",

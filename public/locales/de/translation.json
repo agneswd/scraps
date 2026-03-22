@@ -116,7 +116,10 @@
     "accountBody": "See your signed-in account and session actions.",
     "themeSystem": "System",
     "themeLight": "Hell",
-    "themeDark": "Dunkel"
+    "themeDark": "Dunkel",
+    "clearHistory": "Verlauf löschen",
+    "clearHistoryConfirmTitle": "Gesamten Verlauf löschen?",
+    "clearHistoryConfirmBody": "Alle Einträge werden dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden."
   },
   "categories": {
     "meat": "Fleisch",

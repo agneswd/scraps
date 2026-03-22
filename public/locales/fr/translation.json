@@ -116,7 +116,10 @@
     "accountBody": "See your signed-in account and session actions.",
     "themeSystem": "Système",
     "themeLight": "Lumière",
-    "themeDark": "Sombre"
+    "themeDark": "Sombre",
+    "clearHistory": "Effacer l'historique",
+    "clearHistoryConfirmTitle": "Effacer tout l'historique ?",
+    "clearHistoryConfirmBody": "Toutes les entrées seront supprimées définitivement. Cette action est irréversible."
   },
   "categories": {
     "meat": "Viande",

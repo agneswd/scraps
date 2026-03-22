@@ -1,6 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/modules/auth/use-auth';
-import { listHistoryEntries, restoreHistoryEntry, type HistoryEntry } from '@/modules/settings/data/history-api';
+import { useHousehold } from '@/shared/hooks/use-household';
+import {
+  clearAllHistory,
+  listHistoryEntries,
+  restoreHistoryEntry,
+  type HistoryEntry,
+} from '@/modules/settings/data/history-api';
 
 export function useHistory() {
   const { isAuthenticated } = useAuth();
@@ -30,4 +36,20 @@ export function useHistory() {
     restore: (entry: HistoryEntry) => restoreMutation.mutate(entry),
     restoringId: restoreMutation.variables?.id ?? null,
   };
+}
+
+export function useClearHistory() {
+  const { householdId } = useHousehold();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => {
+      if (!householdId) throw new Error('Missing household context.');
+      return clearAllHistory(householdId);
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['history'] });
+      void queryClient.invalidateQueries({ queryKey: ['stats'] });
+    },
+  });
 }

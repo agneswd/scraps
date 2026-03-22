@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChefHat, ListChecks, PackageOpen, RotateCcw, Trash2 } from 'lucide-react';
-import { useHistory } from '@/modules/settings/use-history';
+import { useHistory, useClearHistory } from '@/modules/settings/use-history';
 import { CATEGORY_ICONS } from '@/modules/dashboard/expiry-utils';
 
 function getHistoryMeta(item: ReturnType<typeof useHistory>['history'][number], t: ReturnType<typeof useTranslation>['t']) {
@@ -50,6 +51,19 @@ function getHistoryMeta(item: ReturnType<typeof useHistory>['history'][number], 
 export function HistoryLog() {
   const { t } = useTranslation();
   const { history, isLoading, restore, restoringId } = useHistory();
+  const clearHistory = useClearHistory();
+  const [confirmingClear, setConfirmingClear] = useState(false);
+
+  function handleClearRequest() {
+    setConfirmingClear(true);
+  }
+
+  function handleClearConfirm() {
+    clearHistory.mutate(undefined, {
+      onSuccess: () => setConfirmingClear(false),
+      onError: () => setConfirmingClear(false),
+    });
+  }
 
   if (isLoading) {
     return (
@@ -70,7 +84,48 @@ export function HistoryLog() {
   }
 
   return (
-    <ul className="space-y-2">
+    <div className="space-y-4">
+      {confirmingClear ? (
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 dark:border-red-800/40 dark:bg-red-950/30">
+          <p className="text-sm font-semibold text-red-700 dark:text-red-400">
+            {t('settings.clearHistoryConfirmTitle')}
+          </p>
+          <p className="mt-1 text-xs text-red-600 dark:text-red-500">
+            {t('settings.clearHistoryConfirmBody')}
+          </p>
+          <div className="mt-3 flex gap-2">
+            <button
+              type="button"
+              disabled={clearHistory.isPending}
+              onClick={handleClearConfirm}
+              className="rounded-xl bg-red-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-red-700 disabled:opacity-50 dark:bg-red-700 dark:hover:bg-red-600"
+            >
+              {clearHistory.isPending ? t('common.saving', 'Clearing…') : t('settings.clearHistory')}
+            </button>
+            <button
+              type="button"
+              disabled={clearHistory.isPending}
+              onClick={() => setConfirmingClear(false)}
+              className="rounded-xl bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-200 disabled:opacity-50 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+            >
+              {t('common.cancel')}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={handleClearRequest}
+            className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-medium text-red-500 transition hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
+          >
+            <Trash2 className="h-3.5 w-3.5" strokeWidth={2} />
+            {t('settings.clearHistory')}
+          </button>
+        </div>
+      )}
+
+      <ul className="space-y-2">
       {history.map((item) => {
         const { Icon, actionClass, actionLabel } = getHistoryMeta(item, t);
         const isRestoring = restoringId === item.id;
@@ -108,5 +163,6 @@ export function HistoryLog() {
         );
       })}
     </ul>
+    </div>
   );
 }

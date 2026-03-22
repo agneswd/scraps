@@ -117,7 +117,10 @@
     "accountBody": "See your signed-in account and session actions.",
     "themeSystem": "System",
     "themeLight": "Light",
-    "themeDark": "Dark"
+    "themeDark": "Dark",
+    "clearHistory": "Clear history",
+    "clearHistoryConfirmTitle": "Clear all history?",
+    "clearHistoryConfirmBody": "This will permanently delete all history entries. This action cannot be undone."
   },
   "categories": {
     "meat": "Meat",

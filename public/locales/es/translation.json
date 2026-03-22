@@ -116,7 +116,10 @@
     "accountBody": "See your signed-in account and session actions.",
     "themeSystem": "Sistema",
     "themeLight": "Claro",
-    "themeDark": "Oscuro"
+    "themeDark": "Oscuro",
+    "clearHistory": "Borrar historial",
+    "clearHistoryConfirmTitle": "¿Borrar todo el historial?",
+    "clearHistoryConfirmBody": "Se eliminarán permanentemente todas las entradas del historial. Esta acción no se puede deshacer."
   },
   "categories": {
     "meat": "Carne",
