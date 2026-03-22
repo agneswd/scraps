@@ -2,8 +2,33 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#f8fafc" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta id="theme-color" name="theme-color" content="#f8fafc" />
+    <script>
+      (() => {
+        const themeStorageKey = 'scraps.preferences.theme';
+
+        const getStoredTheme = () => {
+          try {
+            const storedTheme = window.localStorage.getItem(themeStorageKey);
+            return storedTheme === 'light' || storedTheme === 'dark' || storedTheme === 'system'
+              ? storedTheme
+              : 'system';
+          } catch {
+            return 'system';
+          }
+        };
+
+        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        const storedTheme = getStoredTheme();
+        const resolvedTheme = storedTheme === 'system' ? systemTheme : storedTheme;
+        const root = document.documentElement;
+
+        root.classList.toggle('dark', resolvedTheme === 'dark');
+        root.style.colorScheme = resolvedTheme;
+        document.getElementById('theme-color')?.setAttribute('content', resolvedTheme === 'dark' ? '#020617' : '#f8fafc');
+      })();
+    </script>
     <link rel="manifest" href="/manifest.json" />
     <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://api.fontshare.com" crossorigin />

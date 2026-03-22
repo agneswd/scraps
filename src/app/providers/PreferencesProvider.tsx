@@ -21,6 +21,11 @@ type PreferencesContextValue = {
 
 const LANGUAGE_STORAGE_KEY = 'scraps.preferences.language';
 const THEME_STORAGE_KEY = 'scraps.preferences.theme';
+const THEME_COLOR_BY_MODE = {
+  light: '#f8fafc',
+  dark: '#020617',
+} as const;
+const THEME_COLOR_META_ID = 'theme-color';
 
 const PreferencesContext = createContext<PreferencesContextValue | undefined>(undefined);
 
@@ -51,6 +56,26 @@ function getSystemTheme(): 'light' | 'dark' {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
+function applyResolvedTheme(theme: 'light' | 'dark') {
+  if (typeof document === 'undefined') {
+    return;
+  }
+
+  document.documentElement.classList.toggle('dark', theme === 'dark');
+  document.documentElement.style.colorScheme = theme;
+
+  let themeColorMeta = document.getElementById(THEME_COLOR_META_ID);
+
+  if (!themeColorMeta) {
+    themeColorMeta = document.createElement('meta');
+    themeColorMeta.setAttribute('id', THEME_COLOR_META_ID);
+    themeColorMeta.setAttribute('name', 'theme-color');
+    document.head.appendChild(themeColorMeta);
+  }
+
+  themeColorMeta.setAttribute('content', THEME_COLOR_BY_MODE[theme]);
+}
+
 export function PreferencesProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState(getStoredLanguage);
   const [theme, setThemeState] = useState<ThemePreference>(getStoredTheme);
@@ -69,8 +94,7 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
   const resolvedTheme = theme === 'system' ? systemTheme : theme;
 
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', resolvedTheme === 'dark');
-    document.documentElement.style.colorScheme = resolvedTheme;
+    applyResolvedTheme(resolvedTheme);
   }, [resolvedTheme]);
 
   useEffect(() => {
