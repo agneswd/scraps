@@ -2,12 +2,12 @@ import { motion } from 'framer-motion';
 import { Clock3, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { pocketbase } from '@/shared/api/pocketbase';
-import type { RecipeMatchResult } from '@/modules/pantry/recipes/data/recipe-matching';
+import type { RecipeWithIngredients } from '@/modules/pantry/recipes/data/recipe-api';
 
 type RecipeCardProps = {
-  item: RecipeMatchResult;
+  item: RecipeWithIngredients;
   index: number;
-  onTap: (item: RecipeMatchResult) => void;
+  onTap: (item: RecipeWithIngredients) => void;
 };
 
 export function RecipeCard({ item, index, onTap }: RecipeCardProps) {
@@ -43,20 +43,6 @@ export function RecipeCard({ item, index, onTap }: RecipeCardProps) {
               {item.recipe.description}
             </p>
           ) : null}
-        </div>
-        <div>
-          <span
-            className={[
-              'inline-flex rounded-full px-2.5 py-1 text-xs font-medium',
-              item.canMake
-                ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'
-                : 'bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400',
-            ].join(' ')}
-          >
-            {item.canMake
-              ? t('recipes.canMake')
-              : t('recipes.missingCount', { count: item.missing.length })}
-          </span>
         </div>
         <div className="flex flex-wrap gap-2 text-xs text-slate-400 dark:text-slate-500">
           {item.recipe.servings ? (

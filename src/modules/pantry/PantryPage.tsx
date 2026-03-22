@@ -3,17 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { AiRecipeGenerateModal } from '@/modules/ai/AiRecipeGenerateModal';
 import { PantryItemList } from '@/modules/pantry/items/PantryItemList';
 import { EditPantryItemModal } from '@/modules/pantry/items/EditPantryItemModal';
-import {
-  findUnusedPantryItems,
-  matchRecipesToPantry,
-} from '@/modules/pantry/recipes/data/recipe-matching';
 import { useDeleteRecipe, useRecipes } from '@/modules/pantry/recipes/data/use-recipes';
 import type { RecipeWithIngredients } from '@/modules/pantry/recipes/data/recipe-api';
 import { AddRecipeModal } from '@/modules/pantry/recipes/ui/AddRecipeModal';
 import { EditRecipeModal } from '@/modules/pantry/recipes/ui/EditRecipeModal';
 import { RecipeDetailModal } from '@/modules/pantry/recipes/ui/RecipeDetailModal';
 import { RecipeList } from '@/modules/pantry/recipes/ui/RecipeList';
-import { UnusedIngredients } from '@/modules/pantry/recipes/ui/UnusedIngredients';
 import { usePantryItems, useIncrementQuantity, useUpdatePantryItem } from '@/modules/pantry/use-pantry';
 import { Button } from '@/shared/ui/Button';
 import type { PantryItemRecord } from '@/modules/pantry/pantry-api';
@@ -55,7 +50,7 @@ export function PantryPage() {
   const updateMutation = useUpdatePantryItem();
 
   function handleIncrement(item: PantryItemRecord) {
-    incrementMutation.mutate({ id: item.id, currentQuantity: item.quantity });
+    incrementMutation.mutate({ id: item.id, currentQuantity: item.quantity, currentStatus: item.status });
   }
 
   function handleDecrement(item: PantryItemRecord) {
@@ -69,8 +64,6 @@ export function PantryPage() {
   }
 
   const activeTabIndex = TABS.findIndex((tab) => tab.key === activeTab);
-  const recipeMatches = matchRecipesToPantry(recipes ?? [], items ?? []);
-  const unusedIngredients = findUnusedPantryItems(items ?? [], recipes ?? []);
 
   // ── Loading state ──────────────────────────────────────────────────────────
   if (isLoading) {
@@ -161,7 +154,6 @@ export function PantryPage() {
               onIncrement={handleIncrement}
               onDecrement={handleDecrement}
             />
-            <UnusedIngredients items={unusedIngredients} />
           </>
         )}
 
@@ -169,7 +161,7 @@ export function PantryPage() {
           <>
             {recipesLoading ? <PantrySkeleton /> : (
               <RecipeList
-                items={recipeMatches}
+                items={recipes ?? []}
                 onAdd={() => setIsAddRecipeOpen(true)}
                 onAiGenerate={() => setIsAiRecipeOpen(true)}
                 onItemTap={setSelectedRecipe}
@@ -205,7 +197,7 @@ export function PantryPage() {
         }}
         onDelete={() => {
           if (!selectedRecipe) return;
-          deleteRecipe.mutate(selectedRecipe.recipe.id, {
+          deleteRecipe.mutate(selectedRecipe, {
             onSuccess: () => setSelectedRecipe(null),
           });
         }}

@@ -100,20 +100,22 @@ function buildRecipeFormData(
 }
 
 async function createRecipeIngredients(recipeId: string, ingredients: RecipeIngredientInput[]) {
-  return Promise.all(
-    ingredients
-      .filter((ingredient) => ingredient.name.trim().length > 0)
-      .map((ingredient) =>
-        pocketbase.collection('recipe_ingredients').create<RecipeIngredientRecord>({
-          recipe_id: recipeId,
-          name: ingredient.name.trim(),
-          name_normalized: normalizeIngredientName(ingredient.name),
-          quantity: ingredient.quantity,
-          unit: ingredient.unit?.trim() || undefined,
-          optional: Boolean(ingredient.optional),
-        }),
-      ),
-  );
+  const createdIngredients: RecipeIngredientRecord[] = [];
+
+  for (const ingredient of ingredients.filter((entry) => entry.name.trim().length > 0)) {
+    const createdIngredient = await pocketbase.collection('recipe_ingredients').create<RecipeIngredientRecord>({
+      recipe_id: recipeId,
+      name: ingredient.name.trim(),
+      name_normalized: normalizeIngredientName(ingredient.name),
+      quantity: ingredient.quantity,
+      unit: ingredient.unit?.trim() || undefined,
+      optional: Boolean(ingredient.optional),
+    });
+
+    createdIngredients.push(createdIngredient);
+  }
+
+  return createdIngredients;
 }
 
 export async function listRecipesWithIngredients() {
@@ -140,7 +142,13 @@ export async function createRecipe(input: RecipeInput) {
     buildRecipeFormData(input, { includeOwnerFields: true }),
   );
 
-  await createRecipeIngredients(recipe.id, input.ingredients);
+  try {
+    await createRecipeIngredients(recipe.id, input.ingredients);
+  } catch (error) {
+    await pocketbase.collection('recipes').delete(recipe.id).catch(() => undefined);
+    throw error;
+  }
+
   return recipe;
 }
 
@@ -157,9 +165,9 @@ export async function updateRecipe(
     filter: `recipe_id = "${recipeId}"`,
   });
 
-  await Promise.all(
-    existingIngredients.map((ingredient) => pocketbase.collection('recipe_ingredients').delete(ingredient.id)),
-  );
+  for (const ingredient of existingIngredients) {
+    await pocketbase.collection('recipe_ingredients').delete(ingredient.id);
+  }
 
   await createRecipeIngredients(recipeId, input.ingredients);
 }
