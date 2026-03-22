@@ -62,6 +62,11 @@ export function useCreateShoppingListItems() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: SHOPPING_LIST_KEY });
     },
+    // Partial failures still commit some items server-side — always refresh the
+    // list so the UI reflects the true state rather than showing stale/empty data.
+    onError: () => {
+      void queryClient.invalidateQueries({ queryKey: SHOPPING_LIST_KEY });
+    },
   });
 }
 

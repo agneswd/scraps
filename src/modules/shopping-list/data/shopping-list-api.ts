@@ -35,7 +35,12 @@ export async function createShoppingListItem(input: ShoppingListItemInput) {
 }
 
 export async function createShoppingListItems(items: ShoppingListItemInput[]) {
-  return Promise.all(items.map((item) => createShoppingListItem(item)));
+  // Sequential creates avoid concurrent-request failures against PocketBase.
+  const created: ShoppingListItemRecord[] = [];
+  for (const item of items) {
+    created.push(await createShoppingListItem(item));
+  }
+  return created;
 }
 
 export async function updateShoppingListItem(

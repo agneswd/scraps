@@ -165,7 +165,7 @@ export function ShoppingListPage() {
       )}
 
       {checkedItems.length > 0 ? (
-        <div className="pointer-events-none fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] left-5 z-20 md:bottom-6 md:left-8">
+        <div className="pointer-events-none fixed bottom-[calc(6.75rem+env(safe-area-inset-bottom))] right-4 z-50 md:bottom-6 md:right-8">
           <Button
             variant="secondary"
             className="pointer-events-auto min-h-11 rounded-full px-4 shadow-elevated"
