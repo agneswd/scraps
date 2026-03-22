@@ -113,7 +113,7 @@ export function Layout() {
         </button>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden px-5 pb-28 pt-5 md:px-8 md:py-6 md:pb-6">
+        <main className="scrollbar-hidden flex-1 overflow-y-auto overflow-x-hidden px-5 pb-28 pt-5 md:px-8 md:py-6 md:pb-6">
           <div className="relative mx-auto w-full max-w-lg md:max-w-2xl">
             <AnimatePresence mode="wait">
               <motion.div

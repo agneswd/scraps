@@ -42,7 +42,7 @@ export function RecipeList({ items, onAdd, onAiGenerate, onItemTap }: RecipeList
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
+      <div className="space-y-3 sm:flex sm:items-center sm:justify-between sm:gap-3 sm:space-y-0">
         <div>
           <p className="text-sm font-medium text-slate-900 dark:text-white">
             {t('recipes.savedRecipes')}
@@ -51,13 +51,13 @@ export function RecipeList({ items, onAdd, onAiGenerate, onItemTap }: RecipeList
             {t('recipes.savedRecipesCount', { count: items.length })}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:w-auto sm:items-center">
           {onAiGenerate ? (
-            <Button variant="secondary" className="min-h-10 whitespace-nowrap px-4 text-xs" onClick={onAiGenerate}>
+            <Button variant="secondary" className="min-h-10 w-full whitespace-nowrap px-3 text-xs sm:w-auto sm:px-4" onClick={onAiGenerate}>
               {t('ai.generateTitle')}
             </Button>
           ) : null}
-          <Button className="min-h-10 whitespace-nowrap px-4 text-xs" onClick={onAdd}>{t('recipes.addTitle')}</Button>
+          <Button className="min-h-10 w-full whitespace-nowrap px-3 text-xs sm:w-auto sm:px-4" onClick={onAdd}>{t('recipes.addTitle')}</Button>
         </div>
       </div>
       <div className="grid gap-3 md:grid-cols-2">

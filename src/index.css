@@ -114,6 +114,15 @@ html.dark .skeleton {
   box-sizing: border-box;
 }
 
+.scrollbar-hidden {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+
 button,
 input,
 textarea,

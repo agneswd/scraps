@@ -45,7 +45,7 @@ export function PantryItemList({ items, onItemTap, onIncrement, onDecrement }: P
   return (
     <div>
       {/* Status filter pills */}
-      <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
+      <div className="scrollbar-hidden mb-4 flex gap-2 overflow-x-auto pb-1">
         {STATUS_FILTERS.map(({ key, label }) => (
           <button
             key={key}
