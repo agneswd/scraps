@@ -6,6 +6,8 @@ services:
     container_name: scraps-db
     entrypoint: /pb/pocketbase
     command: ["serve", "--http=0.0.0.0:8090", "--dir=/pb_data", "--migrationsDir=/pb_migrations"]
+    environment:
+      - PB_DATA_DIR=/pb_data
     volumes:
       - ./pb_data:/pb_data:Z
       - ./pb_migrations:/pb_migrations:Z
