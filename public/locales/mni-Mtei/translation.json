@@ -161,7 +161,12 @@
     "categoryBody": "ꯗꯤꯚꯥꯏꯁ ꯑꯁꯤꯗꯥ ꯑꯦꯛꯁꯄꯥꯏꯔꯤ ꯄꯥꯎꯇꯥꯛꯁꯤꯡ ꯃꯈꯥꯜ ꯃꯇꯨꯡ ꯏꯟꯅꯥ ꯌꯦꯡꯕꯥ꯫",
     "categoryToggleBody": "ꯃꯈꯥꯜ ꯑꯁꯤꯒꯤ ꯄꯥꯎꯇꯥꯛꯁꯤꯡ ꯌꯥꯍꯅꯕꯥ꯫",
     "pushTitle": "⚠️ {{itemName}} ꯍꯌꯦꯡ ꯑꯦꯛꯁꯄꯥꯏꯔ ꯑꯣꯏꯒꯗꯧꯔꯦ!",
-    "pushBody": "ꯃꯥꯡꯗꯅꯕꯥ ꯊꯨꯅꯥ ꯁꯤꯖꯤꯟꯅꯧ꯫"
+    "pushBody": "ꯃꯥꯡꯗꯅꯕꯥ ꯊꯨꯅꯥ ꯁꯤꯖꯤꯟꯅꯧ꯫",
+    "testNotification": "Send test notification",
+    "testNotificationTitle": "Scraps test notification",
+    "testNotificationBody": "Notifications are working correctly.",
+    "testNotificationSent": "Test notification sent!",
+    "testNotificationHint": "Fire a notification to confirm delivery is working on this device."
   },
   "errors": {
     "offline": "ꯏꯟꯇꯔꯅꯦꯠ ꯂꯩꯇꯦ",

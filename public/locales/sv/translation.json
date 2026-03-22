@@ -161,7 +161,12 @@
     "categoryBody": "Filtrera påminnelser baserat på kategori.",
     "categoryToggleBody": "Tillåt notiser för denna kategori.",
     "pushTitle": "⚠️ {{itemName}} går ut imorgon!",
-    "pushBody": "Ät upp den innan den blir dålig."
+    "pushBody": "Ät upp den innan den blir dålig.",
+    "testNotification": "Skicka testnotis",
+    "testNotificationTitle": "Scraps-testnotis",
+    "testNotificationBody": "Notiser fungerar korrekt.",
+    "testNotificationSent": "Testnotis skickad!",
+    "testNotificationHint": "Skicka en notis för att bekräfta att de levereras på den här enheten."
   },
   "errors": {
     "offline": "Ingen internetanslutning",

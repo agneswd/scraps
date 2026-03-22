@@ -161,7 +161,12 @@
     "categoryBody": "Device asida expiry notification sing category-na filter touro.",
     "categoryToggleBody": "Category asigi notification thaklou.",
     "pushTitle": "⚠️ {{itemName}} hayeng expire oigadoure!",
-    "pushBody": "Mangdanaba thuna use touro."
+    "pushBody": "Mangdanaba thuna use touro.",
+    "testNotification": "Send test notification",
+    "testNotificationTitle": "Scraps test notification",
+    "testNotificationBody": "Notifications are working correctly.",
+    "testNotificationSent": "Test notification sent!",
+    "testNotificationHint": "Fire a notification to confirm delivery is working on this device."
   },
   "errors": {
     "offline": "Internet leite",

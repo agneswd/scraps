@@ -161,7 +161,12 @@
     "categoryBody": "Filter expiry reminders by leftover category on this device.",
     "categoryToggleBody": "Allow reminders for this category.",
     "pushTitle": "⚠️ {{itemName}} scade domani!",
-    "pushBody": "Usalo o perdilo."
+    "pushBody": "Usalo o perdilo.",
+    "testNotification": "Invia notifica di prova",
+    "testNotificationTitle": "Notifica di prova di Scraps",
+    "testNotificationBody": "Le notifiche funzionano correttamente.",
+    "testNotificationSent": "Notifica di prova inviata!",
+    "testNotificationHint": "Invia una notifica per confermare che la consegna funziona su questo dispositivo."
   },
   "errors": {
     "offline": "Nessuna connessione Internet",

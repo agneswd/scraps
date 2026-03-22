@@ -161,7 +161,12 @@
     "categoryBody": "Filter expiry reminders by leftover category on this device.",
     "categoryToggleBody": "Allow reminders for this category.",
     "pushTitle": "⚠️ {{itemName}} läuft morgen ab!",
-    "pushBody": "Gleich verwerten, bevor es verdirbt."
+    "pushBody": "Gleich verwerten, bevor es verdirbt.",
+    "testNotification": "Testbenachrichtigung senden",
+    "testNotificationTitle": "Scraps-Testbenachrichtigung",
+    "testNotificationBody": "Benachrichtigungen funktionieren korrekt.",
+    "testNotificationSent": "Testbenachrichtigung gesendet!",
+    "testNotificationHint": "Sende eine Benachrichtigung, um die Zustellung auf diesem Gerät zu prüfen."
   },
   "errors": {
     "offline": "Keine Internetverbindung",

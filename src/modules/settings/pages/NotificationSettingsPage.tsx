@@ -1,4 +1,5 @@
-import { Bell, BellOff } from 'lucide-react';
+import { Bell, BellOff, Send } from 'lucide-react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui/Button';
 import { usePush } from '@/shared/hooks/use-push';
@@ -47,6 +48,7 @@ function PreferenceToggle(props: {
 export function NotificationSettingsPage() {
   const { t } = useTranslation();
   const push = usePush();
+  const [testState, setTestState] = useState<'idle' | 'sent' | 'error'>('idle');
 
   const notificationsEnabled = push.preferences.notifications_enabled;
   const expiringEnabled = push.preferences.notify_expiring_leftovers;
@@ -71,6 +73,23 @@ export function NotificationSettingsPage() {
     }
 
     void push.updatePreferences({ [key]: !push.preferences[key] });
+  };
+
+  const handleTestNotification = async () => {
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      await reg.showNotification(t('notifications.testNotificationTitle'), {
+        body: t('notifications.testNotificationBody'),
+        icon: '/icons/icon-192.png',
+        badge: '/icons/badge-72.png',
+        tag: 'scraps-test',
+      });
+      setTestState('sent');
+      setTimeout(() => setTestState('idle'), 3000);
+    } catch {
+      setTestState('error');
+      setTimeout(() => setTestState('idle'), 3000);
+    }
   };
 
   const notificationBody = push.needsIosStandalone
@@ -152,6 +171,34 @@ export function NotificationSettingsPage() {
           />
         ))}
       </section>
+
+      {push.isSubscribed ? (
+        <section className="rounded-3xl bg-slate-50 p-4 dark:bg-slate-800/70">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-slate-900 dark:text-white">
+                {t('notifications.testNotification')}
+              </p>
+              <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+                {testState === 'sent'
+                  ? t('notifications.testNotificationSent')
+                  : testState === 'error'
+                    ? t('errors.generic')
+                    : t('notifications.testNotificationHint')}
+              </p>
+            </div>
+            <Button
+              variant="secondary"
+              className="min-h-10 shrink-0 px-4 text-xs"
+              onClick={() => void handleTestNotification()}
+              disabled={testState !== 'idle'}
+            >
+              <Send className="h-3.5 w-3.5" strokeWidth={2} />
+              {t('notifications.testNotification')}
+            </Button>
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }

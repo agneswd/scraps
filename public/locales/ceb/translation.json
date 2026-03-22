@@ -161,7 +161,12 @@
     "categoryBody": "I-filter ang mga pahibalo sa expiry base sa kategorya niini nga device.",
     "categoryToggleBody": "Itugot ang mga pahibalo para niini nga kategorya.",
     "pushTitle": "⚠️ Mo-expire na ugma ang {{itemName}}!",
-    "pushBody": "Gamita na o malabay lang ni."
+    "pushBody": "Gamita na o malabay lang ni.",
+    "testNotification": "Ipadala ang test notification",
+    "testNotificationTitle": "Scraps test notification",
+    "testNotificationBody": "Nagtrabaho na husto ang mga notification.",
+    "testNotificationSent": "Naipadala ang test notification!",
+    "testNotificationHint": "Ipadala ang notification aron kumpirmahon nga nagtrabaho kini sa device nga ito."
   },
   "errors": {
     "offline": "Walay internet connection",

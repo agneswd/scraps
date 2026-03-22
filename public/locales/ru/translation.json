@@ -161,7 +161,12 @@
     "categoryBody": "Filter expiry reminders by leftover category on this device.",
     "categoryToggleBody": "Allow reminders for this category.",
     "pushTitle": "⚠️ Срок действия {{itemName}} истекает завтра!",
-    "pushBody": "Используй его или потеряй."
+    "pushBody": "Используй его или потеряй.",
+    "testNotification": "Отправить тестовое уведомление",
+    "testNotificationTitle": "Тестовое уведомление Scraps",
+    "testNotificationBody": "Уведомления работают корректно.",
+    "testNotificationSent": "Тестовое уведомление отправлено!",
+    "testNotificationHint": "Отправьте уведомление, чтобы проверить работу на этом устройстве."
   },
   "errors": {
     "offline": "Нет подключения к Интернету",

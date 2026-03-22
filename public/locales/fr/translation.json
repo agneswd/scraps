@@ -161,7 +161,12 @@
     "categoryBody": "Filter expiry reminders by leftover category on this device.",
     "categoryToggleBody": "Allow reminders for this category.",
     "pushTitle": "⚠️ {{itemName}} expire demain !",
-    "pushBody": "Utilisez-le ou perdez-le."
+    "pushBody": "Utilisez-le ou perdez-le.",
+    "testNotification": "Envoyer une notification test",
+    "testNotificationTitle": "Notification test Scraps",
+    "testNotificationBody": "Les notifications fonctionnent correctement.",
+    "testNotificationSent": "Notification test envoyée !",
+    "testNotificationHint": "Envoyez une notification pour confirmer que la livraison fonctionne sur cet appareil."
   },
   "errors": {
     "offline": "Pas de connexion Internet",

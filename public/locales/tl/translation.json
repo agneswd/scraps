@@ -161,7 +161,12 @@
     "categoryBody": "I-filter ang mga expiry reminder ayon sa kategorya.",
     "categoryToggleBody": "Payagan ang mga abiso para sa kategoryang ito.",
     "pushTitle": "⚠️ Mage-expire na bukas ang {{itemName}}!",
-    "pushBody": "Kainin na para hindi masayang."
+    "pushBody": "Kainin na para hindi masayang.",
+    "testNotification": "Magpadala ng test notification",
+    "testNotificationTitle": "Scraps test notification",
+    "testNotificationBody": "Gumagana nang tama ang mga notification.",
+    "testNotificationSent": "Naipadala ang test notification!",
+    "testNotificationHint": "Magpadala ng notification para kumpirmahin na gumagana ito sa device na ito."
   },
   "errors": {
     "offline": "Walay internet connection",
