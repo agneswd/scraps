@@ -109,6 +109,11 @@
     "history": "History",
     "historyEmpty": "No completed items yet.",
     "theme": "Theme",
+    "themeBody": "Choose how Scraps should look on this device.",
+    "languageBody": "Change the app language used across the interface and AI responses.",
+    "historyBody": "Review deleted items and recent restorable activity.",
+    "notificationsBody": "Manage which reminders this device can receive.",
+    "accountBody": "See your signed-in account and session actions.",
     "themeSystem": "System",
     "themeLight": "Light",
     "themeDark": "Dark"
@@ -135,6 +140,7 @@
     "promptTitle": "Stay ahead of spoilage",
     "promptBody": "Get notified before your food expires",
     "enable": "Enable Notifications",
+    "disable": "Disable",
     "enabling": "Enabling...",
     "notNow": "Not Now",
     "iosHint": "Add Scraps to your Home Screen to enable notifications",
@@ -142,6 +148,15 @@
     "unavailable": "Unavailable",
     "enabled": "Notifications enabled",
     "disabled": "Notifications disabled",
+    "typesTitle": "Notification types",
+    "typesBody": "Choose which fridge reminders this device can receive.",
+    "masterToggleTitle": "All notifications",
+    "masterToggleBody": "Turn all push notifications for this device on or off.",
+    "expiringToggleTitle": "Expiring leftovers",
+    "expiringToggleBody": "Send reminders when active leftovers are within 24 hours of expiring.",
+    "categoryTitle": "Leftover categories",
+    "categoryBody": "Filter expiry reminders by leftover category on this device.",
+    "categoryToggleBody": "Allow reminders for this category.",
     "pushTitle": "⚠️ {{itemName}} expires tomorrow!",
     "pushBody": "Use it or lose it."
   },
@@ -278,6 +293,8 @@
     "selectRecipePlaceholder": "Choose a saved recipe",
     "nothingMissing": "You already have everything needed for this recipe.",
     "generateCta": "Add missing items",
+    "generateAllCta": "Add recipe ingredients",
+    "noRecipeIngredients": "This recipe has no required ingredients to add.",
     "generateError": "Could not generate shopping items from this recipe."
   },
   "ai": {
@@ -291,6 +308,10 @@
     "parsingRecipe": "Parsing recipe with AI...",
     "parseRecipeError": "AI could not parse that recipe. Try another source or enter it manually.",
     "generateTitle": "Generate With AI",
+    "generatePromptLabel": "Recipe direction",
+    "generatePromptHint": "Optional: tell AI the cuisine, style, or ingredient focus you want.",
+    "generatePromptPlaceholder": "e.g. Italian pasta, high protein, quick dinner",
+    "generateCta": "Generate recipe",
     "generating": "Creating a recipe from your pantry...",
     "generateError": "AI could not generate a recipe right now."
   }

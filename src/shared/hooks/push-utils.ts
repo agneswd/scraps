@@ -1,7 +1,20 @@
+import type { RecordModel } from 'pocketbase';
 import { ClientResponseError } from 'pocketbase';
 import { pocketbase } from '@/shared/api/pocketbase';
+import {
+  DEFAULT_PUSH_NOTIFICATION_PREFERENCES,
+  type PushNotificationPreferences,
+} from '@/modules/settings/notification-preferences';
 
 const PUSH_COLLECTION = 'push_subscriptions';
+
+export type PushSubscriptionRecord = RecordModel & PushNotificationPreferences & {
+  user_id: string;
+  household_id: string;
+  endpoint: string;
+  p256dh: string;
+  auth_key: string;
+};
 
 export function getRelationId(value: unknown) {
   if (typeof value === 'string' && value.length > 0) {
@@ -79,12 +92,15 @@ export async function ensureServiceWorkerRegistration() {
 }
 
 async function findPushRecordId(endpoint: string) {
-  try {
-    const record = await pocketbase
-      .collection(PUSH_COLLECTION)
-      .getFirstListItem(`endpoint = '${escapeFilterValue(endpoint)}'`);
+  const record = await findPushRecord(endpoint);
+  return record?.id ?? null;
+}
 
-    return record.id;
+export async function findPushRecord(endpoint: string) {
+  try {
+    return await pocketbase
+      .collection(PUSH_COLLECTION)
+      .getFirstListItem<PushSubscriptionRecord>(`endpoint = '${escapeFilterValue(endpoint)}'`);
   } catch (error) {
     if (error instanceof ClientResponseError && error.status === 404) {
       return null;
@@ -94,6 +110,13 @@ async function findPushRecordId(endpoint: string) {
   }
 }
 
+export function getPushPreferences(record?: Partial<PushNotificationPreferences> | null): PushNotificationPreferences {
+  return {
+    ...DEFAULT_PUSH_NOTIFICATION_PREFERENCES,
+    ...(record ?? {}),
+  };
+}
+
 export async function persistPushSubscription(options: {
   endpoint: string;
   p256dh: string;
@@ -101,19 +124,33 @@ export async function persistPushSubscription(options: {
   userId: string;
   householdId: string;
 }) {
-  const existingRecordId = await findPushRecordId(options.endpoint);
+  const existingRecord = await findPushRecord(options.endpoint);
 
-  if (existingRecordId) {
-    return;
+  if (existingRecord) {
+    return existingRecord;
   }
 
-  await pocketbase.collection(PUSH_COLLECTION).create({
+  return pocketbase.collection(PUSH_COLLECTION).create<PushSubscriptionRecord>({
     user_id: options.userId,
     household_id: options.householdId,
     endpoint: options.endpoint,
     p256dh: options.p256dh,
     auth_key: options.authKey,
+    ...DEFAULT_PUSH_NOTIFICATION_PREFERENCES,
   });
+}
+
+export async function updatePushSubscriptionPreferences(
+  endpoint: string,
+  preferences: PushNotificationPreferences,
+) {
+  const record = await findPushRecord(endpoint);
+
+  if (!record) {
+    throw new Error('push-subscription-not-found');
+  }
+
+  return pocketbase.collection(PUSH_COLLECTION).update<PushSubscriptionRecord>(record.id, preferences);
 }
 
 export async function removePushSubscriptionRecord(endpoint: string | null) {

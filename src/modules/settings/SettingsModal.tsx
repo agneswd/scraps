@@ -1,13 +1,15 @@
-import { useEffect, useState } from 'react';
+import { ChevronLeft } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { SettingsActions } from '@/modules/settings/SettingsActions';
 import { HistoryLog } from '@/modules/settings/HistoryLog';
 import { LanguagePicker } from '@/modules/settings/LanguagePicker';
 import { ThemePicker } from '@/modules/settings/ThemePicker';
-import { AiModelPicker } from '@/modules/settings/AiModelPicker';
+import { AccountSettingsPage } from '@/modules/settings/pages/AccountSettingsPage';
+import { NotificationSettingsPage } from '@/modules/settings/pages/NotificationSettingsPage';
+import { SettingsHomePage } from '@/modules/settings/pages/SettingsHomePage';
 import { Modal } from '@/shared/ui/Modal';
 
-type Tab = 'history' | 'theme' | 'language' | 'aiModel';
+type SettingsPage = 'home' | 'history' | 'theme' | 'language' | 'notifications' | 'account';
 
 type Props = {
   isOpen: boolean;
@@ -16,57 +18,74 @@ type Props = {
 
 export function SettingsModal({ isOpen, onClose }: Props) {
   const { t } = useTranslation();
-  const [tab, setTab] = useState<Tab>('history');
+  const [page, setPage] = useState<SettingsPage>('home');
 
   useEffect(() => {
     if (isOpen) {
-      setTab('history');
+      setPage('home');
     }
   }, [isOpen]);
 
-  const tabs: { id: Tab; label: string }[] = [
-    { id: 'history', label: t('settings.history') },
-    { id: 'theme', label: t('settings.theme') },
-    { id: 'language', label: t('settings.language') },
-    { id: 'aiModel', label: t('settings.aiModel', 'AI Model') },
-  ];
+  const pageTitle = useMemo(() => {
+    switch (page) {
+      case 'history':
+        return t('settings.history');
+      case 'theme':
+        return t('settings.theme');
+      case 'language':
+        return t('settings.language');
+      case 'notifications':
+        return t('notifications.label');
+      case 'account':
+        return t('settings.accountLabel', 'Account');
+      default:
+        return t('settings.title');
+    }
+  }, [page, t]);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={t('settings.title')}>
-      {/* Tab bar */}
-      <div className="relative mb-5 flex rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
-        <span
-          aria-hidden
-          className="pointer-events-none absolute inset-y-1 rounded-lg bg-white shadow-soft transition-all duration-200 ease-spring dark:bg-slate-700"
-          style={{
-            width: `calc((100% - 0.5rem) / ${tabs.length})`,
-            left: `calc(0.25rem + ${tabs.findIndex((t) => t.id === tab)} * (100% - 0.5rem) / ${tabs.length})`,
-          }}
-        />
-        {tabs.map((t) => (
+    <Modal isOpen={isOpen} onClose={onClose} title={pageTitle} fullScreen>
+      <div className="mx-auto flex h-full w-full max-w-2xl flex-col gap-5 px-1 pb-4">
+        {page !== 'home' ? (
           <button
-            key={t.id}
             type="button"
-            onClick={() => setTab(t.id)}
-            aria-pressed={tab === t.id}
-            className={[
-              'relative flex-1 rounded-lg py-2 text-sm font-medium transition-colors duration-200',
-              tab === t.id
-                ? 'text-slate-900 dark:text-white'
-                : 'text-slate-400 hover:text-slate-600 dark:text-slate-500',
-            ].join(' ')}
+            onClick={() => setPage('home')}
+            className="inline-flex w-fit items-center gap-2 rounded-full bg-slate-100 px-3 py-2 text-sm font-medium text-slate-600 transition-all hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
           >
-            {t.label}
+            <ChevronLeft className="h-4 w-4" strokeWidth={2} />
+            {t('common.back')}
           </button>
-        ))}
+        ) : null}
+
+        {page === 'home' ? (
+          <SettingsHomePage
+            onOpenHistory={() => setPage('history')}
+            onOpenTheme={() => setPage('theme')}
+            onOpenLanguage={() => setPage('language')}
+            onOpenNotifications={() => setPage('notifications')}
+            onOpenAccount={() => setPage('account')}
+          />
+        ) : null}
+
+        {page === 'history' ? <HistoryLog /> : null}
+
+        {page === 'theme' ? (
+          <div className="space-y-3">
+            <p className="text-sm text-slate-500 dark:text-slate-400">{t('settings.themeBody')}</p>
+            <ThemePicker />
+          </div>
+        ) : null}
+
+        {page === 'language' ? (
+          <div className="space-y-3">
+            <p className="text-sm text-slate-500 dark:text-slate-400">{t('settings.languageBody')}</p>
+            <LanguagePicker />
+          </div>
+        ) : null}
+
+        {page === 'notifications' ? <NotificationSettingsPage /> : null}
+        {page === 'account' ? <AccountSettingsPage /> : null}
       </div>
-
-      {tab === 'history' ? <HistoryLog /> : null}
-      {tab === 'theme' ? <ThemePicker /> : null}
-      {tab === 'language' ? <LanguagePicker /> : null}
-      {tab === 'aiModel' ? <AiModelPicker /> : null}
-
-      <SettingsActions />
     </Modal>
   );
 }

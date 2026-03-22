@@ -1,14 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/modules/auth/use-auth';
+import { DEFAULT_PUSH_NOTIFICATION_PREFERENCES, type PushNotificationPreferences } from '@/modules/settings/notification-preferences';
 import {
   ensureServiceWorkerRegistration,
   getErrorMessage,
+  getPushPreferences,
   getRelationId,
   isAppleMobileDevice,
   isBrowserPushCapable,
   isStandaloneMode,
   persistPushSubscription,
   removePushSubscriptionRecord,
+  updatePushSubscriptionPreferences,
   urlBase64ToUint8Array,
 } from '@/shared/hooks/push-utils';
 
@@ -23,6 +26,7 @@ export function usePush() {
   const [permission, setPermission] = useState<PushPermissionState>('unsupported');
   const [error, setError] = useState<string | null>(null);
   const [endpoint, setEndpoint] = useState<string | null>(null);
+  const [preferences, setPreferences] = useState<PushNotificationPreferences>(DEFAULT_PUSH_NOTIFICATION_PREFERENCES);
 
   const userId = typeof user?.id === 'string' ? user.id : null;
   const householdId = getRelationId(user?.household_id);
@@ -40,6 +44,7 @@ export function usePush() {
       setEndpoint(null);
       setError(null);
       setPermission(isBrowserSupported ? Notification.permission : 'unsupported');
+      setPreferences(DEFAULT_PUSH_NOTIFICATION_PREFERENCES);
       return;
     }
 
@@ -48,6 +53,7 @@ export function usePush() {
       setEndpoint(null);
       setError(null);
       setPermission('unsupported');
+      setPreferences(DEFAULT_PUSH_NOTIFICATION_PREFERENCES);
       return;
     }
 
@@ -56,6 +62,7 @@ export function usePush() {
     if (needsIosStandalone) {
       setIsSubscribed(false);
       setEndpoint(null);
+      setPreferences(DEFAULT_PUSH_NOTIFICATION_PREFERENCES);
       return;
     }
 
@@ -77,7 +84,7 @@ export function usePush() {
         throw new Error('The browser push subscription is missing encryption keys.');
       }
 
-      await persistPushSubscription({
+      const record = await persistPushSubscription({
         endpoint: subscription.endpoint,
         p256dh,
         authKey,
@@ -87,10 +94,12 @@ export function usePush() {
 
       setIsSubscribed(true);
       setEndpoint(subscription.endpoint);
+      setPreferences(getPushPreferences(record));
       setError(null);
     } catch (caughtError) {
       setIsSubscribed(false);
       setEndpoint(null);
+      setPreferences(DEFAULT_PUSH_NOTIFICATION_PREFERENCES);
       setError(getErrorMessage(caughtError, 'Push notifications could not be initialized.'));
     }
   }, [householdId, isBrowserSupported, needsIosStandalone, userId]);
@@ -168,7 +177,7 @@ export function usePush() {
         throw new Error('The browser push subscription is missing encryption keys.');
       }
 
-      await persistPushSubscription({
+      const record = await persistPushSubscription({
         endpoint: activeSubscription.endpoint,
         p256dh,
         authKey,
@@ -178,6 +187,7 @@ export function usePush() {
 
       setIsSubscribed(true);
       setEndpoint(activeSubscription.endpoint);
+      setPreferences(getPushPreferences(record));
       setError(null);
       return true;
     } catch (caughtError) {
@@ -187,6 +197,7 @@ export function usePush() {
 
       setIsSubscribed(false);
       setEndpoint(null);
+  setPreferences(DEFAULT_PUSH_NOTIFICATION_PREFERENCES);
       setError(getErrorMessage(caughtError, 'Notifications could not be enabled.'));
       return false;
     } finally {
@@ -218,15 +229,43 @@ export function usePush() {
       await removePushSubscriptionRecord(nextEndpoint);
       setIsSubscribed(false);
       setEndpoint(null);
+      setPreferences(DEFAULT_PUSH_NOTIFICATION_PREFERENCES);
       setPermission(Notification.permission);
     } catch (caughtError) {
       setIsSubscribed(false);
       setEndpoint(null);
+      setPreferences(DEFAULT_PUSH_NOTIFICATION_PREFERENCES);
       setError(getErrorMessage(caughtError, 'Notifications could not be disabled cleanly.'));
     } finally {
       setIsLoading(false);
     }
   }, [endpoint, isBrowserSupported]);
+
+  const updatePreferences = useCallback(async (patch: Partial<PushNotificationPreferences>) => {
+    if (!endpoint) {
+      setError('Enable notifications for this device before changing notification preferences.');
+      return false;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    const nextPreferences = {
+      ...preferences,
+      ...patch,
+    } satisfies PushNotificationPreferences;
+
+    try {
+      const updatedRecord = await updatePushSubscriptionPreferences(endpoint, nextPreferences);
+      setPreferences(getPushPreferences(updatedRecord));
+      return true;
+    } catch (caughtError) {
+      setError(getErrorMessage(caughtError, 'Notification preferences could not be updated.'));
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [endpoint, preferences]);
 
   return {
     error,
@@ -235,9 +274,11 @@ export function usePush() {
     isSubscribed,
     isSupported,
     needsIosStandalone,
+    preferences,
     permission,
     refresh,
     subscribe,
     unsubscribe,
+    updatePreferences,
   };
 }

@@ -30,7 +30,7 @@ const desktopNavClass = ({ isActive }: { isActive: boolean }) =>
 
 export function Layout() {
   const { t } = useTranslation();
-  const { user, userEmail } = useAuth();
+  const { user } = useAuth();
   const push = usePush();
   const location = useLocation();
   const element = useOutlet();
@@ -38,6 +38,7 @@ export function Layout() {
   const [isAddPantryOpen, setIsAddPantryOpen] = useState(false);
   const [isAddShoppingOpen, setIsAddShoppingOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const showContextAdd = location.pathname !== '/stats';
 
   const openContextAdd = () => {
     if (location.pathname === '/pantry') setIsAddPantryOpen(true);
@@ -49,11 +50,10 @@ export function Layout() {
     <div className="flex min-h-[100dvh] md:h-[100dvh] md:overflow-hidden">
       {/* ─── Desktop sidebar (md+) ─── */}
       <aside className="hidden w-56 shrink-0 flex-col border-r border-slate-100 bg-white px-4 py-6 md:flex dark:border-slate-800 dark:bg-slate-900">
-        <div className="mb-6 px-1">
+        <div className="mb-4 px-1">
           <p className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
             {t('common.appName')}
           </p>
-          <p className="mt-0.5 truncate text-xs text-slate-400 dark:text-slate-500">{userEmail}</p>
         </div>
 
         <nav className="flex flex-col gap-1">
@@ -75,14 +75,16 @@ export function Layout() {
           </NavLink>
         </nav>
 
-        <button
-          type="button"
-          onClick={openContextAdd}
-          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-white shadow-soft transition-all duration-200 hover:bg-slate-700 active:scale-[0.98] dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
-        >
-          <Plus className="h-4 w-4 shrink-0" strokeWidth={2.5} />
-          {t('addItem.fabLabel')}
-        </button>
+        {showContextAdd ? (
+          <button
+            type="button"
+            onClick={openContextAdd}
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-white shadow-soft transition-all duration-200 hover:bg-slate-700 active:scale-[0.98] dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
+          >
+            <Plus className="h-4 w-4 shrink-0" strokeWidth={2.5} />
+            {t('addItem.fabLabel')}
+          </button>
+        ) : null}
 
         <div className="flex-1" />
 
@@ -101,26 +103,17 @@ export function Layout() {
 
       {/* ─── Main column ─── */}
       <div className="flex min-h-[100dvh] flex-1 flex-col md:min-h-0 md:overflow-hidden">
-        {/* Mobile header */}
-        <header className="flex items-center justify-between px-5 pb-1 pt-4 md:hidden">
-          <div>
-            <p className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
-              {t('common.appName')}
-            </p>
-            <p className="text-xs text-slate-400 dark:text-slate-500">{userEmail}</p>
-          </div>
-          <button
-            type="button"
-            onClick={() => setIsSettingsOpen(true)}
-            aria-label={t('settings.title')}
-            className="flex h-10 w-10 items-center justify-center rounded-full text-slate-400 transition-all hover:bg-slate-100 active:scale-90 dark:text-slate-500 dark:hover:bg-slate-800"
-          >
-            <Settings className="h-[1.125rem] w-[1.125rem]" strokeWidth={2} />
-          </button>
-        </header>
+        <button
+          type="button"
+          onClick={() => setIsSettingsOpen(true)}
+          aria-label={t('settings.title')}
+          className="fixed right-5 top-[max(1rem,env(safe-area-inset-top))] z-30 flex h-10 w-10 items-center justify-center rounded-full text-slate-400 transition-all hover:bg-slate-100 active:scale-90 md:hidden dark:text-slate-500 dark:hover:bg-slate-800"
+        >
+          <Settings className="h-[1.125rem] w-[1.125rem]" strokeWidth={2} />
+        </button>
 
         {/* Page content */}
-        <main className="flex-1 overflow-visible px-5 pb-28 pt-2 md:overflow-auto md:px-8 md:py-6 md:pb-6">
+        <main className="flex-1 overflow-visible px-5 pb-28 pt-5 md:overflow-auto md:px-8 md:py-6 md:pb-6">
           <div className="relative mx-auto w-full max-w-lg md:max-w-2xl">
             <AnimatePresence mode="wait">
               <motion.div
@@ -158,7 +151,6 @@ export function Layout() {
                   </div>
                 )}
               </NavLink>
-              <div className="w-16 shrink-0" />
               <NavLink to="/shopping-list" className="flex flex-1">
                 {({ isActive }) => (
                   <div className={mobileTabClass({ isActive })}>
@@ -180,14 +172,16 @@ export function Layout() {
             </div>
 
             {/* Center Add button — context-sensitive */}
-            <button
-              type="button"
-              onClick={openContextAdd}
-              aria-label={t('addItem.fabLabel')}
-              className="absolute left-1/2 top-0 z-10 flex h-16 w-16 -translate-x-1/2 -translate-y-[60%] items-center justify-center rounded-full bg-slate-900 text-white shadow-elevated ring-4 ring-white transition-all hover:bg-slate-700 active:scale-90 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 dark:ring-slate-900"
-            >
-              <Plus className="h-7 w-7" strokeWidth={2.5} />
-            </button>
+            {showContextAdd ? (
+              <button
+                type="button"
+                onClick={openContextAdd}
+                aria-label={t('addItem.fabLabel')}
+                className="absolute left-1/2 top-0 z-10 flex h-[3.25rem] w-[3.25rem] -translate-x-1/2 -translate-y-[58%] items-center justify-center rounded-full bg-slate-900 text-white shadow-elevated ring-3 ring-white transition-all hover:bg-slate-700 active:scale-90 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 dark:ring-slate-900"
+              >
+                <Plus className="h-[1.375rem] w-[1.375rem]" strokeWidth={2.5} />
+              </button>
+            ) : null}
           </div>
         </nav>
 

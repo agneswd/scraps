@@ -62,11 +62,11 @@ export function DashboardPage() {
   return (
     <>
       <section className="space-y-4 pb-4">
-        <div className="flex items-baseline justify-between">
+        <div className="flex items-baseline justify-between gap-3 pr-14 md:pr-0">
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
             {t('dashboard.title')}
           </h1>
-          <span className="text-sm text-slate-400 dark:text-slate-500">
+          <span className="shrink-0 text-sm text-slate-400 dark:text-slate-500">
             {leftovers.length} {leftovers.length === 1 ? 'item' : 'items'}
           </span>
         </div>

@@ -62,7 +62,7 @@ async function authenticateAdmin() {
 
 async function listExpiringLeftovers(now, cutoff) {
   return pocketbase.collection('leftovers').getFullList({
-    fields: 'id,item_name,expiry_date,household_id',
+    fields: 'id,item_name,expiry_date,household_id,category',
     filter: buildExpiringFilter(now, cutoff),
     sort: '+expiry_date',
   });
@@ -70,9 +70,22 @@ async function listExpiringLeftovers(now, cutoff) {
 
 async function listHouseholdSubscriptions(householdId) {
   return pocketbase.collection('push_subscriptions').getFullList({
-    fields: 'id,endpoint,p256dh,auth_key',
+    fields: 'id,endpoint,p256dh,auth_key,notifications_enabled,notify_expiring_leftovers,notify_meat,notify_poultry,notify_seafood,notify_veg,notify_dairy,notify_grains,notify_prepared,notify_other',
     filter: `household_id = '${escapeFilterValue(householdId)}'`,
   });
+}
+
+function shouldNotifySubscription(subscriptionRecord, leftover) {
+  if (subscriptionRecord.notifications_enabled === false) {
+    return false;
+  }
+
+  if (subscriptionRecord.notify_expiring_leftovers === false) {
+    return false;
+  }
+
+  const categoryKey = `notify_${leftover.category}`;
+  return subscriptionRecord[categoryKey] !== false;
 }
 
 async function deleteSubscription(subscriptionId) {
@@ -166,6 +179,10 @@ async function runExpiryCheck() {
       let delivered = false;
 
       for (const subscription of subscriptions) {
+        if (!shouldNotifySubscription(subscription, leftover)) {
+          continue;
+        }
+
         const sent = await sendNotification(subscription, payload);
         delivered = delivered || sent;
 
