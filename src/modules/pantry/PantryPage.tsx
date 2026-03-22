@@ -68,7 +68,7 @@ export function PantryPage() {
   // ── Loading state ──────────────────────────────────────────────────────────
   if (isLoading) {
     return (
-      <div className="space-y-5 overflow-x-hidden">
+      <div className="space-y-5">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
             {t('pantry.title')}
@@ -101,7 +101,7 @@ export function PantryPage() {
 
   // ── Content ────────────────────────────────────────────────────────────────
   return (
-    <div className="space-y-5 overflow-x-hidden">
+    <div className="space-y-5">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
