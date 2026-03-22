@@ -1,20 +1,11 @@
 import type { LeftoverCategory } from '@/modules/dashboard/expiry-utils';
 import type { PantryCategory } from '@/modules/pantry/pantry-categories';
 import type { RecipeIngredientInput } from '@/modules/pantry/recipes/data/recipe-api';
+import { getGeminiModelHierarchy, shouldRetryGeminiModel } from '@/modules/ai/model-hierarchy';
 import { GEMINI_DAILY_LIMIT, incrementDailyUsage, isDailyLimitReached } from '@/modules/ai/rate-limits';
+import i18n from '@/shared/i18n/i18n';
 
 const GEMINI_KEY = import.meta.env.VITE_GEMINI_KEY?.trim();
-
-function getGeminiEndpoint() {
-  let model = import.meta.env.VITE_GEMINI_MODEL?.trim() || 'gemini-3.1-flash-lite-preview';
-  if (typeof window !== 'undefined') {
-    const stored = window.localStorage.getItem('scraps.preferences.aiModel');
-    if (stored) {
-      model = stored;
-    }
-  }
-  return `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
-}
 
 type GeminiResponse = {
   candidates?: Array<{
@@ -62,20 +53,65 @@ function extractJson(text: string) {
   return fenced?.[1]?.trim() ?? trimmed;
 }
 
-async function requestGeminiJson<T>(
-  householdId: string,
+function getAiOutputLanguage() {
+  return i18n.resolvedLanguage || i18n.language || 'en';
+}
+
+function getLanguageInstruction() {
+  return `Write all human-readable field values in the selected app language (${getAiOutputLanguage()}). Keep JSON keys in English exactly as requested.`;
+}
+
+function getRecipeFormattingInstruction() {
+  return 'Format instructions as clear numbered steps with a blank line between each step. Use normal capitalization for titles, ingredient names, and instruction text.';
+}
+
+function capitalizeFirstLetter(text: string) {
+  const trimmed = text.trim();
+  if (!trimmed) {
+    return '';
+  }
+
+  return trimmed.charAt(0).toLocaleUpperCase() + trimmed.slice(1);
+}
+
+function formatRecipeInstructions(text: string) {
+  const normalized = text
+    .replace(/\r/g, '')
+    .replace(/\t+/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+
+  if (!normalized) {
+    return '';
+  }
+
+  const fromLines = normalized
+    .split(/\n+/)
+    .map((line) => line.replace(/^\s*(?:step\s*)?\d+[.):-]?\s*/i, '').replace(/^[-*•]\s*/, '').trim())
+    .filter(Boolean);
+
+  const candidateSteps = fromLines.length > 1
+    ? fromLines
+    : normalized
+        .split(/(?<=[.!?])\s+(?=[\p{L}\d])/u)
+        .map((line) => line.replace(/^\s*(?:step\s*)?\d+[.):-]?\s*/i, '').trim())
+        .filter(Boolean);
+
+  return candidateSteps
+    .map((step, index) => `${index + 1}. ${capitalizeFirstLetter(step)}`)
+    .join('\n\n');
+}
+
+function getGeminiEndpoint(model: string) {
+  return `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+}
+
+async function requestGeminiJsonForModel<T>(
+  model: string,
   parts: Array<{ text: string } | { inlineData: { mimeType: string; data: string } }>,
 ) {
-  if (!GEMINI_KEY) {
-    throw new Error('missing-gemini-key');
-  }
-
-  if (isDailyLimitReached('gemini', householdId)) {
-    throw new Error(`gemini-limit-reached:${GEMINI_DAILY_LIMIT}`);
-  }
-
-  const endpoint = getGeminiEndpoint();
-  const response = await fetch(`${endpoint}?key=${encodeURIComponent(GEMINI_KEY)}`, {
+  const endpoint = getGeminiEndpoint(model);
+  const response = await fetch(`${endpoint}?key=${encodeURIComponent(GEMINI_KEY ?? '')}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -98,8 +134,41 @@ async function requestGeminiJson<T>(
     throw new Error('gemini-empty-response');
   }
 
-  incrementDailyUsage('gemini', householdId);
-  return JSON.parse(extractJson(text)) as T;
+  try {
+    return JSON.parse(extractJson(text)) as T;
+  } catch {
+    throw new Error('invalid-json-response');
+  }
+}
+
+async function requestGeminiJson<T>(
+  householdId: string,
+  parts: Array<{ text: string } | { inlineData: { mimeType: string; data: string } }>,
+) {
+  if (!GEMINI_KEY) {
+    throw new Error('missing-gemini-key');
+  }
+
+  if (isDailyLimitReached('gemini', householdId)) {
+    throw new Error(`gemini-limit-reached:${GEMINI_DAILY_LIMIT}`);
+  }
+
+  let lastError: unknown = null;
+
+  for (const model of getGeminiModelHierarchy()) {
+    try {
+      const result = await requestGeminiJsonForModel<T>(model, parts);
+      incrementDailyUsage('gemini', householdId);
+      return result;
+    } catch (error) {
+      lastError = error;
+      if (!shouldRetryGeminiModel(error)) {
+        throw error;
+      }
+    }
+  }
+
+  throw lastError instanceof Error ? lastError : new Error('gemini-request-failed');
 }
 
 function toRecipeDraft(input: unknown): AiRecipeDraft {
@@ -109,9 +178,9 @@ function toRecipeDraft(input: unknown): AiRecipeDraft {
   }
 
   return {
-    title: String(draft.title).trim(),
-    description: draft.description ? String(draft.description).trim() : undefined,
-    instructions: String(draft.instructions).trim(),
+    title: capitalizeFirstLetter(String(draft.title)),
+    description: draft.description ? capitalizeFirstLetter(String(draft.description)) : undefined,
+    instructions: formatRecipeInstructions(String(draft.instructions)),
     servings: typeof draft.servings === 'number' ? draft.servings : undefined,
     prep_time: typeof draft.prep_time === 'number' ? draft.prep_time : undefined,
     cook_time: typeof draft.cook_time === 'number' ? draft.cook_time : undefined,
@@ -119,7 +188,7 @@ function toRecipeDraft(input: unknown): AiRecipeDraft {
     tags: draft.tags ? String(draft.tags).trim() : undefined,
     ingredients: draft.ingredients
       .map((ingredient) => ({
-        name: String(ingredient.name ?? '').trim(),
+        name: capitalizeFirstLetter(String(ingredient.name ?? '')),
         quantity: typeof ingredient.quantity === 'number' ? ingredient.quantity : undefined,
         unit: ingredient.unit ? String(ingredient.unit).trim() : undefined,
         optional: Boolean(ingredient.optional),
@@ -161,7 +230,7 @@ export async function identifyItemFromPhoto(
         },
       },
       {
-        text: `${targetPrompt} Respond with JSON only in this shape: { "name": "...", "category": "...", "estimated_expiry_days": 0 }. Categories must be one of: meat, poultry, seafood, veg, dairy, grains, prepared, other, condiment, spice, beverage, frozen, baking, canned.`,
+        text: `${targetPrompt} ${getLanguageInstruction()} Respond with JSON only in this shape: { "name": "...", "category": "...", "estimated_expiry_days": 0 }. The "category" value must be one of these exact internal values: meat, poultry, seafood, veg, dairy, grains, prepared, other, condiment, spice, beverage, frozen, baking, canned.`,
       },
     ]),
   );
@@ -171,7 +240,7 @@ export async function parseRecipeFromUrl(householdId: string, url: string) {
   return toRecipeDraft(
     await requestGeminiJson<AiRecipeDraft>(householdId, [
       {
-        text: `Extract a recipe from this public URL: ${url}. Respond with JSON only in this shape: { "title": "...", "description": "...", "servings": 0, "prep_time": 0, "cook_time": 0, "source_url": "...", "tags": "...", "ingredients": [{ "name": "...", "quantity": 0, "unit": "...", "optional": false }], "instructions": "..." }`,
+        text: `Extract a recipe from this public URL: ${url}. ${getLanguageInstruction()} ${getRecipeFormattingInstruction()} Respond with JSON only in this shape: { "title": "...", "description": "...", "servings": 0, "prep_time": 0, "cook_time": 0, "source_url": "...", "tags": "...", "ingredients": [{ "name": "...", "quantity": 0, "unit": "...", "optional": false }], "instructions": "..." }`,
       },
     ]),
   );
@@ -181,7 +250,7 @@ export async function parseRecipeFromText(householdId: string, text: string) {
   return toRecipeDraft(
     await requestGeminiJson<AiRecipeDraft>(householdId, [
       {
-        text: `Extract and structure the following recipe text. Respond with JSON only in this shape: { "title": "...", "description": "...", "servings": 0, "prep_time": 0, "cook_time": 0, "tags": "...", "ingredients": [{ "name": "...", "quantity": 0, "unit": "...", "optional": false }], "instructions": "..." }\n\n${text}`,
+        text: `Extract and structure the following recipe text. ${getLanguageInstruction()} ${getRecipeFormattingInstruction()} Respond with JSON only in this shape: { "title": "...", "description": "...", "servings": 0, "prep_time": 0, "cook_time": 0, "tags": "...", "ingredients": [{ "name": "...", "quantity": 0, "unit": "...", "optional": false }], "instructions": "..." }\n\n${text}`,
       },
     ]),
   );
@@ -199,17 +268,25 @@ export async function parseRecipeFromPhoto(householdId: string, photo: Blob) {
         },
       },
       {
-        text: 'Extract and structure the recipe shown in this image. Respond with JSON only in this shape: { "title": "...", "description": "...", "servings": 0, "prep_time": 0, "cook_time": 0, "tags": "...", "ingredients": [{ "name": "...", "quantity": 0, "unit": "...", "optional": false }], "instructions": "..." }',
+        text: `Extract and structure the recipe shown in this image. ${getLanguageInstruction()} ${getRecipeFormattingInstruction()} Respond with JSON only in this shape: { "title": "...", "description": "...", "servings": 0, "prep_time": 0, "cook_time": 0, "tags": "...", "ingredients": [{ "name": "...", "quantity": 0, "unit": "...", "optional": false }], "instructions": "..." }`,
       },
     ]),
   );
 }
 
-export async function generateRecipeFromPantry(householdId: string, pantryItems: string[]) {
+export async function generateRecipeFromPantry(
+  householdId: string,
+  pantryItems: string[],
+  prompt?: string,
+) {
+  const promptInstruction = prompt?.trim()
+    ? `Also follow this user preference as closely as possible while still using the pantry items: ${prompt.trim()}.`
+    : 'No extra user preference was provided.';
+
   return toRecipeDraft(
     await requestGeminiJson<AiRecipeDraft>(householdId, [
       {
-        text: `I have these ingredients in my pantry: ${pantryItems.join(', ')}. Create one practical recipe that uses only these items plus basic staples like salt, pepper, oil, and water. Respond with JSON only in this shape: { "title": "...", "description": "...", "servings": 0, "prep_time": 0, "cook_time": 0, "tags": "...", "ingredients": [{ "name": "...", "quantity": 0, "unit": "...", "optional": false }], "instructions": "..." }`,
+        text: `I have these ingredients in my pantry: ${pantryItems.join(', ')}. Create one practical recipe that uses only these items plus basic staples like salt, pepper, oil, and water. ${promptInstruction} ${getLanguageInstruction()} ${getRecipeFormattingInstruction()} Respond with JSON only in this shape: { "title": "...", "description": "...", "servings": 0, "prep_time": 0, "cook_time": 0, "tags": "...", "ingredients": [{ "name": "...", "quantity": 0, "unit": "...", "optional": false }], "instructions": "..." }`,
       },
     ]),
   );

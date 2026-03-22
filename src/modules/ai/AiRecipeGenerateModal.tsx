@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAiRecipeGenerate } from '@/modules/ai/use-ai-recipe-generate';
 import { useCreateRecipe } from '@/modules/pantry/recipes/data/use-recipes';
 import { RecipeEditor, type RecipeFormValue } from '@/modules/pantry/recipes/ui/RecipeEditor';
+import { Button } from '@/shared/ui/Button';
 import { Modal } from '@/shared/ui/Modal';
 
 type AiRecipeGenerateModalProps = {
@@ -46,29 +47,34 @@ export function AiRecipeGenerateModal({ isOpen, pantryItems, onClose }: AiRecipe
   const generateRecipe = useAiRecipeGenerate();
   const createRecipe = useCreateRecipe();
   const [error, setError] = useState<string | null>(null);
-  // Stable string key for pantryItems so the effect only re-runs if items actually change.
-  const pantryKey = pantryItems.join(',');
+  const [prompt, setPrompt] = useState('');
 
-  // Single effect: reset any stale result then immediately kick off a fresh generation.
-  // Calling mutate() after reset() is safe — mutate starts a new async operation
-  // regardless of the mutation's current state.
   useEffect(() => {
-    if (!isOpen || pantryItems.length === 0) return;
-
-    setError(null);
-    generateRecipe.reset();
-    generateRecipe.mutate(pantryItems, {
-      onError: () => setError(t('ai.generateError')),
-    });
+    if (!isOpen) {
+      setPrompt('');
+      setError(null);
+      generateRecipe.reset();
+    }
+  // generateRecipe.reset() is intentionally only triggered on open-state changes.
+  // Depending on the whole mutation object causes a render loop because the object identity changes.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, pantryKey, t]);
+  }, [isOpen]);
 
   const initialValue = useMemo(() => toFormValue(generateRecipe.data), [generateRecipe.data]);
+  const isGenerating = generateRecipe.isPending;
 
-  // Show the spinner whenever we're waiting for a result. This covers:
-  // - The mutation is actively running (isPending)
-  // - The first render after modal opens before the effect fires (status === 'idle')
-  const isGenerating = generateRecipe.isPending || generateRecipe.status === 'idle';
+  function handleGenerate() {
+    setError(null);
+    generateRecipe.mutate(
+      {
+        pantryItems,
+        prompt: prompt.trim() || undefined,
+      },
+      {
+        onError: () => setError(t('ai.generateError')),
+      },
+    );
+  }
 
   async function handleSubmit(value: RecipeFormValue) {
     try {
@@ -93,7 +99,43 @@ export function AiRecipeGenerateModal({ isOpen, pantryItems, onClose }: AiRecipe
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={t('ai.generateTitle')}>
-      {/* Loading: generating or just opened before the effect fires */}
+      {!initialValue && !isGenerating ? (
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-slate-900 dark:text-white">
+              {t('ai.generatePromptLabel', 'Recipe direction')}
+            </p>
+            <p className="text-xs text-slate-400 dark:text-slate-500">
+              {t('ai.generatePromptHint', 'Optional: tell AI the cuisine, style, or ingredient focus you want.')}
+            </p>
+          </div>
+
+          <textarea
+            value={prompt}
+            onChange={(event) => setPrompt(event.target.value)}
+            placeholder={t('ai.generatePromptPlaceholder', 'e.g. Italian pasta, high protein, quick dinner')}
+            className="min-h-24 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition-all focus:border-slate-400 focus:ring-4 focus:ring-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:border-slate-500 dark:focus:ring-slate-800"
+          />
+
+          {pantryItems.length > 0 ? (
+            <p className="text-xs text-slate-400 dark:text-slate-500">
+              {pantryItems.join(', ')}
+            </p>
+          ) : null}
+
+          {error ? <p className="text-sm text-red-500">{error}</p> : null}
+
+          <div className="flex gap-3">
+            <Button variant="secondary" className="flex-1" onClick={onClose}>
+              {t('common.cancel')}
+            </Button>
+            <Button className="flex-1" onClick={handleGenerate} disabled={pantryItems.length === 0}>
+              {t('ai.generateCta', 'Generate recipe')}
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
       {isGenerating && !initialValue ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <LoaderCircle className="h-6 w-6 animate-spin text-slate-400 dark:text-slate-500" strokeWidth={2} />
@@ -120,12 +162,7 @@ export function AiRecipeGenerateModal({ isOpen, pantryItems, onClose }: AiRecipe
           <p className="text-sm text-red-500">{error}</p>
           <button
             type="button"
-            onClick={() => {
-              setError(null);
-              generateRecipe.mutate(pantryItems, {
-                onError: () => setError(t('ai.generateError')),
-              });
-            }}
+            onClick={handleGenerate}
             className="text-sm font-medium text-slate-600 underline underline-offset-2 dark:text-slate-300"
           >
             {t('dashboard.retry')}
