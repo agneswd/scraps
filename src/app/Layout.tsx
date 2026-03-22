@@ -47,7 +47,7 @@ export function Layout() {
   };
 
   return (
-    <div className="flex min-h-[100dvh] md:h-[100dvh] md:overflow-hidden">
+    <div className="flex h-[100dvh] overflow-hidden">
       {/* ─── Desktop sidebar (md+) ─── */}
       <aside className="hidden w-56 shrink-0 flex-col border-r border-slate-100 bg-white px-4 py-6 md:flex dark:border-slate-800 dark:bg-slate-900">
         <div className="mb-4 px-1">
@@ -102,7 +102,7 @@ export function Layout() {
       </aside>
 
       {/* ─── Main column ─── */}
-      <div className="flex min-h-[100dvh] flex-1 flex-col md:min-h-0 md:overflow-hidden">
+      <div className="flex h-[100dvh] flex-1 flex-col overflow-hidden">
         <button
           type="button"
           onClick={() => setIsSettingsOpen(true)}
@@ -113,7 +113,7 @@ export function Layout() {
         </button>
 
         {/* Page content */}
-        <main className="flex-1 overflow-visible px-5 pb-28 pt-5 md:overflow-auto md:px-8 md:py-6 md:pb-6">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden px-5 pb-28 pt-5 md:px-8 md:py-6 md:pb-6">
           <div className="relative mx-auto w-full max-w-lg md:max-w-2xl">
             <AnimatePresence mode="wait">
               <motion.div
