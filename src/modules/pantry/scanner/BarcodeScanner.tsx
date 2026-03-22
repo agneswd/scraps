@@ -59,8 +59,10 @@ export function BarcodeScanner({ onDetected, onCancel }: BarcodeScannerProps) {
           { facingMode: 'environment' },
           {
             fps: 10,
-            qrbox: { width: 260, height: 160 },
-            aspectRatio: 1.777778,
+            qrbox: (viewfinderWidth, viewfinderHeight) => ({
+              width: Math.max(280, Math.floor(viewfinderWidth * 0.92)),
+              height: Math.max(180, Math.floor(viewfinderHeight * 0.72)),
+            }),
             disableFlip: false,
           },
           (decodedText) => {
@@ -113,7 +115,7 @@ export function BarcodeScanner({ onDetected, onCancel }: BarcodeScannerProps) {
   return (
     <div className="flex h-full flex-col gap-4">
       <div className="flex-1 overflow-hidden rounded-3xl bg-black shadow-soft">
-        <div id={elementId} className="min-h-[55vh]" />
+        <div id={elementId} className="h-[65vh] min-h-[55vh]" />
       </div>
       <p className="text-center text-xs text-slate-400 dark:text-slate-500">
         {t('scanner.alignBarcode')}
