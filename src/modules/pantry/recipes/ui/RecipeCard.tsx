@@ -6,11 +6,10 @@ import type { RecipeWithIngredients } from '@/modules/pantry/recipes/data/recipe
 
 type RecipeCardProps = {
   item: RecipeWithIngredients;
-  index: number;
   onTap: (item: RecipeWithIngredients) => void;
 };
 
-export function RecipeCard({ item, index, onTap }: RecipeCardProps) {
+export function RecipeCard({ item, onTap }: RecipeCardProps) {
   const { t } = useTranslation();
   const totalMinutes = (item.recipe.prep_time ?? 0) + (item.recipe.cook_time ?? 0);
   const photoUrl = item.recipe.photo
@@ -21,9 +20,9 @@ export function RecipeCard({ item, index, onTap }: RecipeCardProps) {
     <motion.button
       type="button"
       onClick={() => onTap(item)}
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05, type: 'spring', stiffness: 100, damping: 20 }}
+      transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
       className="w-full overflow-hidden rounded-2xl border border-slate-100/80 bg-white text-left shadow-soft transition-all active:scale-[0.98] dark:border-slate-700/40 dark:bg-slate-800/80"
     >
       {photoUrl ? (
