@@ -15,30 +15,40 @@ const ITEMS = [
     icon: History,
     titleKey: 'settings.history',
     bodyKey: 'settings.historyBody',
+    fallbackTitle: 'History',
+    fallbackBody: 'Review deleted items and recent restorable activity.',
   },
   {
     key: 'theme',
     icon: Palette,
     titleKey: 'settings.theme',
     bodyKey: 'settings.themeBody',
+    fallbackTitle: 'Theme',
+    fallbackBody: 'Choose how Scraps should look on this device.',
   },
   {
     key: 'language',
     icon: Globe,
     titleKey: 'settings.language',
     bodyKey: 'settings.languageBody',
+    fallbackTitle: 'Language',
+    fallbackBody: 'Change the app language used across the interface and AI responses.',
   },
   {
     key: 'notifications',
     icon: Bell,
     titleKey: 'notifications.label',
     bodyKey: 'settings.notificationsBody',
+    fallbackTitle: 'Notifications',
+    fallbackBody: 'Manage which reminders this device can receive.',
   },
   {
     key: 'account',
     icon: UserRound,
     titleKey: 'settings.accountLabel',
     bodyKey: 'settings.accountBody',
+    fallbackTitle: 'Account',
+    fallbackBody: 'See your signed-in account and session actions.',
   },
 ] as const;
 
@@ -75,8 +85,12 @@ export function SettingsHomePage({
               <Icon className="h-5 w-5" strokeWidth={1.8} />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-slate-900 dark:text-white">{t(item.titleKey)}</p>
-              <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">{t(item.bodyKey)}</p>
+              <p className="text-sm font-medium text-slate-900 dark:text-white">
+                {t(item.titleKey, item.fallbackTitle)}
+              </p>
+              <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+                {t(item.bodyKey, item.fallbackBody)}
+              </p>
             </div>
             <ChevronRight className="h-4 w-4 shrink-0 text-slate-300 dark:text-slate-600" strokeWidth={2} />
           </button>

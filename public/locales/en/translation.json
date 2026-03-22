@@ -113,6 +113,7 @@
     "languageBody": "Change the app language used across the interface and AI responses.",
     "historyBody": "Review deleted items and recent restorable activity.",
     "notificationsBody": "Manage which reminders this device can receive.",
+    "accountLabel": "Account",
     "accountBody": "See your signed-in account and session actions.",
     "themeSystem": "System",
     "themeLight": "Light",
