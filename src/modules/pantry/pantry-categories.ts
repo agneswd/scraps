@@ -67,3 +67,11 @@ export const PANTRY_CATEGORIES: PantryCategory[] = [
   'canned',
   'other',
 ];
+
+export function isPantryCategory(value: string): value is PantryCategory {
+  return PANTRY_CATEGORIES.includes(value as PantryCategory);
+}
+
+export function toPantryCategory(value: string): PantryCategory {
+  return isPantryCategory(value) ? value : 'other';
+}

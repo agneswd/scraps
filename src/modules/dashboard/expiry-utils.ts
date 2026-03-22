@@ -24,6 +24,25 @@ export type LeftoverStatus = 'active' | 'consumed' | 'wasted';
 
 export type ExpiryTone = 'fresh' | 'warning' | 'expired';
 
+export const LEFTOVER_CATEGORIES: LeftoverCategory[] = [
+  'meat',
+  'poultry',
+  'seafood',
+  'veg',
+  'dairy',
+  'grains',
+  'prepared',
+  'other',
+];
+
+export function isLeftoverCategory(value: string): value is LeftoverCategory {
+  return LEFTOVER_CATEGORIES.includes(value as LeftoverCategory);
+}
+
+export function toLeftoverCategory(value: string): LeftoverCategory {
+  return isLeftoverCategory(value) ? value : 'other';
+}
+
 export const CATEGORY_SHELF_LIFE_DAYS: Record<LeftoverCategory, number> = {
   // Based on cooked leftover refrigerator shelf life research (generous realistic values)
   seafood: 3,    // Cooked fish/shellfish: 3–4 days

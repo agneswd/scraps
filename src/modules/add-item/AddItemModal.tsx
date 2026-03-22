@@ -8,7 +8,7 @@ import { ImageTrigger } from '@/modules/add-item/ImageTrigger';
 import { CategoryPicker } from '@/modules/add-item/CategoryPicker';
 import { useAddItem } from '@/modules/add-item/use-add-item';
 import type { LeftoverCategory } from '@/modules/dashboard/expiry-utils';
-import { calculateDefaultExpiryDate } from '@/modules/dashboard/expiry-utils';
+import { calculateDefaultExpiryDate, toLeftoverCategory } from '@/modules/dashboard/expiry-utils';
 import { Button } from '@/shared/ui/Button';
 import { Modal } from '@/shared/ui/Modal';
 
@@ -21,11 +21,6 @@ type AddItemModalProps = {
 const TOTAL_STEPS = 2;
 
 type AddMode = 'choose' | 'manual' | 'ai';
-
-function toLeftoverCategory(value: string): LeftoverCategory {
-  const allowed: LeftoverCategory[] = ['meat', 'poultry', 'seafood', 'veg', 'dairy', 'grains', 'prepared', 'other'];
-  return allowed.includes(value as LeftoverCategory) ? (value as LeftoverCategory) : 'other';
-}
 
 export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
   const { t } = useTranslation();

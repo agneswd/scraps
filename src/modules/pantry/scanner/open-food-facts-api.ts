@@ -30,8 +30,12 @@ export type OpenFoodFactsProduct = {
   category: PantryCategory;
   quantityLabel?: string;
   imageUrl?: string;
-  imageBlob?: Blob | null;
 };
+
+export type OffLookupResult =
+  | { type: 'found'; product: OpenFoodFactsProduct }
+  | { type: 'not-found' }
+  | { type: 'lookup-error' };
 
 function resolveLocale(language: string) {
   const normalized = language.toLowerCase();
@@ -67,16 +71,10 @@ function inferPantryCategory(tags: string[] = []): PantryCategory {
   return 'other';
 }
 
-async function fetchImageBlob(imageUrl?: string) {
-  if (!imageUrl) {
-    return null;
-  }
-
+export async function fetchProductImageBlob(imageUrl: string): Promise<Blob | null> {
   try {
     const response = await fetch(imageUrl);
-    if (!response.ok) {
-      return null;
-    }
+    if (!response.ok) return null;
     const blob = await response.blob();
     return blob.type.startsWith('image/') ? resizeAndCompress(blob) : blob;
   } catch {
@@ -84,7 +82,7 @@ async function fetchImageBlob(imageUrl?: string) {
   }
 }
 
-export async function lookupOpenFoodFactsProduct(barcode: string, language: string) {
+export async function lookupOpenFoodFactsProduct(barcode: string, language: string): Promise<OffLookupResult> {
   const locale = resolveLocale(language);
   const url = new URL(`https://${locale}.openfoodfacts.org/api/v2/product/${barcode}.json`);
   url.searchParams.set('fields', 'product_name,product_name_en,brands,categories_tags,image_front_url,quantity');
@@ -93,32 +91,32 @@ export async function lookupOpenFoodFactsProduct(barcode: string, language: stri
   try {
     response = await fetch(url);
   } catch {
-    return null;
+    return { type: 'lookup-error' };
   }
 
   if (!response.ok) {
-    return null;
+    return response.status === 404 ? { type: 'not-found' } : { type: 'lookup-error' };
   }
 
   const data = (await response.json()) as OpenFoodFactsResponse;
   if (data.status !== 1 || !data.product) {
-    return null;
+    return { type: 'not-found' };
   }
 
   const name = data.product.product_name?.trim() || data.product.product_name_en?.trim();
   if (!name) {
-    return null;
+    return { type: 'not-found' };
   }
 
-  const imageBlob = await fetchImageBlob(data.product.image_front_url);
-
   return {
-    barcode,
-    name,
-    brand: data.product.brands?.trim() || undefined,
-    category: inferPantryCategory(data.product.categories_tags),
-    quantityLabel: data.product.quantity?.trim() || undefined,
-    imageUrl: data.product.image_front_url,
-    imageBlob,
-  } satisfies OpenFoodFactsProduct;
+    type: 'found',
+    product: {
+      barcode,
+      name,
+      brand: data.product.brands?.trim() || undefined,
+      category: inferPantryCategory(data.product.categories_tags),
+      quantityLabel: data.product.quantity?.trim() || undefined,
+      imageUrl: data.product.image_front_url || undefined,
+    },
+  };
 }

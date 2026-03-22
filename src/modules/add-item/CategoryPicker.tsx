@@ -1,8 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CATEGORY_ICONS, type LeftoverCategory } from '@/modules/dashboard/expiry-utils';
-
-const categories = ['meat', 'poultry', 'seafood', 'veg', 'dairy', 'grains', 'prepared', 'other'] as const;
+import { CATEGORY_ICONS, LEFTOVER_CATEGORIES, type LeftoverCategory } from '@/modules/dashboard/expiry-utils';
 
 type CategoryPickerProps = {
   value: LeftoverCategory | null;
@@ -17,7 +15,7 @@ export function CategoryPicker({ value, customDays, onChange, onCustomDaysChange
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-4 gap-2">
-        {categories.map((category, index) => {
+        {LEFTOVER_CATEGORIES.map((category, index) => {
           const Icon = CATEGORY_ICONS[category];
           const isSelected = value === category;
           const label = category === 'other' ? t('categories.custom') : t(`categories.${category}`);
