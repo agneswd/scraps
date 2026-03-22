@@ -54,7 +54,7 @@ migrate(
         {
           type: 'number',
           name: 'quantity',
-          required: true,
+          required: false,
           min: 0,
         },
         {

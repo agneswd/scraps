@@ -1,16 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Edit2, Save, X } from 'lucide-react';
+import { Edit2, Save, Trash2, X } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { CategoryPicker } from '@/modules/add-item/CategoryPicker';
-import { CameraCapture } from '@/modules/add-item/CameraCapture';
+import { CameraModal } from '@/modules/add-item/CameraModal';
+import { ImageTrigger } from '@/modules/add-item/ImageTrigger';
 import {
   CATEGORY_ICONS,
   calculateDefaultExpiryDate,
   type LeftoverCategory,
 } from '@/modules/dashboard/expiry-utils';
 import { getLeftoverPhotoUrl, updateLeftover, type LeftoverRecord } from '@/modules/dashboard/leftover-api';
+import { archiveAndDeleteLeftover } from '@/modules/settings/data/history-api';
 import { Button } from '@/shared/ui/Button';
 import { Modal } from '@/shared/ui/Modal';
 
@@ -31,7 +33,9 @@ export function LeftoverDetailModal({ leftover, onClose }: Props) {
   const [editDaysFromToday, setEditDaysFromToday] = useState<number>(3);
   const [editNotes, setEditNotes] = useState('');
   const [editPhoto, setEditPhoto] = useState<Blob | 'keep' | null>('keep');
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const photoUrl = leftover ? getLeftoverPhotoUrl(leftover) : null;
 
@@ -61,6 +65,7 @@ export function LeftoverDetailModal({ leftover, onClose }: Props) {
     setEditPhoto('keep');
     setIsEditing(false);
     setSaveError(null);
+    setConfirmDelete(false);
   }, [leftover?.id]);
 
   const updateMutation = useMutation({
@@ -87,6 +92,34 @@ export function LeftoverDetailModal({ leftover, onClose }: Props) {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      if (!leftover) {
+        return;
+      }
+
+      await archiveAndDeleteLeftover(leftover);
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['leftovers'] });
+      void queryClient.invalidateQueries({ queryKey: ['history'] });
+      void queryClient.invalidateQueries({ queryKey: ['stats'] });
+      onClose();
+    },
+    onError: () => {
+      setSaveError(t('leftover.deleteError', 'Could not delete the leftover.'));
+    },
+  });
+
+  async function handleDelete() {
+    if (!confirmDelete) {
+      setConfirmDelete(true);
+      return;
+    }
+
+    await deleteMutation.mutateAsync();
+  }
+
   const CategoryIcon = leftover ? CATEGORY_ICONS[leftover.category] : null;
   const displayPhotoUrl = editPhoto instanceof Blob ? editPhotoPreviewUrl : photoUrl;
 
@@ -97,19 +130,20 @@ export function LeftoverDetailModal({ leftover, onClose }: Props) {
           {/* Photo */}
           {isEditing ? (
             <div className="space-y-3">
-              {displayPhotoUrl ? (
-                <div className="relative overflow-hidden rounded-2xl">
-                  <img src={displayPhotoUrl} alt={editName} className="aspect-video w-full object-cover" />
-                  <button
-                    type="button"
-                    onClick={() => setEditPhoto(null)}
-                    className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-white transition hover:bg-black/70"
-                  >
-                    <X className="h-3.5 w-3.5" strokeWidth={2.5} />
-                  </button>
-                </div>
-              ) : null}
-              <CameraCapture hasPhoto={Boolean(displayPhotoUrl)} onCapture={(blob) => setEditPhoto(blob)} />
+              <ImageTrigger
+                photo={editPhoto instanceof Blob ? editPhoto : (editPhoto === 'keep' && photoUrl ? new Blob() : null)}
+                previewUrl={displayPhotoUrl}
+                onOpenModal={() => setIsCameraOpen(true)}
+                onClear={() => setEditPhoto(null)}
+              />
+              <CameraModal
+                isOpen={isCameraOpen}
+                onClose={() => setIsCameraOpen(false)}
+                onCapture={(blob) => {
+                  setEditPhoto(blob);
+                  setIsCameraOpen(false);
+                }}
+              />
             </div>
           ) : (
             displayPhotoUrl ? (
@@ -190,6 +224,20 @@ export function LeftoverDetailModal({ leftover, onClose }: Props) {
                 </p>
               ) : null}
 
+              <Button
+                variant="secondary"
+                onClick={() => void handleDelete()}
+                disabled={deleteMutation.isPending}
+                className="w-full rounded-2xl !bg-red-50 !text-red-600 dark:!bg-red-950/40 dark:!text-red-400"
+              >
+                <Trash2 className="h-4 w-4" strokeWidth={2.5} />
+                {deleteMutation.isPending
+                  ? t('leftover.deleting', 'Deleting...')
+                  : confirmDelete
+                    ? t('leftover.confirmDelete', 'Tap again to delete')
+                    : t('leftover.delete', 'Delete leftover')}
+              </Button>
+
               <div className="flex gap-3">
                 <Button variant="ghost" onClick={() => setIsEditing(false)} className="flex-1">
                   {t('common.cancel')}
@@ -214,7 +262,7 @@ export function LeftoverDetailModal({ leftover, onClose }: Props) {
                   <p className="text-sm text-slate-500 dark:text-slate-400">
                     {leftover.category === 'other' ? t('categories.custom') : t(`categories.${leftover.category}`)}
                     {' · '}
-                    {new Date(leftover.expiry_date).toLocaleDateString()}
+                    {t('leftover.addedLabel', 'Added')} {new Date(leftover.created).toLocaleDateString()}
                   </p>
                 </div>
                 <button

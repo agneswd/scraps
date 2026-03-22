@@ -1,11 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useHousehold } from '@/shared/hooks/use-household';
+import { archiveAndDeleteRecipe } from '@/modules/settings/data/history-api';
 import {
   createRecipe,
-  deleteRecipe,
   listRecipesWithIngredients,
   updateRecipe,
   type RecipeIngredientInput,
+  type RecipeWithIngredients,
 } from '@/modules/pantry/recipes/data/recipe-api';
 
 const RECIPE_KEY = ['recipes'] as const;
@@ -68,9 +69,10 @@ export function useDeleteRecipe() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: deleteRecipe,
+    mutationFn: (recipeWithIngredients: RecipeWithIngredients) => archiveAndDeleteRecipe(recipeWithIngredients),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: RECIPE_KEY });
+      void queryClient.invalidateQueries({ queryKey: ['history'] });
     },
   });
 }

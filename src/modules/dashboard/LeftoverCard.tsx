@@ -52,7 +52,7 @@ export function LeftoverCard({ leftover, onClick }: LeftoverCardProps) {
         <div className="mt-1 flex flex-wrap items-center gap-2">
           <span className="inline-flex items-center gap-1 text-xs text-slate-400 dark:text-slate-500">
             <CalendarClock className="h-3 w-3" strokeWidth={2} />
-            {new Date(leftover.expiry_date).toLocaleDateString()}
+            {t('leftover.addedLabel', 'Added')} {new Date(leftover.created).toLocaleDateString()}
           </span>
           <span
             className={[

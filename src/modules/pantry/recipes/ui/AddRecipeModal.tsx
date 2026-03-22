@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Camera, Link2, LoaderCircle, Pencil, Text } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { AiScanButton } from '@/modules/ai/AiScanButton';
 import { useAiRecipeParse } from '@/modules/ai/use-ai-recipe-parse';
-import { CameraCapture } from '@/modules/add-item/CameraCapture';
+import { CameraModal } from '@/modules/add-item/CameraModal';
+import { ImageTrigger } from '@/modules/add-item/ImageTrigger';
 import { Modal } from '@/shared/ui/Modal';
 import { RecipeEditor, type RecipeFormValue } from '@/modules/pantry/recipes/ui/RecipeEditor';
 import { useCreateRecipe } from '@/modules/pantry/recipes/data/use-recipes';
@@ -54,7 +55,18 @@ export function AddRecipeModal({ isOpen, onClose }: AddRecipeModalProps) {
   const [urlValue, setUrlValue] = useState('');
   const [textValue, setTextValue] = useState('');
   const [photoValue, setPhotoValue] = useState<Blob | null>(null);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [initialValue, setInitialValue] = useState<RecipeFormValue | undefined>(undefined);
+
+  const previewUrl = useMemo(() => {
+    return photoValue ? URL.createObjectURL(photoValue) : null;
+  }, [photoValue]);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -164,11 +176,29 @@ export function AddRecipeModal({ isOpen, onClose }: AddRecipeModalProps) {
               className="min-h-40 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition-all focus:border-slate-400 focus:ring-4 focus:ring-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:border-slate-500 dark:focus:ring-slate-800"
             />
           ) : null}
-          {mode === 'photo' ? <CameraCapture hasPhoto={Boolean(photoValue)} onCapture={setPhotoValue} /> : null}
+          {mode === 'photo' ? (
+            <div className="space-y-4">
+              <ImageTrigger
+                photo={photoValue}
+                previewUrl={previewUrl}
+                onOpenModal={() => setIsCameraOpen(true)}
+                onClear={() => setPhotoValue(null)}
+              />
+              <CameraModal
+                isOpen={isCameraOpen}
+                onClose={() => setIsCameraOpen(false)}
+                onCapture={(blob) => {
+                  setPhotoValue(blob);
+                  setIsCameraOpen(false);
+                }}
+              />
+            </div>
+          ) : null}
           {error ? <p className="text-sm text-red-500">{error}</p> : null}
           <div className="flex gap-3">
-            <Button variant="secondary" onClick={() => setMode('choose')}>{t('common.back')}</Button>
+            <Button variant="secondary" className="flex-1" onClick={() => setMode('choose')}>{t('common.back')}</Button>
             <AiScanButton
+              className="flex-1"
               label={t('ai.importButton')}
               onClick={() => void handleAiImport()}
               isLoading={parseRecipe.isPending}

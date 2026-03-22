@@ -2,9 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Camera, LoaderCircle, Pencil, Sparkles } from 'lucide-react';
-import { AiScanButton } from '@/modules/ai/AiScanButton';
 import { useAiIdentify } from '@/modules/ai/use-ai-identify';
-import { CameraCapture } from '@/modules/add-item/CameraCapture';
+import { CameraModal } from '@/modules/add-item/CameraModal';
+import { ImageTrigger } from '@/modules/add-item/ImageTrigger';
 import { CategoryPicker } from '@/modules/add-item/CategoryPicker';
 import { useAddItem } from '@/modules/add-item/use-add-item';
 import type { LeftoverCategory } from '@/modules/dashboard/expiry-utils';
@@ -39,15 +39,18 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
   const [notes, setNotes] = useState('');
   const [photo, setPhoto] = useState<Blob | null>(null);
   const [aiPhoto, setAiPhoto] = useState<Blob | null>(null);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const previewUrl = useMemo(() => (photo ? URL.createObjectURL(photo) : null), [photo]);
+  const aiPreviewUrl = useMemo(() => (aiPhoto ? URL.createObjectURL(aiPhoto) : null), [aiPhoto]);
 
   useEffect(() => {
     return () => {
       if (previewUrl) URL.revokeObjectURL(previewUrl);
+      if (aiPreviewUrl) URL.revokeObjectURL(aiPreviewUrl);
     };
-  }, [previewUrl]);
+  }, [previewUrl, aiPreviewUrl]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -60,12 +63,15 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
       setPhoto(null);
       setAiPhoto(null);
       setError(null);
+      setIsCameraOpen(false);
     }
   }, [isOpen]);
 
   const canProceed = step === 0
     ? itemName.trim().length > 0 && category !== null && (category !== 'other' || customDays != null)
     : true; // step 1 (photo/notes) is always optional
+
+  const isAiSubmitting = identifyLeftover.isPending || isPending;
 
   async function handleSave() {
     if (!category) return;
@@ -84,21 +90,39 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
     }
   }
 
-  async function handleAiIdentify() {
-    if (!aiPhoto) return;
+  async function handleAiCapture(capturedPhoto: Blob) {
     try {
       setError(null);
-      const result = await identifyLeftover.mutateAsync(aiPhoto);
+      setAiPhoto(capturedPhoto);
+
+      const result = await identifyLeftover.mutateAsync(capturedPhoto);
+      const nextCategory = toLeftoverCategory(result.category);
+      const nextCustomDays = result.estimated_expiry_days ?? null;
+
       setItemName(result.name);
-      setCategory(toLeftoverCategory(result.category));
-      setCustomDays(result.estimated_expiry_days ?? null);
-      setPhoto(aiPhoto);
-      setMode('manual');
-      setStep(0);
+      setCategory(nextCategory);
+      setCustomDays(nextCustomDays);
+      setPhoto(capturedPhoto);
+
+      try {
+        await createLeftover({
+          itemName: result.name.trim(),
+          category: nextCategory,
+          expiryDate: calculateDefaultExpiryDate(nextCategory, new Date(), nextCustomDays ?? undefined),
+          notes: '',
+          photo: capturedPhoto,
+        });
+        onClose();
+      } catch {
+        setError(t('addItem.saveError'));
+        setMode('manual');
+        setStep(0);
+      }
     } catch {
       setError(t('ai.identifyError'));
       setMode('manual');
-      setPhoto(aiPhoto);
+      setPhoto(capturedPhoto);
+      setStep(0);
     }
   }
 
@@ -109,7 +133,10 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
         <div className="space-y-3">
           <button
             type="button"
-            onClick={() => setMode('ai')}
+            onClick={() => {
+              setError(null);
+              setMode('ai');
+            }}
             className="flex w-full items-center gap-4 rounded-2xl bg-slate-900 p-4 text-left transition-all active:scale-[0.98] dark:bg-white"
           >
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/15 dark:bg-slate-900/15">
@@ -140,9 +167,26 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
 
   // ── AI scan mode ───────────────────────────────────────────────────────────
   if (mode === 'ai') {
+    if (!isAiSubmitting && !error) {
+      return (
+        <CameraModal
+          isOpen={isOpen}
+          onClose={() => {
+            setMode('choose');
+            setAiPhoto(null);
+          }}
+          onCapture={(blob) => {
+            void handleAiCapture(blob);
+          }}
+          closeOnCapture={false}
+          closeOnUpload={false}
+        />
+      );
+    }
+
     return (
       <Modal isOpen={isOpen} onClose={onClose} title={t('ai.identifyTitle')}>
-        {identifyLeftover.isPending ? (
+        {isAiSubmitting ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900 dark:bg-white">
               <Sparkles className="h-6 w-6 text-white dark:text-slate-900" strokeWidth={1.8} />
@@ -152,8 +196,20 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
           </div>
         ) : (
           <div className="space-y-4">
-            <CameraCapture hasPhoto={Boolean(aiPhoto)} onCapture={setAiPhoto} />
-            {aiPhoto ? <AiScanButton onClick={() => void handleAiIdentify()} /> : null}
+            {aiPreviewUrl ? <img src={aiPreviewUrl} alt="" className="h-36 w-full rounded-2xl object-cover" /> : null}
+            <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-600 dark:bg-red-950/50 dark:text-red-400">
+              {error}
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setError(null);
+                setMode('ai');
+              }}
+              className="w-full rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
+            >
+              {t('ai.scanButton')}
+            </button>
             <button
               type="button"
               onClick={() => { setMode('manual'); setStep(0); }}
@@ -230,12 +286,20 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
                     {t('addItem.photoLabel')}
                     <span className="ml-1 text-slate-300 dark:text-slate-600">{t('common.optional')}</span>
                   </p>
-                  {previewUrl ? (
-                    <div className="overflow-hidden rounded-2xl">
-                      <img src={previewUrl} alt={t('addItem.previewAlt')} className="aspect-video w-full object-cover" />
-                    </div>
-                  ) : null}
-                  <CameraCapture hasPhoto={Boolean(photo)} onCapture={setPhoto} />
+                  <ImageTrigger
+                    photo={photo}
+                    previewUrl={previewUrl}
+                    onOpenModal={() => setIsCameraOpen(true)}
+                    onClear={() => setPhoto(null)}
+                  />
+                  <CameraModal
+                    isOpen={isCameraOpen}
+                    onClose={() => setIsCameraOpen(false)}
+                    onCapture={(blob) => {
+                      setPhoto(blob);
+                      setIsCameraOpen(false);
+                    }}
+                  />
                 </div>
 
                 {/* Notes */}

@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ClientResponseError } from 'pocketbase';
 import { useAuth } from '@/modules/auth/use-auth';
 import type { LeftoverCategory } from '@/modules/dashboard/expiry-utils';
-import { pocketbase } from '@/shared/api/pocketbase';
+import { createLeftover } from '@/modules/dashboard/leftover-api';
 
 type CreateLeftoverInput = {
   itemName: string;
@@ -32,29 +32,16 @@ export function useAddItem() {
         throw new Error('Missing authenticated household context.');
       }
 
-      const formData = new FormData();
-      formData.set('household_id', householdId);
-      formData.set('added_by', user.id);
-      formData.set('item_name', itemName);
-      formData.set('category', category);
-      formData.set('expiry_date', expiryDate);
-      formData.set('status', 'active');
-
-      if (notes) {
-        formData.set('notes', notes);
-      }
-
-      if (photo) {
-        const extension = photo.type === 'image/jpeg' ? 'jpg' : 'webp';
-        formData.set(
-          'photo',
-          new File([photo], `${itemName.toLowerCase().replace(/\s+/g, '-')}.${extension}`, {
-            type: photo.type,
-          }),
-        );
-      }
-
-      return pocketbase.collection('leftovers').create(formData);
+      return createLeftover({
+        household_id: householdId,
+        added_by: user.id,
+        item_name: itemName,
+        category,
+        expiry_date: expiryDate,
+        notes,
+        photo,
+        status: 'active',
+      });
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['leftovers'] });

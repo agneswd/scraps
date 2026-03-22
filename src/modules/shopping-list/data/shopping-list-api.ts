@@ -49,8 +49,8 @@ export async function deleteShoppingListItem(id: string) {
   return pocketbase.collection('shopping_list_items').delete(id);
 }
 
-export async function clearCheckedShoppingListItems() {
-  const checkedItems = await pocketbase.collection('shopping_list_items').getFullList<ShoppingListItemRecord>({
+export async function clearCheckedShoppingListItems(items?: ShoppingListItemRecord[]) {
+  const checkedItems = items ?? await pocketbase.collection('shopping_list_items').getFullList<ShoppingListItemRecord>({
     filter: 'checked = true',
   });
 

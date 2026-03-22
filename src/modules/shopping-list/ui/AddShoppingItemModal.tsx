@@ -79,8 +79,8 @@ export function AddShoppingItemModal({ isOpen, onClose }: AddShoppingItemModalPr
         </div>
         {error ? <p className="text-sm text-red-500">{error}</p> : null}
         <div className="flex gap-3">
-          <Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
-          <Button disabled={createItem.isPending || name.trim().length === 0} onClick={() => void handleSubmit()}>
+          <Button variant="secondary" className="flex-1" onClick={onClose}>{t('common.cancel')}</Button>
+          <Button className="flex-1" disabled={createItem.isPending || name.trim().length === 0} onClick={() => void handleSubmit()}>
             {createItem.isPending ? t('shoppingList.saving') : t('common.save')}
           </Button>
         </div>

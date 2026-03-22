@@ -1,10 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useHousehold } from '@/shared/hooks/use-household';
+import { archiveAndDeleteShoppingItem, archiveAndDeleteShoppingItems } from '@/modules/settings/data/history-api';
 import {
-  clearCheckedShoppingListItems,
   createShoppingListItem,
   createShoppingListItems,
-  deleteShoppingListItem,
   listShoppingListItems,
   updateShoppingListItem,
   type ShoppingListItemInput,
@@ -93,12 +92,12 @@ export function useDeleteShoppingListItem() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: deleteShoppingListItem,
-    onMutate: async (id: string) => {
+    mutationFn: archiveAndDeleteShoppingItem,
+    onMutate: async (item: ShoppingListItemRecord) => {
       await queryClient.cancelQueries({ queryKey: SHOPPING_LIST_KEY });
       const previous = queryClient.getQueryData(SHOPPING_LIST_KEY);
       queryClient.setQueryData<ShoppingListItemRecord[]>(SHOPPING_LIST_KEY, (old) =>
-        old?.filter((item) => item.id !== id),
+        old?.filter((current) => current.id !== item.id),
       );
       return { previous };
     },
@@ -107,6 +106,7 @@ export function useDeleteShoppingListItem() {
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: SHOPPING_LIST_KEY });
+      void queryClient.invalidateQueries({ queryKey: ['history'] });
     },
   });
 }
@@ -115,9 +115,19 @@ export function useClearCheckedShoppingListItems() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: clearCheckedShoppingListItems,
+    mutationFn: async () => {
+      const items = queryClient.getQueryData<ShoppingListItemRecord[]>(SHOPPING_LIST_KEY) ?? [];
+      const checkedItems = items.filter((item) => item.checked);
+
+      if (checkedItems.length === 0) {
+        return;
+      }
+
+      await archiveAndDeleteShoppingItems(checkedItems);
+    },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: SHOPPING_LIST_KEY });
+      void queryClient.invalidateQueries({ queryKey: ['history'] });
     },
   });
 }

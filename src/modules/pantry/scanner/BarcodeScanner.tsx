@@ -111,9 +111,9 @@ export function BarcodeScanner({ onDetected, onCancel }: BarcodeScannerProps) {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="overflow-hidden rounded-2xl bg-black shadow-soft">
-        <div id={elementId} className="min-h-[280px]" />
+    <div className="flex h-full flex-col gap-4">
+      <div className="flex-1 overflow-hidden rounded-3xl bg-black shadow-soft">
+        <div id={elementId} className="min-h-[55vh]" />
       </div>
       <p className="text-center text-xs text-slate-400 dark:text-slate-500">
         {t('scanner.alignBarcode')}

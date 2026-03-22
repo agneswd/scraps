@@ -90,18 +90,30 @@ export function ShoppingListPage() {
           </div>
           {/* Desktop: action buttons in header row */}
           <div className="hidden shrink-0 items-center gap-2 sm:flex">
-            <Button variant="secondary" onClick={() => setIsGenerateOpen(true)}>
+            <Button
+              variant="secondary"
+              className="min-h-10 whitespace-nowrap px-4 text-xs"
+              onClick={() => setIsGenerateOpen(true)}
+            >
               {t('shoppingList.generateTitle')}
             </Button>
-            <Button onClick={() => setIsAddOpen(true)}>{t('shoppingList.addTitle')}</Button>
+            <Button className="min-h-10 whitespace-nowrap px-4 text-xs" onClick={() => setIsAddOpen(true)}>
+              {t('shoppingList.addTitle')}
+            </Button>
           </div>
         </div>
         {/* Mobile: action buttons below title, full-width */}
         <div className="flex gap-2 sm:hidden">
-          <Button variant="secondary" className="flex-1" onClick={() => setIsGenerateOpen(true)}>
+          <Button
+            variant="secondary"
+            className="min-h-10 flex-1 whitespace-nowrap px-3 text-xs"
+            onClick={() => setIsGenerateOpen(true)}
+          >
             {t('shoppingList.generateTitle')}
           </Button>
-          <Button className="flex-1" onClick={() => setIsAddOpen(true)}>{t('shoppingList.addTitle')}</Button>
+          <Button className="min-h-10 flex-1 whitespace-nowrap px-3 text-xs" onClick={() => setIsAddOpen(true)}>
+            {t('shoppingList.addTitle')}
+          </Button>
         </div>
       </div>
 
@@ -141,7 +153,7 @@ export function ShoppingListPage() {
                     <ShoppingListItem
                       item={item}
                       onToggle={(currentItem) => toggleItem.mutate({ id: currentItem.id, checked: !currentItem.checked })}
-                      onDelete={(currentItem) => deleteItem.mutate(currentItem.id)}
+                      onDelete={(currentItem) => deleteItem.mutate(currentItem)}
                     />
                   </motion.div>
                 )})}

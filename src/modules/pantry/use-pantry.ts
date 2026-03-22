@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useHousehold } from '@/shared/hooks/use-household';
+import { archiveAndDeletePantryItem } from '@/modules/settings/data/history-api';
 import type { PantryCategory, PantryStatus } from '@/modules/pantry/pantry-categories';
 import {
   createPantryItem,
@@ -70,9 +71,10 @@ export function useDeletePantryItem() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => deletePantryItem(id),
+    mutationFn: archiveAndDeletePantryItem,
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: PANTRY_KEY });
+      void queryClient.invalidateQueries({ queryKey: ['history'] });
     },
   });
 }
@@ -81,16 +83,29 @@ export function useIncrementQuantity() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, currentQuantity }: { id: string; currentQuantity: number }) =>
-      incrementPantryQuantity(id, currentQuantity),
-    onMutate: async ({ id, currentQuantity }) => {
+    mutationFn: ({
+      id,
+      currentQuantity,
+      currentStatus,
+    }: {
+      id: string;
+      currentQuantity: number;
+      currentStatus: PantryStatus;
+    }) => incrementPantryQuantity(id, currentQuantity, currentStatus),
+    onMutate: async ({ id, currentQuantity, currentStatus }) => {
       await queryClient.cancelQueries({ queryKey: PANTRY_KEY });
 
       const previous = queryClient.getQueriesData<PantryItemRecord[]>({ queryKey: PANTRY_KEY });
 
       queryClient.setQueriesData<PantryItemRecord[]>({ queryKey: PANTRY_KEY }, (old) =>
         old?.map((item) =>
-          item.id === id ? { ...item, quantity: currentQuantity + 1 } : item,
+          item.id === id
+            ? {
+                ...item,
+                quantity: currentQuantity + 1,
+                status: currentQuantity <= 0 || currentStatus === 'finished' ? 'in_stock' : currentStatus,
+              }
+            : item,
         ),
       );
 

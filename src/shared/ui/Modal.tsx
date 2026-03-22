@@ -9,9 +9,11 @@ type ModalProps = {
   isOpen: boolean;
   onClose: () => void;
   title: string;
+  fullScreen?: boolean;
+  onExitComplete?: () => void;
 };
 
-export function Modal({ children, isOpen, onClose, title }: ModalProps) {
+export function Modal({ children, isOpen, onClose, title, fullScreen = false, onExitComplete }: ModalProps) {
   const { t } = useTranslation();
   const panelRef = useRef<HTMLDivElement | null>(null);
 
@@ -42,13 +44,13 @@ export function Modal({ children, isOpen, onClose, title }: ModalProps) {
   if (!body) return null;
 
   return createPortal(
-    <AnimatePresence>
+    <AnimatePresence onExitComplete={onExitComplete}>
       {isOpen ? (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
+          transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
           className="fixed inset-0 z-50 flex items-end justify-center bg-black/30 backdrop-blur-sm sm:items-center sm:px-6"
         >
           <motion.div
@@ -60,10 +62,23 @@ export function Modal({ children, isOpen, onClose, title }: ModalProps) {
             initial={{ y: '100%', opacity: 0.5 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: '100%', opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 260, damping: 28 }}
-            className="flex max-h-[94vh] w-full max-w-lg flex-col overflow-hidden rounded-t-[2rem] bg-white shadow-elevated outline-none sm:rounded-[2rem] dark:bg-slate-900"
+            transition={{
+              y: isOpen
+                ? { type: 'spring', stiffness: 260, damping: 28 }
+                : { duration: 0.32, ease: [0.22, 1, 0.36, 1] },
+              opacity: { duration: 0.24, ease: [0.22, 1, 0.36, 1] },
+            }}
+            className={[
+              'flex w-full flex-col overflow-hidden bg-white shadow-elevated outline-none dark:bg-slate-900',
+              fullScreen
+                ? 'h-[100dvh] max-h-none max-w-none rounded-none'
+                : 'max-h-[94vh] max-w-lg rounded-t-[2rem] sm:rounded-[2rem]',
+            ].join(' ')}
           >
-            <div className="flex items-center justify-between px-6 pb-2 pt-5">
+            <div className={[
+              'flex items-center justify-between px-6 pb-2 pt-5',
+              fullScreen ? 'pt-[max(1.25rem,env(safe-area-inset-top))]' : '',
+            ].join(' ')}>
               <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">{title}</h2>
               <button
                 type="button"
@@ -75,7 +90,12 @@ export function Modal({ children, isOpen, onClose, title }: ModalProps) {
               </button>
             </div>
 
-            <div className="overflow-y-auto px-6 pb-8 pt-2">{children}</div>
+            <div className={[
+              'overflow-y-auto pt-2',
+              fullScreen ? 'flex-1 px-4 pb-[max(1rem,env(safe-area-inset-bottom))]' : 'px-6 pb-8',
+            ].join(' ')}>
+              {children}
+            </div>
           </motion.div>
         </motion.div>
       ) : null}

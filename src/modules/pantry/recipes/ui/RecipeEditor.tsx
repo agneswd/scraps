@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { CameraCapture } from '@/modules/add-item/CameraCapture';
+import { CameraModal } from '@/modules/add-item/CameraModal';
+import { ImageTrigger } from '@/modules/add-item/ImageTrigger';
 import type { RecipeIngredientInput } from '@/modules/pantry/recipes/data/recipe-api';
 import { Button } from '@/shared/ui/Button';
 
@@ -57,6 +58,7 @@ export function RecipeEditor({
 }: RecipeEditorProps) {
   const { t } = useTranslation();
   const [value, setValue] = useState<RecipeFormValue>(initialValue);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
 
   useEffect(() => {
     setValue(initialValue);
@@ -189,39 +191,41 @@ export function RecipeEditor({
         <div className="space-y-3">
           {value.ingredients.map((ingredient, index) => (
             <div key={`${index}-${ingredient.name}`} className="rounded-2xl bg-slate-50 p-3 dark:bg-slate-800/70">
-              <div className="grid grid-cols-[1fr,6rem,6rem,auto] gap-2">
+              <div className="space-y-2">
                 <input
                   type="text"
                   value={ingredient.name}
                   onChange={(event) => updateIngredient(index, { name: event.target.value })}
                   placeholder={t('recipes.ingredientNamePlaceholder')}
-                  className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition-all focus:border-slate-400 focus:ring-2 focus:ring-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:border-slate-500 dark:focus:ring-slate-800"
+                  className="h-11 w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition-all focus:border-slate-400 focus:ring-2 focus:ring-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:border-slate-500 dark:focus:ring-slate-800"
                 />
-                <input
-                  type="number"
-                  min={0}
-                  value={ingredient.quantity ?? ''}
-                  onChange={(event) => updateIngredient(index, {
-                    quantity: event.target.value ? Number(event.target.value) : undefined,
-                  })}
-                  placeholder={t('recipes.qtyPlaceholder')}
-                  className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition-all focus:border-slate-400 focus:ring-2 focus:ring-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:border-slate-500 dark:focus:ring-slate-800"
-                />
-                <input
-                  type="text"
-                  value={ingredient.unit ?? ''}
-                  onChange={(event) => updateIngredient(index, { unit: event.target.value })}
-                  placeholder={t('recipes.unitPlaceholder')}
-                  className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition-all focus:border-slate-400 focus:ring-2 focus:ring-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:border-slate-500 dark:focus:ring-slate-800"
-                />
-                <button
-                  type="button"
-                  onClick={() => removeIngredient(index)}
-                  className="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-slate-400 transition hover:bg-red-50 hover:text-red-500 dark:bg-slate-900 dark:text-slate-500 dark:hover:bg-red-950/50 dark:hover:text-red-400"
-                  aria-label={t('recipes.removeIngredient')}
-                >
-                  <Trash2 className="h-4 w-4" strokeWidth={2} />
-                </button>
+                <div className="grid grid-cols-[minmax(0,1fr),minmax(0,1fr),auto] gap-2">
+                  <input
+                    type="number"
+                    min={0}
+                    value={ingredient.quantity ?? ''}
+                    onChange={(event) => updateIngredient(index, {
+                      quantity: event.target.value ? Number(event.target.value) : undefined,
+                    })}
+                    placeholder={t('recipes.qtyPlaceholder')}
+                    className="h-11 w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition-all focus:border-slate-400 focus:ring-2 focus:ring-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:border-slate-500 dark:focus:ring-slate-800"
+                  />
+                  <input
+                    type="text"
+                    value={ingredient.unit ?? ''}
+                    onChange={(event) => updateIngredient(index, { unit: event.target.value })}
+                    placeholder={t('recipes.unitPlaceholder')}
+                    className="h-11 w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition-all focus:border-slate-400 focus:ring-2 focus:ring-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:border-slate-500 dark:focus:ring-slate-800"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeIngredient(index)}
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-slate-400 transition hover:bg-red-50 hover:text-red-500 dark:bg-slate-900 dark:text-slate-500 dark:hover:bg-red-950/50 dark:hover:text-red-400"
+                    aria-label={t('recipes.removeIngredient')}
+                  >
+                    <Trash2 className="h-4 w-4" strokeWidth={2} />
+                  </button>
+                </div>
               </div>
               <label className="mt-2 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                 <input
@@ -280,19 +284,30 @@ export function RecipeEditor({
         <label className="mb-2 block text-xs font-medium text-slate-500 dark:text-slate-400">
           {t('recipes.photoLabel')}
         </label>
-        {previewUrl ? (
-          <img src={previewUrl} alt="" className="mb-3 h-36 w-full rounded-2xl object-cover" />
-        ) : null}
-        <CameraCapture hasPhoto={value.photo !== null} onCapture={(photo) => setValue((current) => ({ ...current, photo }))} />
+        <ImageTrigger
+          photo={value.photo}
+          previewUrl={previewUrl}
+          onOpenModal={() => setIsCameraOpen(true)}
+          onClear={() => setValue((current) => ({ ...current, photo: null }))}
+        />
+        <CameraModal
+          isOpen={isCameraOpen}
+          onClose={() => setIsCameraOpen(false)}
+          onCapture={(photo) => {
+            setValue((current) => ({ ...current, photo }));
+            setIsCameraOpen(false);
+          }}
+        />
       </div>
 
       {error ? <p className="text-sm text-red-500">{error}</p> : null}
 
       <div className="flex gap-3">
-        <Button variant="secondary" onClick={onCancel}>
+        <Button variant="secondary" className="flex-1" onClick={onCancel}>
           {t('common.cancel')}
         </Button>
         <Button
+          className="flex-1"
           disabled={isSubmitting || !canSubmit}
           onClick={() => void onSubmit(value)}
         >

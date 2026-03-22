@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/modules/auth/use-auth';
-import { listArchivedLeftovers, restoreLeftover } from '@/modules/dashboard/leftover-api';
+import { listHistoryEntries, restoreHistoryEntry, type HistoryEntry } from '@/modules/settings/data/history-api';
 
 export function useHistory() {
   const { isAuthenticated } = useAuth();
@@ -8,23 +8,26 @@ export function useHistory() {
 
   const historyQuery = useQuery({
     queryKey: ['history'],
-    queryFn: listArchivedLeftovers,
+    queryFn: listHistoryEntries,
     enabled: isAuthenticated,
   });
 
   const restoreMutation = useMutation({
-    mutationFn: (id: string) => restoreLeftover(id),
+    mutationFn: (entry: HistoryEntry) => restoreHistoryEntry(entry),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['history'] });
       void queryClient.invalidateQueries({ queryKey: ['leftovers'] });
       void queryClient.invalidateQueries({ queryKey: ['stats'] });
+      void queryClient.invalidateQueries({ queryKey: ['pantry_items'] });
+      void queryClient.invalidateQueries({ queryKey: ['recipes'] });
+      void queryClient.invalidateQueries({ queryKey: ['shopping-list'] });
     },
   });
 
   return {
     history: historyQuery.data ?? [],
     isLoading: historyQuery.isLoading,
-    restore: (id: string) => restoreMutation.mutate(id),
-    restoringId: restoreMutation.variables ?? null,
+    restore: (entry: HistoryEntry) => restoreMutation.mutate(entry),
+    restoringId: restoreMutation.variables?.id ?? null,
   };
 }

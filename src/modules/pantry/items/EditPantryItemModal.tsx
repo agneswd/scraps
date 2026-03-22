@@ -4,7 +4,8 @@ import { motion } from 'framer-motion';
 import { Modal } from '@/shared/ui/Modal';
 import { Button } from '@/shared/ui/Button';
 import { Select } from '@/shared/ui/Select';
-import { CameraCapture } from '@/modules/add-item/CameraCapture';
+import { CameraModal } from '@/modules/add-item/CameraModal';
+import { ImageTrigger } from '@/modules/add-item/ImageTrigger';
 import { useUpdatePantryItem, useDeletePantryItem } from '@/modules/pantry/use-pantry';
 import { PANTRY_CATEGORIES, type PantryCategory } from '@/modules/pantry/pantry-categories';
 import type { PantryItemRecord } from '@/modules/pantry/pantry-api';
@@ -16,12 +17,17 @@ type EditPantryItemModalProps = {
   onClose: () => void;
 };
 
-const STATUS_OPTIONS: PantryStatus[] = ['in_stock', 'low', 'finished'];
+const STATUS_OPTIONS: PantryStatus[] = ['in_stock', 'low'];
+
+function getStatusForQuantity(quantity: number, status: PantryStatus) {
+  return quantity === 0 ? 'finished' : status;
+}
 
 export function EditPantryItemModal({ isOpen, item, onClose }: EditPantryItemModalProps) {
   const { t } = useTranslation();
   const updateItem = useUpdatePantryItem();
   const deleteItem = useDeletePantryItem();
+  const [visibleItem, setVisibleItem] = useState<PantryItemRecord | null>(item);
 
   const [name, setName] = useState('');
   const [category, setCategory] = useState<PantryCategory>('other');
@@ -30,6 +36,7 @@ export function EditPantryItemModal({ isOpen, item, onClose }: EditPantryItemMod
   const [status, setStatus] = useState<PantryStatus>('in_stock');
   const [photo, setPhoto] = useState<Blob | null>(null);
   const [photoChanged, setPhotoChanged] = useState(false);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -40,12 +47,18 @@ export function EditPantryItemModal({ isOpen, item, onClose }: EditPantryItemMod
   }, [previewUrl]);
 
   useEffect(() => {
+    if (item) {
+      setVisibleItem(item);
+    }
+  }, [item]);
+
+  useEffect(() => {
     if (item && isOpen) {
       setName(item.name);
       setCategory(item.category);
       setQuantity(item.quantity);
       setUnit(item.unit ?? '');
-      setStatus(item.status);
+      setStatus(item.status === 'finished' ? 'in_stock' : item.status);
       setPhoto(null);
       setPhotoChanged(false);
       setError(null);
@@ -54,15 +67,19 @@ export function EditPantryItemModal({ isOpen, item, onClose }: EditPantryItemMod
   }, [item, isOpen]);
 
   async function handleSave() {
+    if (!visibleItem) {
+      return;
+    }
+
     try {
       setError(null);
       await updateItem.mutateAsync({
-        id: item!.id,
+        id: visibleItem.id,
         name: name.trim(),
         category,
         quantity,
         unit: unit.trim() || undefined,
-        status,
+        status: getStatusForQuantity(quantity, status),
         ...(photoChanged ? { photo } : {}),
       });
       onClose();
@@ -72,23 +89,32 @@ export function EditPantryItemModal({ isOpen, item, onClose }: EditPantryItemMod
   }
 
   async function handleDelete() {
+    if (!visibleItem) {
+      return;
+    }
+
     if (!confirmDelete) {
       setConfirmDelete(true);
       return;
     }
 
     try {
-      await deleteItem.mutateAsync(item!.id);
+      await deleteItem.mutateAsync(visibleItem);
       onClose();
     } catch {
       setError(t('pantry.deleteError'));
     }
   }
 
-  if (!item) return null;
+  if (!visibleItem) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={t('pantry.editTitle')}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={t('pantry.editTitle')}
+      onExitComplete={() => setVisibleItem(null)}
+    >
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
@@ -153,23 +179,29 @@ export function EditPantryItemModal({ isOpen, item, onClose }: EditPantryItemMod
           <label className="mb-1.5 block text-xs font-medium text-slate-500 dark:text-slate-400">
             {t('pantry.statusLabel')}
           </label>
-          <div className="flex gap-2">
-            {STATUS_OPTIONS.map((s) => (
-              <button
-                key={s}
-                type="button"
-                onClick={() => setStatus(s)}
-                className={[
-                  'flex-1 rounded-xl px-3 py-2 text-xs font-medium transition-all active:scale-[0.96]',
-                  status === s
-                    ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
-                    : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400',
-                ].join(' ')}
-              >
-                {t(`pantry.status_${s}`)}
-              </button>
-            ))}
-          </div>
+          {quantity === 0 ? (
+            <div className="rounded-xl bg-slate-100 px-3 py-2 text-center text-xs font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+              {t('pantry.status_finished')}
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              {STATUS_OPTIONS.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setStatus(s)}
+                  className={[
+                    'flex-1 rounded-xl px-3 py-2 text-xs font-medium transition-all active:scale-[0.96]',
+                    status === s
+                      ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
+                      : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400',
+                  ].join(' ')}
+                >
+                  {t(`pantry.status_${s}`)}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Photo */}
@@ -177,9 +209,20 @@ export function EditPantryItemModal({ isOpen, item, onClose }: EditPantryItemMod
           <label className="mb-1.5 block text-xs font-medium text-slate-500 dark:text-slate-400">
             {t('addItem.photoLabel')}
           </label>
-          <CameraCapture
-            hasPhoto={photo !== null}
-            onCapture={(blob) => { setPhoto(blob); setPhotoChanged(true); }}
+          <ImageTrigger
+            photo={photo}
+            previewUrl={previewUrl}
+            onOpenModal={() => setIsCameraOpen(true)}
+            onClear={() => { setPhoto(null); setPhotoChanged(true); }}
+          />
+          <CameraModal
+            isOpen={isCameraOpen}
+            onClose={() => setIsCameraOpen(false)}
+            onCapture={(blob) => {
+              setPhoto(blob);
+              setPhotoChanged(true);
+              setIsCameraOpen(false);
+            }}
           />
         </div>
 
@@ -190,13 +233,17 @@ export function EditPantryItemModal({ isOpen, item, onClose }: EditPantryItemMod
           <Button
             variant="secondary"
             onClick={handleDelete}
-            className={confirmDelete ? '!bg-red-50 !text-red-600 dark:!bg-red-900/20 dark:!text-red-400' : ''}
+            className={[
+              'flex-1 min-h-14 rounded-2xl px-4 text-sm',
+              confirmDelete ? '!bg-red-50 !text-red-600 dark:!bg-red-900/20 dark:!text-red-400' : '',
+            ].join(' ')}
           >
             {confirmDelete ? t('pantry.confirmDelete') : t('pantry.delete')}
           </Button>
           <Button
             disabled={!name.trim() || updateItem.isPending}
             onClick={handleSave}
+            className="flex-1 min-h-14 rounded-2xl px-4 text-sm"
           >
             {updateItem.isPending ? t('pantry.saving') : t('common.save')}
           </Button>

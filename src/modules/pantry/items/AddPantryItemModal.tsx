@@ -7,7 +7,8 @@ import { useAiIdentify } from '@/modules/ai/use-ai-identify';
 import { Modal } from '@/shared/ui/Modal';
 import { Button } from '@/shared/ui/Button';
 import { PantryCategoryPicker } from '@/modules/pantry/items/PantryCategoryPicker';
-import { CameraCapture } from '@/modules/add-item/CameraCapture';
+import { CameraModal } from '@/modules/add-item/CameraModal';
+import { ImageTrigger } from '@/modules/add-item/ImageTrigger';
 import { BarcodeScanner } from '@/modules/pantry/scanner/BarcodeScanner';
 import { useScanner } from '@/modules/pantry/scanner/use-scanner';
 import { useCreatePantryItem, useIncrementQuantity } from '@/modules/pantry/use-pantry';
@@ -43,12 +44,17 @@ export function AddPantryItemModal({ isOpen, onClose }: AddPantryItemModalProps)
   const [aiPhoto, setAiPhoto] = useState<Blob | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
 
   const previewUrl = useMemo(() => (photo ? URL.createObjectURL(photo) : null), [photo]);
+  const aiPreviewUrl = useMemo(() => (aiPhoto ? URL.createObjectURL(aiPhoto) : null), [aiPhoto]);
 
   useEffect(() => {
-    return () => { if (previewUrl) URL.revokeObjectURL(previewUrl); };
-  }, [previewUrl]);
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      if (aiPreviewUrl) URL.revokeObjectURL(aiPreviewUrl);
+    };
+  }, [previewUrl, aiPreviewUrl]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -64,6 +70,7 @@ export function AddPantryItemModal({ isOpen, onClose }: AddPantryItemModalProps)
       setAiPhoto(null);
       setError(null);
       setIsScannerOpen(false);
+      setIsCameraOpen(false);
     }
   }, [isOpen, scanner]);
 
@@ -106,6 +113,7 @@ export function AddPantryItemModal({ isOpen, onClose }: AddPantryItemModalProps)
         await incrementQuantity.mutateAsync({
           id: result.existingItem.id,
           currentQuantity: result.existingItem.quantity,
+          currentStatus: result.existingItem.status,
         });
         onClose();
         return;
@@ -223,7 +231,7 @@ export function AddPantryItemModal({ isOpen, onClose }: AddPantryItemModalProps)
 
   if (method === 'barcode' && isScannerOpen) {
     return (
-      <Modal isOpen={isOpen} onClose={onClose} title={t('scanner.title')}>
+      <Modal isOpen={isOpen} onClose={onClose} title={t('scanner.title')} fullScreen>
         <BarcodeScanner
           onDetected={(scannedBarcode) => {
             void handleBarcodeDetected(scannedBarcode);
@@ -239,8 +247,8 @@ export function AddPantryItemModal({ isOpen, onClose }: AddPantryItemModalProps)
 
   if (method === 'barcode' && scanner.isResolving) {
     return (
-      <Modal isOpen={isOpen} onClose={onClose} title={t('scanner.title')}>
-        <div className="flex flex-col items-center justify-center py-14 text-center">
+      <Modal isOpen={isOpen} onClose={onClose} title={t('scanner.title')} fullScreen>
+        <div className="flex h-full flex-col items-center justify-center py-14 text-center">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800">
             <LoaderCircle className="h-6 w-6 animate-spin text-slate-400 dark:text-slate-500" strokeWidth={2} />
           </div>
@@ -265,8 +273,21 @@ export function AddPantryItemModal({ isOpen, onClose }: AddPantryItemModalProps)
           </div>
         ) : (
           <div className="space-y-4">
-            <CameraCapture hasPhoto={Boolean(aiPhoto)} onCapture={setAiPhoto} />
-            {aiPhoto ? <AiScanButton onClick={() => void handleAiIdentify()} /> : null}
+            <ImageTrigger
+              photo={aiPhoto}
+              previewUrl={aiPreviewUrl}
+              onOpenModal={() => setIsCameraOpen(true)}
+              onClear={() => setAiPhoto(null)}
+            />
+            <CameraModal
+              isOpen={isCameraOpen}
+              onClose={() => setIsCameraOpen(false)}
+              onCapture={(blob) => {
+                setAiPhoto(blob);
+                setIsCameraOpen(false);
+              }}
+            />
+            {aiPhoto ? <AiScanButton className="w-full" onClick={() => void handleAiIdentify()} /> : null}
             <Button variant="secondary" className="w-full" onClick={() => setMethod('manual')}>
               {t('common.back')}
             </Button>
@@ -325,10 +346,22 @@ export function AddPantryItemModal({ isOpen, onClose }: AddPantryItemModalProps)
                 <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                   {t('addItem.photoLabel')}
                 </label>
-                <CameraCapture hasPhoto={photo !== null} onCapture={setPhoto} />
-                {previewUrl && (
-                  <img src={previewUrl} alt="" className="mt-3 h-32 w-full rounded-xl object-cover" />
-                )}
+                <div className="space-y-4">
+                  <ImageTrigger
+                    photo={photo}
+                    previewUrl={previewUrl}
+                    onOpenModal={() => setIsCameraOpen(true)}
+                    onClear={() => setPhoto(null)}
+                  />
+                  <CameraModal
+                    isOpen={isCameraOpen}
+                    onClose={() => setIsCameraOpen(false)}
+                    onCapture={(blob) => {
+                      setPhoto(blob);
+                      setIsCameraOpen(false);
+                    }}
+                  />
+                </div>
               </motion.div>
             )}
 
@@ -371,17 +404,19 @@ export function AddPantryItemModal({ isOpen, onClose }: AddPantryItemModalProps)
         <div className="mt-6 flex gap-3">
           <Button
             variant="secondary"
+            className="flex-1"
             onClick={() => (step > 0 ? setStep(step - 1) : setMethod('choose'))}
           >
             {t('common.back')}
           </Button>
 
           {step < totalSteps - 1 ? (
-            <Button disabled={!canProceed} onClick={() => setStep(step + 1)}>
+            <Button className="flex-1" disabled={!canProceed} onClick={() => setStep(step + 1)}>
               {t('common.next')}
             </Button>
           ) : (
             <Button
+              className="flex-1"
               disabled={!canProceed || createItem.isPending}
               onClick={handleSave}
             >

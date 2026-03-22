@@ -78,22 +78,31 @@ type UpdatePantryItemFields = {
 };
 
 export async function updatePantryItem(id: string, fields: UpdatePantryItemFields) {
+  const payload: Record<string, string | number> = {};
+
+  if (fields.name !== undefined) payload.name = fields.name;
+  if (fields.category !== undefined) payload.category = fields.category;
+  if (fields.quantity !== undefined) payload.quantity = fields.quantity;
+  if (fields.unit !== undefined) payload.unit = fields.unit;
+  if (fields.expiry_date !== undefined) payload.expiry_date = fields.expiry_date;
+  if (fields.status !== undefined) payload.status = fields.status;
+
+  let updatedRecord: PantryItemRecord | null = null;
+
+  if (Object.keys(payload).length > 0) {
+    updatedRecord = await pocketbase.collection('pantry_items').update<PantryItemRecord>(id, payload);
+  }
+
+  if (fields.photo === undefined) {
+    return updatedRecord ?? pocketbase.collection('pantry_items').getOne<PantryItemRecord>(id);
+  }
+
   const formData = new FormData();
-
-  if (fields.name !== undefined) formData.set('name', fields.name);
-  if (fields.category !== undefined) formData.set('category', fields.category);
-  if (fields.quantity !== undefined) formData.set('quantity', String(fields.quantity));
-  if (fields.unit !== undefined) formData.set('unit', fields.unit);
-  if (fields.expiry_date !== undefined) formData.set('expiry_date', fields.expiry_date);
-  if (fields.status !== undefined) formData.set('status', fields.status);
-
-  if (fields.photo !== undefined) {
-    if (fields.photo) {
-      const ext = fields.photo.type === 'image/jpeg' ? 'jpg' : 'webp';
-      formData.set('photo', new File([fields.photo], `pantry.${ext}`, { type: fields.photo.type }));
-    } else {
-      formData.set('photo', '');
-    }
+  if (fields.photo) {
+    const ext = fields.photo.type === 'image/jpeg' ? 'jpg' : 'webp';
+    formData.set('photo', new File([fields.photo], `pantry.${ext}`, { type: fields.photo.type }));
+  } else {
+    formData.set('photo', '');
   }
 
   return pocketbase.collection('pantry_items').update<PantryItemRecord>(id, formData);
@@ -103,8 +112,9 @@ export async function deletePantryItem(id: string) {
   return pocketbase.collection('pantry_items').delete(id);
 }
 
-export async function incrementPantryQuantity(id: string, currentQuantity: number) {
+export async function incrementPantryQuantity(id: string, currentQuantity: number, currentStatus: PantryStatus) {
   return pocketbase.collection('pantry_items').update<PantryItemRecord>(id, {
     quantity: currentQuantity + 1,
+    status: currentQuantity <= 0 || currentStatus === 'finished' ? 'in_stock' : currentStatus,
   });
 }
