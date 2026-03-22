@@ -49,7 +49,6 @@ export function useClearHistory() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['history'] });
-      void queryClient.invalidateQueries({ queryKey: ['stats'] });
     },
   });
 }

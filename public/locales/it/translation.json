@@ -119,7 +119,7 @@
     "themeDark": "Buio",
     "clearHistory": "Cancella cronologia",
     "clearHistoryConfirmTitle": "Cancellare tutta la cronologia?",
-    "clearHistoryConfirmBody": "Tutte le voci verranno eliminate definitivamente. Questa azione non può essere annullata."
+    "clearHistoryConfirmBody": "Questo rimuove il registro degli elementi eliminati. Le statistiche non vengono influenzate."
   },
   "categories": {
     "meat": "Carne",

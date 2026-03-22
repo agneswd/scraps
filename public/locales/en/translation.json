@@ -120,7 +120,7 @@
     "themeDark": "Dark",
     "clearHistory": "Clear history",
     "clearHistoryConfirmTitle": "Clear all history?",
-    "clearHistoryConfirmBody": "This will permanently delete all history entries. This action cannot be undone."
+    "clearHistoryConfirmBody": "This removes the deleted-item undo log. Your consumed and wasted stats are not affected."
   },
   "categories": {
     "meat": "Meat",

@@ -119,7 +119,7 @@
     "themeDark": "Ngitngit",
     "clearHistory": "I-clear ang kasaysayan",
     "clearHistoryConfirmTitle": "I-clear ang tibuok kasaysayan?",
-    "clearHistoryConfirmBody": "Ang tanan nga entry permanenteng mapapala. Dili kini mahimong buhaton pag-usab."
+    "clearHistoryConfirmBody": "Kini magtangtang sa undo log sa natangtang nga mga butang. Ang imong mga stats dili maapektohan."
   },
   "categories": {
     "meat": "Karne",

@@ -119,7 +119,7 @@
     "themeDark": "Dunkel",
     "clearHistory": "Verlauf löschen",
     "clearHistoryConfirmTitle": "Gesamten Verlauf löschen?",
-    "clearHistoryConfirmBody": "Alle Einträge werden dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden."
+    "clearHistoryConfirmBody": "Dadurch wird das Wiederherstellungsprotokoll gelöschter Elemente entfernt. Ihre Statistiken werden nicht beeinflusst."
   },
   "categories": {
     "meat": "Fleisch",

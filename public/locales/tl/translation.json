@@ -119,7 +119,7 @@
     "themeDark": "Dark",
     "clearHistory": "Burahin ang kasaysayan",
     "clearHistoryConfirmTitle": "Burahin ang lahat ng kasaysayan?",
-    "clearHistoryConfirmBody": "Permanenteng mabubura ang lahat ng talaan. Hindi na ito maaaring ibalik."
+    "clearHistoryConfirmBody": "Aalisin nito ang undo log ng mga binurang item. Hindi maaapektuhan ang iyong mga stats."
   },
   "categories": {
     "meat": "Karne",

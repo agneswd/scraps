@@ -354,16 +354,13 @@ export async function archiveAndDeleteShoppingItems(items: ShoppingListItemRecor
 export async function clearAllHistory(householdId: string) {
   const validId = assertPbId(householdId, 'householdId');
 
-  const [deletedEntries, archivedLeftovers] = await Promise.all([
-    pocketbase.collection('history_entries').getFullList<DeletedHistoryRecord>({
-      filter: `household_id = "${validId}"`,
-      fields: 'id',
-    }),
-    listArchivedLeftovers(),
-  ]);
+  // Only delete history_entries (the undo-log for deleted items).
+  // Archived leftovers (consumed/wasted) live in the leftovers collection
+  // and are the source of truth for stats — they must not be removed here.
+  const entries = await pocketbase.collection('history_entries').getFullList<DeletedHistoryRecord>({
+    filter: `household_id = "${validId}"`,
+    fields: 'id',
+  });
 
-  await Promise.all([
-    ...deletedEntries.map((entry) => pocketbase.collection('history_entries').delete(entry.id)),
-    ...archivedLeftovers.map((leftover) => deleteLeftover(leftover.id)),
-  ]);
+  await Promise.all(entries.map((entry) => pocketbase.collection('history_entries').delete(entry.id)));
 }

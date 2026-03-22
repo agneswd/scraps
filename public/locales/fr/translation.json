@@ -119,7 +119,7 @@
     "themeDark": "Sombre",
     "clearHistory": "Effacer l'historique",
     "clearHistoryConfirmTitle": "Effacer tout l'historique ?",
-    "clearHistoryConfirmBody": "Toutes les entrées seront supprimées définitivement. Cette action est irréversible."
+    "clearHistoryConfirmBody": "Ceci supprime le journal des éléments supprimés. Vos statistiques consommés et gaspillés ne sont pas affectées."
   },
   "categories": {
     "meat": "Viande",

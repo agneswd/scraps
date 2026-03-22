@@ -119,7 +119,7 @@
     "themeDark": "Mörkt",
     "clearHistory": "Rensa historik",
     "clearHistoryConfirmTitle": "Rensa all historik?",
-    "clearHistoryConfirmBody": "Alla historikposter raderas permanent. Det går inte att ångra."
+    "clearHistoryConfirmBody": "Det här tar bort återställningsloggen för borttagna objekt. Din äten och slasad statistik påverkas inte."
   },
   "categories": {
     "meat": "Kött",

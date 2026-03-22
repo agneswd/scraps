@@ -119,7 +119,7 @@
     "themeDark": "Oscuro",
     "clearHistory": "Borrar historial",
     "clearHistoryConfirmTitle": "¿Borrar todo el historial?",
-    "clearHistoryConfirmBody": "Se eliminarán permanentemente todas las entradas del historial. Esta acción no se puede deshacer."
+    "clearHistoryConfirmBody": "Esto elimina el registro de elementos borrados. Las estadísticas de consumo y desperdicio no se ven afectadas."
   },
   "categories": {
     "meat": "Carne",
