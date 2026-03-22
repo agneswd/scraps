@@ -79,6 +79,13 @@ body {
   margin: 0;
   min-width: 320px;
   overflow: hidden;
+  background: inherit;
+  color: inherit;
+}
+
+#root {
+  background: inherit;
+  color: inherit;
 }
 
 /* ─── Skeleton shimmer ─── */
@@ -139,5 +146,15 @@ a {
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   .safe-bottom {
     padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+  }
+}
+
+/* Prevent iOS Safari auto-zoom on input focus.
+   iOS zooms when a focused input's font-size is < 16px.
+   -webkit-touch-callout is only supported on iOS Safari, so this rule
+   is scoped exclusively to that UA and won't affect Android or desktop. */
+@supports (-webkit-touch-callout: none) {
+  input, textarea, select {
+    font-size: 1rem;
   }
 }
