@@ -1,4 +1,3 @@
-import { ChevronLeft } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { HistoryLog } from '@/modules/settings/HistoryLog';
@@ -44,21 +43,14 @@ export function SettingsModal({ isOpen, onClose }: Props) {
   }, [page, t]);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={pageTitle} fullScreen>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={pageTitle}
+      fullScreen
+      onBack={page !== 'home' ? () => setPage('home') : undefined}
+    >
       <div className="mx-auto flex h-full w-full max-w-2xl flex-col gap-5 px-1 pb-4">
-        {page !== 'home' ? (
-          <div className="sticky top-0 z-10 -mx-4 border-b border-slate-100/80 bg-white/95 px-4 pb-3 pt-1 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
-            <button
-              type="button"
-              onClick={() => setPage('home')}
-              className="inline-flex w-fit items-center gap-2 rounded-full bg-slate-100 px-3 py-2 text-sm font-medium text-slate-600 transition-all hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-            >
-              <ChevronLeft className="h-4 w-4" strokeWidth={2} />
-              {t('common.back')}
-            </button>
-          </div>
-        ) : null}
-
         {page === 'home' ? (
           <SettingsHomePage
             onOpenHistory={() => setPage('history')}

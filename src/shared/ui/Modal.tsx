@@ -1,7 +1,7 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { X } from 'lucide-react';
+import { ChevronLeft, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 type ModalProps = {
@@ -11,9 +11,10 @@ type ModalProps = {
   title: string;
   fullScreen?: boolean;
   onExitComplete?: () => void;
+  onBack?: () => void;
 };
 
-export function Modal({ children, isOpen, onClose, title, fullScreen = false, onExitComplete }: ModalProps) {
+export function Modal({ children, isOpen, onClose, title, fullScreen = false, onExitComplete, onBack }: ModalProps) {
   const { t } = useTranslation();
   const panelRef = useRef<HTMLDivElement | null>(null);
 
@@ -79,7 +80,19 @@ export function Modal({ children, isOpen, onClose, title, fullScreen = false, on
               'flex items-center justify-between px-6 pb-2 pt-5',
               fullScreen ? 'pt-[max(1.25rem,env(safe-area-inset-top))]' : '',
             ].join(' ')}>
-              <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">{title}</h2>
+              <div className="flex items-center gap-2 min-w-0">
+                {onBack ? (
+                  <button
+                    type="button"
+                    onClick={onBack}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-all duration-200 ease-spring hover:bg-slate-200 active:scale-90 dark:bg-slate-800 dark:text-slate-400"
+                    aria-label={t('common.back')}
+                  >
+                    <ChevronLeft className="h-4 w-4" strokeWidth={2.5} />
+                  </button>
+                ) : null}
+                <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white truncate">{title}</h2>
+              </div>
               <button
                 type="button"
                 onClick={onClose}
