@@ -24,6 +24,7 @@ export function ShoppingListPage() {
   const clearChecked = useClearCheckedShoppingListItems();
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isGenerateOpen, setIsGenerateOpen] = useState(false);
+  const checkedItems = useMemo(() => (items ?? []).filter((item) => item.checked), [items]);
 
   const recipeTitles = useMemo(
     () => new Map((recipes ?? []).map((recipeWithIngredients) => [recipeWithIngredients.recipe.id, recipeWithIngredients.recipe.title])),
@@ -160,13 +161,21 @@ export function ShoppingListPage() {
               </div>
             </div>
           )})}
-          <div>
-            <Button variant="secondary" onClick={() => clearChecked.mutate()} disabled={clearChecked.isPending}>
-              {clearChecked.isPending ? t('shoppingList.clearing') : t('shoppingList.clearChecked')}
-            </Button>
-          </div>
         </div>
       )}
+
+      {checkedItems.length > 0 ? (
+        <div className="pointer-events-none fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] left-5 z-20 md:bottom-6 md:left-8">
+          <Button
+            variant="secondary"
+            className="pointer-events-auto min-h-11 rounded-full px-4 shadow-elevated"
+            onClick={() => clearChecked.mutate()}
+            disabled={clearChecked.isPending}
+          >
+            {clearChecked.isPending ? t('shoppingList.clearing') : t('shoppingList.clearChecked')}
+          </Button>
+        </div>
+      ) : null}
 
       <AddShoppingItemModal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} />
       <GenerateFromRecipeModal isOpen={isGenerateOpen} onClose={() => setIsGenerateOpen(false)} />

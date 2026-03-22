@@ -68,7 +68,7 @@ export function PantryPage() {
   // ── Loading state ──────────────────────────────────────────────────────────
   if (isLoading) {
     return (
-      <div className="space-y-5">
+      <div className="space-y-5 overflow-x-hidden">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
             {t('pantry.title')}
@@ -101,7 +101,7 @@ export function PantryPage() {
 
   // ── Content ────────────────────────────────────────────────────────────────
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 overflow-x-hidden">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
@@ -113,7 +113,7 @@ export function PantryPage() {
       </div>
 
       {/* Tab switcher — CSS sliding pill (no layoutId motion conflict) */}
-      <div className="relative flex rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
+      <div className="relative flex overflow-hidden rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
         {/* Sliding active background */}
         <span
           aria-hidden
