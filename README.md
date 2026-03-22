@@ -39,6 +39,7 @@ Edit `.env` and fill in:
 | `VAPID_SUBJECT` | `mailto:` address for push notifications |
 | `VITE_GEMINI_KEY` | Gemini API key for AI-assisted pantry and recipe features |
 | `VITE_SPOONACULAR_KEY` | Spoonacular API key reserved for future recipe discovery |
+| `VITE_POCKETBASE_URL` | Override the PocketBase URL (defaults to same origin in production) |
 | `TUNNEL_TOKEN` | Cloudflare Tunnel token (only if using the tunnel profile) |
 
 ### 2. Generate VAPID keys
@@ -108,13 +109,17 @@ src/
 ├── modules/
 │   ├── auth/        Login flow
 │   ├── dashboard/   Leftover cards, expiry logic, swipe actions
-│   ├── add-item/    Multi-step add form with camera
-│   └── stats/       Consumed vs wasted ratio
+│   ├── add-item/    Multi-step add form with camera and AI scan
+│   ├── pantry/      Pantry inventory, barcode scanner, recipes
+│   ├── shopping-list/ Shopping list with recipe ingredient generation
+│   ├── settings/    History log, theme, language, notifications, account
+│   ├── stats/       Consumed vs wasted ratio and trend data
+│   └── ai/          Gemini-powered item identification and recipe generation
 └── shared/
-    ├── api/         PocketBase client
-    ├── hooks/       Push notifications, online status
-    ├── i18n/        Internationalisation setup
-    └── ui/          Button, Modal, Fab, banners
+    ├── api/         PocketBase client with injection-safe filter helpers
+    ├── hooks/       Push notifications, online status, household context
+    ├── i18n/        Internationalisation setup (11 languages)
+    └── ui/          Button, Modal, Fab, Select, banners, toasts
 ```
 
 ## Tech Stack
