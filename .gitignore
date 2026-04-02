@@ -5,3 +5,4 @@ dist/
 .env.*
 !.env.example
 pb_data/
+AGENTS.md
