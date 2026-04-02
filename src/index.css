@@ -338,28 +338,28 @@ html.green select:focus {
 
 /* Coloured semantic cards (stats, expiry) */
 html.green .bg-red-50 {
-  background-color: #1a0a0a !important;
+  background-color: #1a3320 !important;
 }
 
 html.green .bg-amber-50 {
-  background-color: #1a0f00 !important;
+  background-color: #1c3d22 !important;
 }
 
 html.green .bg-emerald-50 {
-  background-color: #071a0c !important;
+  background-color: #16422a !important;
 }
 
 html.green .bg-emerald-950\/30,
 html.green .bg-red-950\/30,
 html.green .bg-amber-950\/30 {
-  background-color: rgba(7, 26, 12, 0.6) !important;
+  background-color: rgba(22, 66, 42, 0.5) !important;
 }
 
 /* Coloured icon wrappers */
 html.green .bg-emerald-100,
 html.green .bg-amber-100,
 html.green .bg-red-100 {
-  background-color: #14532d !important;
+  background-color: #166534 !important;
 }
 
 /* Thumbnail placeholders */
