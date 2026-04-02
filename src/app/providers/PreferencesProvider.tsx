@@ -25,7 +25,7 @@ const THEME_STORAGE_KEY = 'scraps.preferences.theme';
 const THEME_COLOR_BY_MODE = {
   light: '#f8fafc',
   dark: '#020617',
-  green: '#16a34a',
+  green: '#052e16',
 } as const;
 const THEME_COLOR_META_ID = 'theme-color';
 

@@ -161,58 +161,71 @@ a {
 
 /* ─── Healthy (green) theme ─── */
 html.green {
-  background: #f0fdf4;
-  color: #14532d;
+  background: #052e16;
+  color: #dcfce7;
 }
 
 html.green body,
 html.green #root {
-  background: #f0fdf4;
-  color: #14532d;
+  background: #052e16;
+  color: #dcfce7;
 }
 
+/* White cards → deep green surface */
 html.green .bg-white,
 html.green .bg-white\/80 {
-  background-color: #ffffff !important;
-}
-
-html.green .bg-slate-50 {
-  background-color: #f0fdf4 !important;
-}
-
-html.green .bg-slate-100 {
-  background-color: #dcfce7 !important;
-}
-
-html.green .bg-slate-200 {
-  background-color: #bbf7d0 !important;
-}
-
-html.green .bg-slate-800,
-html.green .bg-slate-900 {
   background-color: #14532d !important;
 }
 
+/* Light backgrounds → mid green */
+html.green .bg-slate-50 {
+  background-color: #052e16 !important;
+}
+
+html.green .bg-slate-100 {
+  background-color: #14532d !important;
+}
+
+html.green .bg-slate-200 {
+  background-color: #166534 !important;
+}
+
+/* Dark backgrounds → near-black green */
+html.green .bg-slate-800 {
+  background-color: #071a0c !important;
+}
+
+html.green .bg-slate-900 {
+  background-color: #021a0a !important;
+}
+
+/* Borders */
 html.green .border-slate-100 {
-  border-color: #dcfce7 !important;
+  border-color: #166534 !important;
 }
 
 html.green .border-slate-200 {
-  border-color: #bbf7d0 !important;
+  border-color: #15803d !important;
 }
 
+html.green .border-slate-700\/40,
+html.green .border-slate-700 {
+  border-color: #166534 !important;
+}
+
+/* Text */
 html.green .text-slate-900 {
-  color: #14532d !important;
+  color: #f0fdf4 !important;
 }
 
 html.green .text-slate-800,
 html.green .text-slate-700 {
-  color: #166534 !important;
+  color: #dcfce7 !important;
 }
 
 html.green .text-slate-600,
 html.green .text-slate-500 {
-  color: #16a34a !important;
+  color: #86efac !important;
 }
 
 html.green .text-slate-400 {
@@ -220,10 +233,10 @@ html.green .text-slate-400 {
 }
 
 html.green .text-white {
-  color: #ffffff !important;
+  color: #f0fdf4 !important;
 }
 
-/* Selected/active buttons (the dark pill becomes green) */
+/* Active/selected pill → bright green */
 html.green .bg-slate-900.text-white {
   background-color: #16a34a !important;
   color: #ffffff !important;
@@ -235,25 +248,32 @@ html.green .bg-slate-900.text-white svg {
 
 /* Hover states */
 html.green .hover\:bg-slate-100:hover {
-  background-color: #dcfce7 !important;
+  background-color: #166534 !important;
 }
 
 html.green .hover\:bg-slate-200:hover {
-  background-color: #bbf7d0 !important;
+  background-color: #15803d !important;
+}
+
+/* Tag pills (servings, time, ingredients) */
+html.green .bg-slate-100.px-2\.5,
+html.green .bg-slate-700 {
+  background-color: #166534 !important;
+  color: #86efac !important;
 }
 
 /* Ring focus colour */
 html.green .ring-white {
-  --tw-ring-color: #f0fdf4 !important;
+  --tw-ring-color: #052e16 !important;
 }
 
 /* Skeleton shimmer in green */
 html.green .skeleton {
   background: linear-gradient(
     90deg,
-    #dcfce7 25%,
-    #c5f5d5 50%,
-    #dcfce7 75%
+    #14532d 25%,
+    #166534 50%,
+    #14532d 75%
   );
   background-size: 200% 100%;
   animation: shimmer 1.4s ease-in-out infinite;

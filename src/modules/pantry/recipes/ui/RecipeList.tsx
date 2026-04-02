@@ -61,8 +61,8 @@ export function RecipeList({ items, onAdd, onAiGenerate, onItemTap }: RecipeList
         </div>
       </div>
       <div className="grid gap-3 md:grid-cols-2">
-        {items.map((item) => (
-          <RecipeCard key={item.recipe.id} item={item} onTap={onItemTap} />
+        {items.map((item, index) => (
+          <RecipeCard key={item.recipe.id} item={item} index={index} onTap={onItemTap} />
         ))}
       </div>
     </div>
