@@ -159,219 +159,97 @@ a {
   }
 }
 
-/* ─── Healthy (green) theme ─── *
- * Palette:
- *   Background:   #0a1f0e  (off-black forest)
- *   Surface:      #0f2d14  (deep green surface)
- *   Card:         #162b1a  (raised card surface)
- *   Elevated:     #1e3d24  (modals, dropdowns)
- *   Border:       rgba(34,197,94,0.15)  (subtle green border glow)
- *   Text hi:      #e8f5e9  (near-white warm green)
- *   Text mid:     #a5d6a7  (mid green)
- *   Text muted:   #66bb6a  (muted green)
- *   Accent:       #22c55e  (single bright accent)
- */
+/* ─── Healthy Green Theme (Fresh / Light) ─── */
 html.green {
-  background: #0a1f0e;
-  color: #e8f5e9;
+  background: #f0fdf4; /* Tailwind Green 50 */
+  color: #064e3b;      /* Tailwind Emerald 900 */
 }
 
 html.green body,
 html.green #root {
-  background: #0a1f0e;
-  color: #e8f5e9;
+  background: inherit;
+  color: inherit;
 }
 
 /* ── Surfaces ── */
 html.green .bg-white,
 html.green .bg-white\/80 {
-  background-color: #162b1a !important;
+  background-color: #ffffff !important;
 }
 
-html.green .bg-slate-50 {
-  background-color: #0a1f0e !important;
-}
-
+html.green .bg-slate-50,
 html.green .bg-slate-100 {
-  background-color: #0f2d14 !important;
-}
-
-html.green .bg-slate-200 {
-  background-color: #162b1a !important;
-}
-
-html.green .bg-slate-800,
-html.green .bg-slate-800\/80 {
-  background-color: #0f2d14 !important;
-}
-
-html.green .bg-slate-900 {
-  background-color: #0a1a0c !important;
-}
-
-html.green .bg-slate-700 {
-  background-color: #0f2d14 !important;
+  background-color: #dcfce7 !important; /* Green 100 */
 }
 
 /* ── Borders ── */
 html.green .border-slate-100,
-html.green .border-slate-100\/80 {
-  border-color: rgba(34, 197, 94, 0.12) !important;
-}
-
 html.green .border-slate-200 {
-  border-color: rgba(34, 197, 94, 0.18) !important;
-}
-
-html.green .border-slate-700,
-html.green .border-slate-700\/40 {
-  border-color: rgba(34, 197, 94, 0.12) !important;
-}
-
-html.green .border-slate-800 {
-  border-color: rgba(34, 197, 94, 0.1) !important;
+  border-color: #bbf7d0 !important; /* Green 200 */
 }
 
 /* ── Text ── */
-html.green .text-slate-900 {
-  color: #e8f5e9 !important;
+html.green .text-slate-900,
+html.green .text-slate-800 {
+  color: #064e3b !important; /* Emerald 900 */
 }
 
-html.green .text-slate-800,
-html.green .text-slate-700 {
-  color: #c8e6c9 !important;
+html.green .text-slate-700,
+html.green .text-slate-600 {
+  color: #047857 !important; /* Emerald 600 */
 }
 
-html.green .text-slate-600,
-html.green .text-slate-500 {
-  color: #a5d6a7 !important;
-}
-
+html.green .text-slate-500,
 html.green .text-slate-400 {
-  color: #66bb6a !important;
+  color: #059669 !important; /* Emerald 500 */
 }
 
-html.green .text-white {
-  color: #e8f5e9 !important;
-}
-
-/* ── Active/selected pills → accent green ── */
+/* ── Active/Accent Pills ── */
 html.green .bg-slate-900.text-white {
-  background-color: #22c55e !important;
-  color: #0a1f0e !important;
-  box-shadow: 0 2px 12px rgba(34, 197, 94, 0.25) !important;
+  background-color: #10b981 !important; /* Emerald 500 */
+  color: #ffffff !important;
+  box-shadow: 0 2px 10px rgba(16, 185, 129, 0.2) !important;
 }
 
 html.green .bg-slate-900.text-white svg {
-  color: #0a1f0e !important;
+  color: #ffffff !important;
 }
 
-/* ── Hover states ── */
-html.green .hover\:bg-slate-100:hover {
-  background-color: #162b1a !important;
-}
-
+/* ── Hover States ── */
+html.green .hover\:bg-slate-100:hover,
 html.green .hover\:bg-slate-200:hover {
-  background-color: #1e3d24 !important;
-}
-
-/* ── Bottom nav bar — liquid glass on green ── */
-html.green nav.fixed {
-  background-color: rgba(10, 31, 14, 0.82) !important;
-  border-top-color: rgba(34, 197, 94, 0.12) !important;
-  box-shadow: inset 0 1px 0 rgba(34, 197, 94, 0.08) !important;
-}
-
-/* ── Desktop sidebar ── */
-html.green aside {
-  background-color: #0a1a0c !important;
-  border-right-color: rgba(34, 197, 94, 0.1) !important;
-}
-
-/* ── FAB ring ── */
-html.green .ring-white {
-  --tw-ring-color: #0a1f0e !important;
-}
-
-/* ── Tab active indicator dot ── */
-html.green .mobileTabClass .bg-slate-900 {
-  background-color: #22c55e !important;
-}
-
-/* ── Semantic / coloured cards ── */
-html.green .bg-red-50 {
-  background-color: #1b2c1e !important;
-}
-
-html.green .bg-amber-50 {
-  background-color: #1e2f1b !important;
-}
-
-html.green .bg-emerald-50 {
-  background-color: #122716 !important;
-}
-
-html.green .bg-emerald-950\/30,
-html.green .bg-red-950\/30,
-html.green .bg-amber-950\/30 {
-  background-color: rgba(22, 43, 26, 0.7) !important;
-}
-
-html.green .bg-emerald-100 {
-  background-color: #1e3d24 !important;
-}
-
-html.green .bg-amber-100,
-html.green .bg-red-100 {
-  background-color: #162b1a !important;
+  background-color: #bbf7d0 !important; /* Green 200 */
 }
 
 /* ── Inputs ── */
 html.green input,
 html.green textarea,
 html.green select {
-  background-color: #0f2d14 !important;
-  border-color: rgba(34, 197, 94, 0.2) !important;
-  color: #e8f5e9 !important;
+  background-color: #ffffff !important;
+  border-color: #86efac !important; /* Green 300 */
+  color: #064e3b !important;
 }
 
 html.green input::placeholder,
 html.green textarea::placeholder {
-  color: #66bb6a !important;
-  opacity: 0.7;
+  color: #34d399 !important; /* Emerald 400 */
+  opacity: 1;
 }
 
 html.green input:focus,
 html.green textarea:focus,
 html.green select:focus {
-  border-color: #22c55e !important;
-  --tw-ring-color: rgba(34, 197, 94, 0.2) !important;
+  border-color: #10b981 !important; /* Emerald 500 */
+  --tw-ring-color: rgba(16, 185, 129, 0.25) !important;
 }
 
-/* ── Segment/slider white tab ── */
-html.green .bg-white.shadow-soft {
-  background-color: #22c55e !important;
-  box-shadow: 0 2px 12px rgba(34, 197, 94, 0.2) !important;
-}
-
-/* ── Thumbnail placeholder boxes ── */
-html.green .bg-slate-700:not(.border) {
-  background-color: #0f2d14 !important;
-}
-
-/* ── Ring / focus ── */
-html.green .focus\:ring-slate-100:focus,
-html.green .focus\:ring-slate-200:focus {
-  --tw-ring-color: rgba(34, 197, 94, 0.2) !important;
-}
-
-/* ── Skeleton shimmer in green ── */
+/* ── Skeleton Shimmer ── */
 html.green .skeleton {
   background: linear-gradient(
     90deg,
-    #0f2d14 25%,
-    #162b1a 50%,
-    #0f2d14 75%
+    #dcfce7 25%,
+    #bbf7d0 50%,
+    #dcfce7 75%
   );
   background-size: 200% 100%;
   animation: shimmer 1.4s ease-in-out infinite;
