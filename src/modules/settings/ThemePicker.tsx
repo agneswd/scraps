@@ -1,11 +1,11 @@
 import { useTranslation } from 'react-i18next';
 import { usePreferences, type ThemePreference } from '@/app/providers/PreferencesProvider';
 
-const OPTIONS: Array<{ id: ThemePreference; labelKey: string; dot?: string }> = [
-  { id: 'system', labelKey: 'settings.themeSystem' },
-  { id: 'light', labelKey: 'settings.themeLight' },
-  { id: 'dark', labelKey: 'settings.themeDark' },
-  { id: 'healthy', labelKey: 'settings.themeHealthy', dot: '#16a34a' },
+const OPTIONS: Array<{ id: ThemePreference; labelKey: string; dot: string; activeDot: string }> = [
+  { id: 'system', labelKey: 'settings.themeSystem', dot: '#94a3b8', activeDot: 'rgba(255,255,255,0.7)' },
+  { id: 'light', labelKey: 'settings.themeLight', dot: '#e2e8f0', activeDot: 'rgba(255,255,255,0.7)' },
+  { id: 'dark', labelKey: 'settings.themeDark', dot: '#0f172a', activeDot: 'rgba(255,255,255,0.7)' },
+  { id: 'healthy', labelKey: 'settings.themeHealthy', dot: '#16a34a', activeDot: 'rgba(255,255,255,0.7)' },
 ];
 
 export function ThemePicker() {
@@ -33,8 +33,8 @@ export function ThemePicker() {
           >
             <span className="font-medium">{t(option.labelKey)}</span>
             <span
-              className={['h-2.5 w-2.5 rounded-full transition-colors', !option.dot && (isActive ? 'bg-white/70 dark:bg-slate-900/70' : 'bg-slate-300 dark:bg-slate-600')].filter(Boolean).join(' ')}
-              style={option.dot ? { backgroundColor: isActive ? 'rgba(255,255,255,0.7)' : option.dot } : undefined}
+              className="h-2.5 w-2.5 rounded-full transition-colors"
+              style={{ backgroundColor: isActive ? option.activeDot : option.dot }}
             />
           </button>
         );

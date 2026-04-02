@@ -335,3 +335,39 @@ html.green select:focus {
   border-color: #22c55e !important;
   --tw-ring-color: rgba(22, 163, 74, 0.3) !important;
 }
+
+/* Coloured semantic cards (stats, expiry) */
+html.green .bg-red-50 {
+  background-color: #1a0a0a !important;
+}
+
+html.green .bg-amber-50 {
+  background-color: #1a0f00 !important;
+}
+
+html.green .bg-emerald-50 {
+  background-color: #071a0c !important;
+}
+
+html.green .bg-emerald-950\/30,
+html.green .bg-red-950\/30,
+html.green .bg-amber-950\/30 {
+  background-color: rgba(7, 26, 12, 0.6) !important;
+}
+
+/* Coloured icon wrappers */
+html.green .bg-emerald-100,
+html.green .bg-amber-100,
+html.green .bg-red-100 {
+  background-color: #14532d !important;
+}
+
+/* Thumbnail placeholders */
+html.green .bg-slate-700 {
+  background-color: #071a0c !important;
+}
+
+/* White segmented/slider track indicator */
+html.green .bg-white.shadow-soft {
+  background-color: #16a34a !important;
+}
