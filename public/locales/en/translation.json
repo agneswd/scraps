@@ -118,6 +118,7 @@
     "themeSystem": "System",
     "themeLight": "Light",
     "themeDark": "Dark",
+    "themeHealthy": "Healthy",
     "clearHistory": "Clear history",
     "clearHistoryConfirmTitle": "Clear all history?",
     "clearHistoryConfirmBody": "This removes the deleted-item undo log. Your consumed and wasted stats are not affected."

@@ -9,13 +9,14 @@ import {
 import i18n from '@/shared/i18n/i18n';
 import { loadLanguageResources } from '@/shared/i18n/languages';
 
-export type ThemePreference = 'system' | 'light' | 'dark';
+export type ThemePreference = 'system' | 'light' | 'dark' | 'healthy';
+export type ResolvedTheme = 'light' | 'dark' | 'green';
 
 type PreferencesContextValue = {
   language: string;
   setLanguage: (language: string) => Promise<void>;
   theme: ThemePreference;
-  resolvedTheme: 'light' | 'dark';
+  resolvedTheme: ResolvedTheme;
   setTheme: (theme: ThemePreference) => void;
 };
 
@@ -24,6 +25,7 @@ const THEME_STORAGE_KEY = 'scraps.preferences.theme';
 const THEME_COLOR_BY_MODE = {
   light: '#f8fafc',
   dark: '#020617',
+  green: '#16a34a',
 } as const;
 const THEME_COLOR_META_ID = 'theme-color';
 
@@ -43,7 +45,7 @@ function getStoredTheme(): ThemePreference {
   }
 
   const storedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
-  return storedTheme === 'light' || storedTheme === 'dark' || storedTheme === 'system'
+  return storedTheme === 'light' || storedTheme === 'dark' || storedTheme === 'system' || storedTheme === 'healthy'
     ? storedTheme
     : 'system';
 }
@@ -56,13 +58,14 @@ function getSystemTheme(): 'light' | 'dark' {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
-function applyResolvedTheme(theme: 'light' | 'dark') {
+function applyResolvedTheme(theme: ResolvedTheme) {
   if (typeof document === 'undefined') {
     return;
   }
 
   document.documentElement.classList.toggle('dark', theme === 'dark');
-  document.documentElement.style.colorScheme = theme;
+  document.documentElement.classList.toggle('green', theme === 'green');
+  document.documentElement.style.colorScheme = theme === 'green' ? 'light' : theme;
 
   let themeColorMeta = document.getElementById(THEME_COLOR_META_ID);
 
@@ -91,7 +94,7 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
     return () => mediaQuery.removeEventListener('change', updateTheme);
   }, []);
 
-  const resolvedTheme = theme === 'system' ? systemTheme : theme;
+  const resolvedTheme: ResolvedTheme = theme === 'system' ? systemTheme : theme === 'healthy' ? 'green' : theme;
 
   useEffect(() => {
     applyResolvedTheme(resolvedTheme);
