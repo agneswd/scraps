@@ -2,6 +2,7 @@ import { FormEvent, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
+import { Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/shared/ui/Button';
 import { useAuth } from '@/modules/auth/use-auth';
 
@@ -10,6 +11,7 @@ export function LoginPage() {
   const { clearError, error, isAuthenticated, isLoading, login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -65,18 +67,30 @@ export function LoginPage() {
             <label className="mb-1.5 block text-xs font-medium text-slate-500 dark:text-slate-400">
               {t('auth.passwordLabel')}
             </label>
-            <input
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(event) => {
-                if (error) clearError();
-                setPassword(event.target.value);
-              }}
-              className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-[0.9375rem] text-slate-900 outline-none transition-all duration-200 ease-spring placeholder:text-slate-300 focus:border-slate-400 focus:ring-4 focus:ring-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-600 dark:focus:border-slate-500 dark:focus:ring-slate-800"
-              placeholder={t('auth.passwordPlaceholder')}
-              required
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                autoComplete="current-password"
+                value={password}
+                onChange={(event) => {
+                  if (error) clearError();
+                  setPassword(event.target.value);
+                }}
+                className="h-12 w-full rounded-2xl border border-slate-200 bg-white pl-4 pr-11 text-[0.9375rem] text-slate-900 outline-none transition-all duration-200 ease-spring placeholder:text-slate-300 focus:border-slate-400 focus:ring-4 focus:ring-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-600 dark:focus:border-slate-500 dark:focus:ring-slate-800"
+                placeholder={t('auth.passwordPlaceholder')}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? t('auth.hidePassword', 'Hide password') : t('auth.showPassword', 'Show password')}
+                className="absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:text-slate-500 dark:hover:bg-slate-700 dark:hover:text-slate-300"
+              >
+                {showPassword
+                  ? <EyeOff className="h-4 w-4" strokeWidth={2} />
+                  : <Eye className="h-4 w-4" strokeWidth={2} />}
+              </button>
+            </div>
           </div>
 
           {error ? (

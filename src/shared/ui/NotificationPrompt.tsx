@@ -66,17 +66,21 @@ export function NotificationPrompt({
     <AnimatePresence>
       {shouldShow ? (
         <motion.div
-          initial={{ y: 80, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 80, opacity: 0 }}
-          transition={{ type: 'spring', stiffness: 300, damping: 28 }}
-          className="pointer-events-none safe-bottom fixed inset-x-0 bottom-20 z-30 flex justify-center px-5"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30 px-5 backdrop-blur-sm"
         >
-          <section
+          <motion.section
+            initial={{ scale: 0.92, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.92, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 320, damping: 26 }}
             role="dialog"
-            aria-modal="false"
+            aria-modal="true"
             aria-labelledby="notification-prompt-title"
-            className="pointer-events-auto w-full max-w-sm rounded-2xl bg-white p-4 shadow-elevated dark:bg-slate-800"
+            className="w-full max-w-sm rounded-2xl bg-white p-4 shadow-elevated dark:bg-slate-800"
           >
             <div className="flex items-start gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400">
@@ -116,7 +120,7 @@ export function NotificationPrompt({
                 </Button>
               </div>
             ) : null}
-          </section>
+          </motion.section>
         </motion.div>
       ) : null}
     </AnimatePresence>

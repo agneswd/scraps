@@ -11,11 +11,15 @@ export type PushNotificationPreferences = {
   notify_grains: boolean;
   notify_prepared: boolean;
   notify_other: boolean;
+  /** 0–23: local hour of day at which the daily expiry reminder fires. */
+  notify_hour: number;
+  /** IANA timezone string (e.g. "Europe/Berlin"). Empty = UTC fallback. */
+  notify_timezone: string;
 };
 
 export type PushCategoryPreferenceKey = Exclude<
   keyof PushNotificationPreferences,
-  'notifications_enabled' | 'notify_expiring_leftovers'
+  'notifications_enabled' | 'notify_expiring_leftovers' | 'notify_hour' | 'notify_timezone'
 >;
 
 export const DEFAULT_PUSH_NOTIFICATION_PREFERENCES: PushNotificationPreferences = {
@@ -29,6 +33,8 @@ export const DEFAULT_PUSH_NOTIFICATION_PREFERENCES: PushNotificationPreferences 
   notify_grains: true,
   notify_prepared: true,
   notify_other: true,
+  notify_hour: 12,
+  notify_timezone: '',
 };
 
 export const CATEGORY_NOTIFICATION_FIELDS: Array<{

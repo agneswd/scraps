@@ -185,6 +185,7 @@
     "filterLow": "Low",
     "filterFinished": "Finished",
     "noMatchingItems": "No items match this filter.",
+    "searchPlaceholder": "Search items…",
     "addTitle": "Add to Pantry",
     "editTitle": "Edit Item",
     "addMethodPrompt": "How would you like to add an item?",

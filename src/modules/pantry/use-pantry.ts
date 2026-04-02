@@ -61,7 +61,22 @@ export function useUpdatePantryItem() {
   return useMutation({
     mutationFn: ({ id, ...fields }: { id: string } & Parameters<typeof updatePantryItem>[1]) =>
       updatePantryItem(id, fields),
-    onSuccess: () => {
+    onMutate: async ({ id, ...fields }) => {
+      await queryClient.cancelQueries({ queryKey: PANTRY_KEY });
+      const previous = queryClient.getQueriesData<PantryItemRecord[]>({ queryKey: PANTRY_KEY });
+      queryClient.setQueriesData<PantryItemRecord[]>({ queryKey: PANTRY_KEY }, (old) =>
+        old?.map((item) => item.id === id ? { ...item, ...fields } as PantryItemRecord : item),
+      );
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        for (const [key, data] of context.previous) {
+          queryClient.setQueryData(key, data);
+        }
+      }
+    },
+    onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: PANTRY_KEY });
     },
   });

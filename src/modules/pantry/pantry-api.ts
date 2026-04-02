@@ -19,7 +19,7 @@ export async function listPantryItems(statusFilter?: PantryStatus) {
   const filter = statusFilter ? `status = "${statusFilter}"` : '';
   return pocketbase.collection('pantry_items').getFullList<PantryItemRecord>({
     filter,
-    sort: '-updated',
+    sort: 'name',
   });
 }
 

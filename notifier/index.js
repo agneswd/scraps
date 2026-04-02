@@ -3,22 +3,45 @@ import PocketBase from 'pocketbase';
 import webpush from 'web-push';
 
 const pocketbase = new PocketBase(process.env.PB_URL || 'http://scraps-db:8090');
-const checkIntervalHours = Math.max(1, Number(process.env.CHECK_INTERVAL_HOURS || 2));
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function escapeFilterValue(value) {
   return String(value).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 }
 
 function getRelationId(value) {
-  if (typeof value === 'string' && value.length > 0) {
-    return value;
-  }
-
-  if (Array.isArray(value) && typeof value[0] === 'string' && value[0].length > 0) {
-    return value[0];
-  }
-
+  if (typeof value === 'string' && value.length > 0) return value;
+  if (Array.isArray(value) && typeof value[0] === 'string' && value[0].length > 0) return value[0];
   return null;
+}
+
+/**
+ * Returns the local hour (0–23) for the given IANA timezone at `now`.
+ * Falls back to UTC if the timezone string is missing or invalid.
+ */
+function getLocalHour(timezoneName, now) {
+  try {
+    const tz = timezoneName && timezoneName.length > 0 ? timezoneName : 'UTC';
+    const formatted = new Intl.DateTimeFormat('en-GB', {
+      timeZone: tz,
+      hour: 'numeric',
+      hour12: false,
+    }).format(now);
+    const h = Number(formatted.replace(/^0/, ''));
+    return Number.isFinite(h) ? h : now.getUTCHours();
+  } catch {
+    return now.getUTCHours();
+  }
+}
+
+/**
+ * Returns true when the subscription's preferred notify_hour matches the
+ * current local hour in the subscription's timezone.
+ */
+function isInNotifyWindow(subscription, now) {
+  const notifyHour = typeof subscription.notify_hour === 'number' ? subscription.notify_hour : 12;
+  return getLocalHour(subscription.notify_timezone, now) === notifyHour;
 }
 
 function buildExpiringFilter(now, cutoff) {
@@ -68,10 +91,11 @@ async function listExpiringLeftovers(now, cutoff) {
   });
 }
 
-async function listHouseholdSubscriptions(householdId) {
+/** Fetch ALL subscriptions that have notifications enabled. */
+async function listAllEnabledSubscriptions() {
   return pocketbase.collection('push_subscriptions').getFullList({
-    fields: 'id,endpoint,p256dh,auth_key,notifications_enabled,notify_expiring_leftovers,notify_meat,notify_poultry,notify_seafood,notify_veg,notify_dairy,notify_grains,notify_prepared,notify_other',
-    filter: `household_id = '${escapeFilterValue(householdId)}'`,
+    fields: 'id,household_id,endpoint,p256dh,auth_key,notifications_enabled,notify_expiring_leftovers,notify_meat,notify_poultry,notify_seafood,notify_veg,notify_dairy,notify_grains,notify_prepared,notify_other,notify_hour,notify_timezone',
+    filter: "notifications_enabled = true",
   });
 }
 
@@ -129,12 +153,10 @@ async function markLeftoverNotified(leftoverId) {
   });
 }
 
-async function runExpiryCheck() {
-  const isAuthenticated = await authenticateAdmin();
+// ─── Main check logic ─────────────────────────────────────────────────────────
 
-  if (!isAuthenticated) {
-    return;
-  }
+async function runExpiryCheck() {
+  if (!await authenticateAdmin()) return;
 
   if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY || !process.env.VAPID_SUBJECT) {
     console.warn('Notifier is missing VAPID configuration. Expiry checks are skipped.');
@@ -142,53 +164,65 @@ async function runExpiryCheck() {
   }
 
   const now = new Date();
+
+  // 1. Find which subscriptions should fire NOW (local hour matches notify_hour).
+  const allSubscriptions = await listAllEnabledSubscriptions();
+  const qualifying = allSubscriptions.filter((sub) => isInNotifyWindow(sub, now));
+
+  if (qualifying.length === 0) {
+    // Nothing scheduled for this half-hour window — exit silently.
+    return;
+  }
+
+  // 2. Group qualifying subscriptions by household.
+  const householdSubs = new Map();
+
+  for (const sub of qualifying) {
+    const hid = getRelationId(sub.household_id);
+    if (!hid) continue;
+    const list = householdSubs.get(hid) ?? [];
+    list.push(sub);
+    householdSubs.set(hid, list);
+  }
+
+  if (householdSubs.size === 0) return;
+
+  // 3. Fetch leftovers expiring in the next 24 h.
   const cutoff = new Date(now.getTime() + 24 * 60 * 60 * 1000);
   const leftovers = await listExpiringLeftovers(now, cutoff);
 
   if (leftovers.length === 0) {
-    console.info('Notifier check complete. No leftovers are expiring within 24 hours.');
+    console.info('Notifier: no leftovers expiring within 24 h at this time.');
     return;
   }
 
+  // Group leftovers by household for O(1) lookup.
   const leftoversByHousehold = new Map();
 
-  for (const leftover of leftovers) {
-    const householdId = getRelationId(leftover.household_id);
-
-    if (!householdId) {
-      continue;
-    }
-
-    const householdLeftovers = leftoversByHousehold.get(householdId) ?? [];
-    householdLeftovers.push(leftover);
-    leftoversByHousehold.set(householdId, householdLeftovers);
+  for (const lft of leftovers) {
+    const hid = getRelationId(lft.household_id);
+    if (!hid) continue;
+    const list = leftoversByHousehold.get(hid) ?? [];
+    list.push(lft);
+    leftoversByHousehold.set(hid, list);
   }
 
   let notificationCount = 0;
   let notifiedItemCount = 0;
 
-  for (const [householdId, householdLeftovers] of leftoversByHousehold.entries()) {
-    const subscriptions = await listHouseholdSubscriptions(householdId);
-
-    if (subscriptions.length === 0) {
-      continue;
-    }
+  // 4. Notify qualifying subscriptions per household.
+  for (const [householdId, subs] of householdSubs.entries()) {
+    const householdLeftovers = leftoversByHousehold.get(householdId) ?? [];
 
     for (const leftover of householdLeftovers) {
       const payload = buildNotificationPayload(leftover);
       let delivered = false;
 
-      for (const subscription of subscriptions) {
-        if (!shouldNotifySubscription(subscription, leftover)) {
-          continue;
-        }
-
-        const sent = await sendNotification(subscription, payload);
+      for (const sub of subs) {
+        if (!shouldNotifySubscription(sub, leftover)) continue;
+        const sent = await sendNotification(sub, payload);
         delivered = delivered || sent;
-
-        if (sent) {
-          notificationCount += 1;
-        }
+        if (sent) notificationCount += 1;
       }
 
       if (delivered) {
@@ -199,12 +233,17 @@ async function runExpiryCheck() {
   }
 
   console.info(
-    `Notifier check complete. Sent ${notificationCount} notifications across ${notifiedItemCount} leftovers.`,
+    `Notifier: sent ${notificationCount} notifications across ${notifiedItemCount} leftovers.`,
   );
 }
 
-cron.schedule(`0 */${checkIntervalHours} * * *`, () => {
+// ─── Schedule ─────────────────────────────────────────────────────────────────
+// Runs every 30 minutes. The per-subscription isInNotifyWindow() filter ensures
+// only subscriptions whose preferred local hour matches NOW are processed,
+// giving up to 30-minute precision for the user-chosen notification time.
+cron.schedule('*/30 * * * *', () => {
   void runExpiryCheck();
 });
 
+// Run once on startup to catch the current window if the container just restarted.
 void runExpiryCheck();

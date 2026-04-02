@@ -137,6 +137,8 @@ export async function persistPushSubscription(options: {
     p256dh: options.p256dh,
     auth_key: options.authKey,
     ...DEFAULT_PUSH_NOTIFICATION_PREFERENCES,
+    // Detect the device's IANA timezone so the notifier can fire at the right local hour.
+    notify_timezone: Intl.DateTimeFormat().resolvedOptions().timeZone ?? '',
   });
 }
 

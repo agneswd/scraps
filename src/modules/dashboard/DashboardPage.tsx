@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ExpiryBanner } from '@/modules/dashboard/ExpiryBanner';
 import { LeftoverList } from '@/modules/dashboard/LeftoverList';
@@ -25,17 +25,22 @@ export function DashboardPage() {
   const { t } = useTranslation();
   const [undoToast, setUndoToast] = useState<UndoToastData | null>(null);
 
+  // useRef so handleAction can always call the latest undoAction without
+  // being itself recreated on every render (avoids stale closure with useCallback).
+  const undoActionRef = useRef<((id: string) => Promise<void>) | null>(null);
+
   const handleAction = useCallback((id: string, name: string, status: 'consumed' | 'wasted') => {
     const label = status === 'consumed' ? t('dashboard.markConsumed') : t('dashboard.markWasted');
     setUndoToast({
       id: `${id}-${Date.now()}`,
       message: `${name} — ${label}`,
-      onUndo: () => void undoRef.current?.(id),
+      onUndo: () => void undoActionRef.current?.(id),
     });
   }, [t]);
 
   const { leftovers, isError, isLoading, markConsumed, markWasted, refetch, updatingId, undoAction } = useLeftovers(handleAction);
-  const undoRef = { current: undoAction };
+  // Keep ref current without triggering a re-render.
+  undoActionRef.current = undoAction;
 
   if (isLoading) {
     return <DashboardSkeleton />;

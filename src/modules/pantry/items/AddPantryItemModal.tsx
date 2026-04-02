@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { LoaderCircle } from 'lucide-react';
+import { LoaderCircle, Sparkles } from 'lucide-react';
 import { Modal } from '@/shared/ui/Modal';
+import { CameraModal } from '@/modules/add-item/CameraModal';
 import { BarcodeScanner } from '@/modules/pantry/scanner/BarcodeScanner';
 import { useResolveScannedBarcode } from '@/modules/pantry/scanner/use-scanner';
 import { fetchProductImageBlob } from '@/modules/pantry/scanner/open-food-facts-api';
@@ -9,7 +10,6 @@ import { useCreatePantryItem, useIncrementQuantity } from '@/modules/pantry/use-
 import { toPantryCategory, type PantryCategory } from '@/modules/pantry/pantry-categories';
 import { useAiIdentify } from '@/modules/ai/use-ai-identify';
 import { PantryEntryMethodPicker } from '@/modules/pantry/items/PantryEntryMethodPicker';
-import { PantryItemAiFlow } from '@/modules/pantry/items/PantryItemAiFlow';
 import { PantryItemManualWizard } from '@/modules/pantry/items/PantryItemManualWizard';
 
 type AddPantryItemModalProps = {
@@ -143,22 +143,39 @@ export function AddPantryItemModal({ isOpen, onClose }: AddPantryItemModalProps)
     }
   }
 
-  async function handleAiIdentify() {
-    if (!aiPhoto) return;
+  async function handleAiCapture(capturedPhoto: Blob) {
     try {
       setError(null);
-      const result = await identifyPantryItem.mutateAsync(aiPhoto);
+      setAiPhoto(capturedPhoto);
+      const result = await identifyPantryItem.mutateAsync(capturedPhoto);
+      const nextCategory = toPantryCategory(result.category);
+
       setName(result.name);
-      setCategory(toPantryCategory(result.category));
+      setCategory(nextCategory);
       setQuantity(1);
-      setPhoto(aiPhoto);
-      setStep(3);
-      setMethod('manual');
+      setPhoto(capturedPhoto);
+
+      // Auto-save immediately — same behaviour as the leftover AI flow
+      try {
+        await createItem.mutateAsync({
+          name: result.name.trim(),
+          category: nextCategory,
+          quantity: 1,
+          photo: capturedPhoto,
+        });
+        onClose();
+      } catch {
+        // Save failed → drop into manual form with data pre-filled
+        setError(t('pantry.saveError'));
+        setMethod('manual');
+        setStep(3);
+      }
     } catch {
+      // AI identification failed → manual fallback with photo
       setError(t('ai.identifyError'));
       setMethod('manual');
-      setStep(2);
-      setPhoto(aiPhoto);
+      setStep(0);
+      setPhoto(capturedPhoto);
     }
   }
 
@@ -210,17 +227,59 @@ export function AddPantryItemModal({ isOpen, onClose }: AddPantryItemModalProps)
   }
 
   if (method === 'ai') {
+    const isAiWorking = identifyPantryItem.isPending || createItem.isPending;
+
+    // While not busy and no error, show the camera directly (instant flow)
+    if (!isAiWorking && !error) {
+      return (
+        <CameraModal
+          isOpen={isOpen}
+          onClose={() => {
+            setMethod('choose');
+            setAiPhoto(null);
+          }}
+          onCapture={(blob) => void handleAiCapture(blob)}
+          closeOnCapture={false}
+          closeOnUpload={false}
+        />
+      );
+    }
+
+    // AI is processing — show spinner, or show error + retry
     return (
       <Modal isOpen={isOpen} onClose={onClose} title={t('ai.identifyTitle')}>
-        <PantryItemAiFlow
-          isIdentifying={identifyPantryItem.isPending}
-          aiPhoto={aiPhoto}
-          aiPreviewUrl={aiPreviewUrl}
-          onCapture={setAiPhoto}
-          onClearPhoto={() => setAiPhoto(null)}
-          onIdentify={() => void handleAiIdentify()}
-          onBack={() => setMethod('manual')}
-        />
+        {isAiWorking ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900 dark:bg-white">
+              <Sparkles className="h-6 w-6 text-white dark:text-slate-900" strokeWidth={1.8} />
+            </div>
+            <p className="mt-5 text-base font-semibold text-slate-900 dark:text-white">{t('ai.identifying')}</p>
+            <p className="mt-1 text-sm text-slate-400 dark:text-slate-500">{t('ai.identifyingHint')}</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {aiPreviewUrl ? (
+              <img src={aiPreviewUrl} alt="" className="h-36 w-full rounded-2xl object-cover" />
+            ) : null}
+            <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-600 dark:bg-red-950/50 dark:text-red-400">
+              {error}
+            </p>
+            <button
+              type="button"
+              onClick={() => { setError(null); setMethod('ai'); }}
+              className="w-full rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
+            >
+              {t('ai.scanButton')}
+            </button>
+            <button
+              type="button"
+              onClick={() => { setMethod('manual'); setStep(0); }}
+              className="w-full py-2 text-center text-sm text-slate-400 transition hover:text-slate-600 dark:hover:text-slate-300"
+            >
+              {t('common.back')}
+            </button>
+          </div>
+        )}
       </Modal>
     );
   }

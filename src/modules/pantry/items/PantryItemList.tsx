@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'framer-motion';
-import { PackageOpen } from 'lucide-react';
+import { PackageOpen, Search } from 'lucide-react';
 import { PantryItemCard } from '@/modules/pantry/items/PantryItemCard';
 import type { PantryItemRecord } from '@/modules/pantry/pantry-api';
 import type { PantryStatus } from '@/modules/pantry/pantry-categories';
@@ -23,8 +23,12 @@ const STATUS_FILTERS: Array<{ key: PantryStatus | 'all'; label: string }> = [
 export function PantryItemList({ items, onItemTap, onIncrement, onDecrement }: PantryItemListProps) {
   const { t } = useTranslation();
   const [filter, setFilter] = useState<PantryStatus | 'all'>('all');
+  const [search, setSearch] = useState('');
 
-  const filtered = filter === 'all' ? items : items.filter((i) => i.status === filter);
+  const query = search.trim().toLowerCase();
+  const filtered = items
+    .filter((i) => filter === 'all' || i.status === filter)
+    .filter((i) => !query || i.name.toLowerCase().includes(query));
 
   if (items.length === 0) {
     return (
@@ -44,6 +48,18 @@ export function PantryItemList({ items, onItemTap, onIncrement, onDecrement }: P
 
   return (
     <div>
+      {/* Search box */}
+      <div className="relative mb-3">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" strokeWidth={2} />
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder={t('pantry.searchPlaceholder', 'Search items…')}
+          className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-slate-500 dark:focus:ring-slate-700"
+        />
+      </div>
+
       {/* Status filter pills */}
       <div className="scrollbar-hidden mb-4 flex gap-2 overflow-x-auto pb-1">
         {STATUS_FILTERS.map(({ key, label }) => (

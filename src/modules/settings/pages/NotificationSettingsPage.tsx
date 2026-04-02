@@ -1,4 +1,4 @@
-import { Bell, BellOff, Send } from 'lucide-react';
+import { Bell, BellOff, Clock, Send } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui/Button';
@@ -171,6 +171,50 @@ export function NotificationSettingsPage() {
           />
         ))}
       </section>
+
+      {push.isSubscribed ? (
+        <section className="space-y-3">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
+              {t('notifications.scheduleTitle', 'Daily reminder time')}
+            </p>
+            <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+              {t('notifications.scheduleBody', 'Pick the time of day you want to receive expiry reminders.')}
+            </p>
+          </div>
+
+          <div className="flex items-center justify-between gap-3 rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-800/70">
+            <div className="flex items-center gap-2.5">
+              <Clock className="h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500" strokeWidth={2} />
+              <div>
+                <p className="text-sm font-medium text-slate-900 dark:text-white">
+                  {t('notifications.notifyAt', 'Notify at')}
+                </p>
+                {push.preferences.notify_timezone ? (
+                  <p className="mt-0.5 text-xs text-slate-400 dark:text-slate-500">
+                    {push.preferences.notify_timezone}
+                  </p>
+                ) : null}
+              </div>
+            </div>
+            <select
+              value={push.preferences.notify_hour}
+              disabled={!canEditPreferences}
+              onChange={(e) => {
+                const hour = Number(e.target.value);
+                const tz = push.preferences.notify_timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+                void push.updatePreferences({ notify_hour: hour, notify_timezone: tz });
+              }}
+              className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-900 outline-none transition focus:border-slate-400 disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+            >
+              {Array.from({ length: 24 }, (_, h) => {
+                const label = h === 0 ? '12:00 AM' : h < 12 ? `${h}:00 AM` : h === 12 ? '12:00 PM' : `${h - 12}:00 PM`;
+                return <option key={h} value={h}>{label}</option>;
+              })}
+            </select>
+          </div>
+        </section>
+      ) : null}
 
       {push.isSubscribed ? (
         <section className="rounded-3xl bg-slate-50 p-4 dark:bg-slate-800/70">

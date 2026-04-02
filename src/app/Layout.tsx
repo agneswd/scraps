@@ -103,18 +103,19 @@ export function Layout() {
 
       {/* ─── Main column ─── */}
       <div className="flex h-[100dvh] flex-1 flex-col overflow-hidden">
-        <button
-          type="button"
-          onClick={() => setIsSettingsOpen(true)}
-          aria-label={t('settings.title')}
-          className="fixed right-5 top-[max(1rem,env(safe-area-inset-top))] z-30 flex h-10 w-10 items-center justify-center rounded-full text-slate-400 transition-all hover:bg-slate-100 active:scale-90 md:hidden dark:text-slate-500 dark:hover:bg-slate-800"
-        >
-          <Settings className="h-[1.125rem] w-[1.125rem]" strokeWidth={2} />
-        </button>
-
         {/* Page content */}
         <main className="scrollbar-hidden flex-1 overflow-y-auto overflow-x-hidden px-5 pb-28 pt-[max(1.25rem,env(safe-area-inset-top))] md:px-8 md:py-6 md:pb-6">
           <div className="relative mx-auto w-full max-w-lg md:max-w-2xl">
+            {/* Settings gear — sits in the flow so it scrolls off the top naturally */}
+            <button
+              type="button"
+              onClick={() => setIsSettingsOpen(true)}
+              aria-label={t('settings.title')}
+              className="absolute right-0 top-0 z-10 flex h-9 w-9 items-center justify-center rounded-full text-slate-400 transition-all hover:bg-slate-100 active:scale-90 md:hidden dark:text-slate-500 dark:hover:bg-slate-800"
+            >
+              <Settings className="h-[1.125rem] w-[1.125rem]" strokeWidth={2} />
+            </button>
+
             <AnimatePresence mode="wait">
               <motion.div
                 key={location.pathname}

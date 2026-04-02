@@ -132,13 +132,17 @@ export function formatTimeRemaining(
     );
   }
 
-  const hoursRemaining = Math.ceil(timeRemaining / (60 * 60 * 1000));
+  const MS_PER_HOUR = 60 * 60 * 1000;
+  const MS_PER_DAY  = 24 * MS_PER_HOUR;
 
-  if (hoursRemaining <= 24) {
+  if (timeRemaining < MS_PER_DAY) {
+    const hoursRemaining = Math.max(1, Math.ceil(timeRemaining / MS_PER_HOUR));
     return translate('dashboard.hoursLeft', { count: hoursRemaining });
   }
 
-  const daysRemaining = Math.ceil(hoursRemaining / 24);
+  // Round to nearest whole day to avoid the double-ceil off-by-one
+  // e.g. 25 h → ceil used to give 2 days; Math.round gives 1 day ✓
+  const daysRemaining = Math.max(1, Math.round(timeRemaining / MS_PER_DAY));
 
   return translate(
     daysRemaining === 1 ? 'dashboard.daysLeft' : 'dashboard.daysLeft_plural',
@@ -147,5 +151,10 @@ export function formatTimeRemaining(
 }
 
 export function countExpiringSoon(expiryDates: string[], now = new Date()) {
-  return expiryDates.filter((expiryDate) => calculateTimeRemaining(expiryDate, now) <= 24 * 60 * 60 * 1000).length;
+  return expiryDates.filter((expiryDate) => {
+    const remaining = calculateTimeRemaining(expiryDate, now);
+    // Only count items that are still active (> 0) and expiring within 24 h.
+    // Negative values (already expired) must NOT appear in the "expiring today" banner.
+    return remaining > 0 && remaining <= 24 * 60 * 60 * 1000;
+  }).length;
 }

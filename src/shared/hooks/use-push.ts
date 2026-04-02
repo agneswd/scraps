@@ -92,9 +92,21 @@ export function usePush() {
         householdId,
       });
 
+      const prefs = getPushPreferences(record);
+
+      // Back-fill timezone if the stored record has none (existing subscriptions
+      // created before this field existed). Fire-and-forget — UI doesn't wait for it.
+      if (!prefs.notify_timezone) {
+        const detectedTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        if (detectedTz) {
+          prefs.notify_timezone = detectedTz;
+          void updatePushSubscriptionPreferences(subscription.endpoint, prefs);
+        }
+      }
+
       setIsSubscribed(true);
       setEndpoint(subscription.endpoint);
-      setPreferences(getPushPreferences(record));
+      setPreferences(prefs);
       setError(null);
     } catch (caughtError) {
       setIsSubscribed(false);
