@@ -159,215 +159,220 @@ a {
   }
 }
 
-/* ─── Healthy (green) theme ─── */
+/* ─── Healthy (green) theme ─── *
+ * Palette:
+ *   Background:   #0a1f0e  (off-black forest)
+ *   Surface:      #0f2d14  (deep green surface)
+ *   Card:         #162b1a  (raised card surface)
+ *   Elevated:     #1e3d24  (modals, dropdowns)
+ *   Border:       rgba(34,197,94,0.15)  (subtle green border glow)
+ *   Text hi:      #e8f5e9  (near-white warm green)
+ *   Text mid:     #a5d6a7  (mid green)
+ *   Text muted:   #66bb6a  (muted green)
+ *   Accent:       #22c55e  (single bright accent)
+ */
 html.green {
-  background: #052e16;
-  color: #dcfce7;
+  background: #0a1f0e;
+  color: #e8f5e9;
 }
 
 html.green body,
 html.green #root {
-  background: #052e16;
-  color: #dcfce7;
+  background: #0a1f0e;
+  color: #e8f5e9;
 }
 
-/* White cards → deep green surface */
+/* ── Surfaces ── */
 html.green .bg-white,
 html.green .bg-white\/80 {
-  background-color: #14532d !important;
+  background-color: #162b1a !important;
 }
 
-/* Light backgrounds → mid green */
 html.green .bg-slate-50 {
-  background-color: #052e16 !important;
+  background-color: #0a1f0e !important;
 }
 
 html.green .bg-slate-100 {
-  background-color: #14532d !important;
+  background-color: #0f2d14 !important;
 }
 
 html.green .bg-slate-200 {
-  background-color: #166534 !important;
+  background-color: #162b1a !important;
 }
 
-/* Dark backgrounds → near-black green */
-html.green .bg-slate-800 {
-  background-color: #071a0c !important;
+html.green .bg-slate-800,
+html.green .bg-slate-800\/80 {
+  background-color: #0f2d14 !important;
 }
 
 html.green .bg-slate-900 {
-  background-color: #021a0a !important;
+  background-color: #0a1a0c !important;
 }
 
-/* Borders */
-html.green .border-slate-100 {
-  border-color: #166534 !important;
+html.green .bg-slate-700 {
+  background-color: #0f2d14 !important;
+}
+
+/* ── Borders ── */
+html.green .border-slate-100,
+html.green .border-slate-100\/80 {
+  border-color: rgba(34, 197, 94, 0.12) !important;
 }
 
 html.green .border-slate-200 {
-  border-color: #15803d !important;
+  border-color: rgba(34, 197, 94, 0.18) !important;
 }
 
-html.green .border-slate-700\/40,
-html.green .border-slate-700 {
-  border-color: #166534 !important;
+html.green .border-slate-700,
+html.green .border-slate-700\/40 {
+  border-color: rgba(34, 197, 94, 0.12) !important;
 }
 
-/* Text */
+html.green .border-slate-800 {
+  border-color: rgba(34, 197, 94, 0.1) !important;
+}
+
+/* ── Text ── */
 html.green .text-slate-900 {
-  color: #f0fdf4 !important;
+  color: #e8f5e9 !important;
 }
 
 html.green .text-slate-800,
 html.green .text-slate-700 {
-  color: #dcfce7 !important;
+  color: #c8e6c9 !important;
 }
 
 html.green .text-slate-600,
 html.green .text-slate-500 {
-  color: #86efac !important;
+  color: #a5d6a7 !important;
 }
 
 html.green .text-slate-400 {
-  color: #4ade80 !important;
+  color: #66bb6a !important;
 }
 
 html.green .text-white {
-  color: #f0fdf4 !important;
+  color: #e8f5e9 !important;
 }
 
-/* Active/selected pill → bright green */
+/* ── Active/selected pills → accent green ── */
 html.green .bg-slate-900.text-white {
-  background-color: #16a34a !important;
-  color: #ffffff !important;
+  background-color: #22c55e !important;
+  color: #0a1f0e !important;
+  box-shadow: 0 2px 12px rgba(34, 197, 94, 0.25) !important;
 }
 
 html.green .bg-slate-900.text-white svg {
-  color: #ffffff !important;
+  color: #0a1f0e !important;
 }
 
-/* Hover states */
+/* ── Hover states ── */
 html.green .hover\:bg-slate-100:hover {
-  background-color: #166534 !important;
+  background-color: #162b1a !important;
 }
 
 html.green .hover\:bg-slate-200:hover {
-  background-color: #15803d !important;
+  background-color: #1e3d24 !important;
 }
 
-/* Tag pills (servings, time, ingredients) */
-html.green .bg-slate-100.px-2\.5,
-html.green .bg-slate-700 {
-  background-color: #166534 !important;
-  color: #86efac !important;
-}
-
-/* Ring focus colour */
-html.green .ring-white {
-  --tw-ring-color: #052e16 !important;
-}
-
-/* Skeleton shimmer in green */
-html.green .skeleton {
-  background: linear-gradient(
-    90deg,
-    #14532d 25%,
-    #166534 50%,
-    #14532d 75%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.4s ease-in-out infinite;
-}
-
-/* Bottom nav bar (uses bg-white/75 + backdrop-blur) */
+/* ── Bottom nav bar — liquid glass on green ── */
 html.green nav.fixed {
-  background-color: rgba(5, 46, 22, 0.85) !important;
-  border-top-color: rgba(22, 163, 74, 0.25) !important;
-  box-shadow: inset 0 1px 0 rgba(74, 222, 128, 0.1) !important;
+  background-color: rgba(10, 31, 14, 0.82) !important;
+  border-top-color: rgba(34, 197, 94, 0.12) !important;
+  box-shadow: inset 0 1px 0 rgba(34, 197, 94, 0.08) !important;
 }
 
-/* FAB add button ring */
-html.green .ring-white {
-  --tw-ring-color: #052e16 !important;
-}
-
-/* Desktop sidebar */
+/* ── Desktop sidebar ── */
 html.green aside {
-  background-color: #071a0c !important;
-  border-right-color: #166534 !important;
+  background-color: #0a1a0c !important;
+  border-right-color: rgba(34, 197, 94, 0.1) !important;
 }
 
-/* Active tab indicator dot (bg-slate-900) */
-html.green .bg-slate-900 {
-  background-color: #16a34a !important;
+/* ── FAB ring ── */
+html.green .ring-white {
+  --tw-ring-color: #0a1f0e !important;
 }
 
-/* bg-slate-950 (dark nav bg) */
-html.green .bg-slate-950\/80 {
-  background-color: rgba(5, 46, 22, 0.85) !important;
+/* ── Tab active indicator dot ── */
+html.green .mobileTabClass .bg-slate-900 {
+  background-color: #22c55e !important;
 }
 
-/* Card borders (border-slate-100/80, border-slate-100, border-slate-200) */
-html.green .border-slate-100\/80,
-html.green .border-slate-200\/80 {
-  border-color: rgba(22, 101, 52, 0.6) !important;
-}
-
-/* Input/form borders */
-html.green input,
-html.green textarea,
-html.green select {
-  background-color: #14532d !important;
-  border-color: #166534 !important;
-  color: #dcfce7 !important;
-}
-
-html.green input::placeholder,
-html.green textarea::placeholder {
-  color: #4ade80 !important;
-  opacity: 0.6;
-}
-
-/* Focus ring colour */
-html.green input:focus,
-html.green textarea:focus,
-html.green select:focus {
-  border-color: #22c55e !important;
-  --tw-ring-color: rgba(22, 163, 74, 0.3) !important;
-}
-
-/* Coloured semantic cards (stats, expiry) */
+/* ── Semantic / coloured cards ── */
 html.green .bg-red-50 {
-  background-color: #1a3320 !important;
+  background-color: #1b2c1e !important;
 }
 
 html.green .bg-amber-50 {
-  background-color: #1c3d22 !important;
+  background-color: #1e2f1b !important;
 }
 
 html.green .bg-emerald-50 {
-  background-color: #16422a !important;
+  background-color: #122716 !important;
 }
 
 html.green .bg-emerald-950\/30,
 html.green .bg-red-950\/30,
 html.green .bg-amber-950\/30 {
-  background-color: rgba(22, 66, 42, 0.5) !important;
+  background-color: rgba(22, 43, 26, 0.7) !important;
 }
 
-/* Coloured icon wrappers */
-html.green .bg-emerald-100,
+html.green .bg-emerald-100 {
+  background-color: #1e3d24 !important;
+}
+
 html.green .bg-amber-100,
 html.green .bg-red-100 {
-  background-color: #166534 !important;
+  background-color: #162b1a !important;
 }
 
-/* Thumbnail placeholders */
-html.green .bg-slate-700 {
-  background-color: #071a0c !important;
+/* ── Inputs ── */
+html.green input,
+html.green textarea,
+html.green select {
+  background-color: #0f2d14 !important;
+  border-color: rgba(34, 197, 94, 0.2) !important;
+  color: #e8f5e9 !important;
 }
 
-/* White segmented/slider track indicator */
+html.green input::placeholder,
+html.green textarea::placeholder {
+  color: #66bb6a !important;
+  opacity: 0.7;
+}
+
+html.green input:focus,
+html.green textarea:focus,
+html.green select:focus {
+  border-color: #22c55e !important;
+  --tw-ring-color: rgba(34, 197, 94, 0.2) !important;
+}
+
+/* ── Segment/slider white tab ── */
 html.green .bg-white.shadow-soft {
-  background-color: #16a34a !important;
+  background-color: #22c55e !important;
+  box-shadow: 0 2px 12px rgba(34, 197, 94, 0.2) !important;
+}
+
+/* ── Thumbnail placeholder boxes ── */
+html.green .bg-slate-700:not(.border) {
+  background-color: #0f2d14 !important;
+}
+
+/* ── Ring / focus ── */
+html.green .focus\:ring-slate-100:focus,
+html.green .focus\:ring-slate-200:focus {
+  --tw-ring-color: rgba(34, 197, 94, 0.2) !important;
+}
+
+/* ── Skeleton shimmer in green ── */
+html.green .skeleton {
+  background: linear-gradient(
+    90deg,
+    #0f2d14 25%,
+    #162b1a 50%,
+    #0f2d14 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
 }
